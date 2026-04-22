@@ -23,8 +23,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/register/**", "/login/**", "/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/shop/**", "/product/**", "/cart/**").authenticated()
+                // Cho phép truy cập công khai: trang chủ, cửa hàng, chi tiết sản phẩm
+                .requestMatchers("/", "/shop/**", "/product/**", "/register/**", "/login/**", "/css/**", "/js/**", "/images/**").permitAll()
+                // Yêu cầu đăng nhập: giỏ hàng, thanh toán, theo dõi đơn hàng
+                .requestMatchers("/cart/**", "/checkout/**", "/order/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
