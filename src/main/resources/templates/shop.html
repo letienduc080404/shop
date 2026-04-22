@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('BỘ SƯU TẬP')}"></head>
+
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12">
+        <div class="mb-20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div class="max-w-2xl">
+                    <p class="text-secondary font-label text-xs tracking-[0.3em] font-bold mb-4 uppercase">Archive 2024</p>
+                    <h1 class="text-6xl md:text-8xl font-serif tracking-tighter leading-tight">Bộ Sưu Tập <br />Mùa Thu.</h1>
+                </div>
+                <div class="md:text-right">
+                    <p class="font-label text-[10px] tracking-widest text-outline uppercase mb-2">Số lượng sản phẩm</p>
+                    <span class="text-4xl font-serif" th:text="${products != null ? products.size() : '0'}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-16">
+            <aside class="w-full lg:w-64 flex-shrink-0">
+                <div class="sticky top-32 space-y-12">
+                    <section>
+                        <h3 class="font-label text-xs tracking-widest font-bold border-b border-outline-variant pb-4 mb-6 uppercase">Danh mục</h3>
+                        <ul class="space-y-4">
+                             <li><a class="text-xs tracking-wider hover:text-secondary transition-colors font-medium" 
+                                    th:classappend="${param.category == null ? 'text-secondary font-bold' : 'text-outline'}"
+                                    href="/shop">TẤT CẢ SẢN PHẨM</a></li>
+                             <li th:each="cat : ${categories}">
+                                 <a class="text-xs tracking-wider hover:text-secondary transition-colors uppercase" 
+                                    th:classappend="${param.category != null && #strings.equals(param.category, #strings.toString(cat.idDanhMuc)) ? 'text-secondary font-bold' : 'text-outline'}"
+                                    th:href="@{/shop(category=${cat.idDanhMuc})}" 
+                                    th:text="${cat.tenDanhMuc}">DANH MỤC</a>
+                             </li>
+                        </ul>
+                    </section>
+                </div>
+            </aside>
+
+            <div class="flex-grow">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
+                    <article th:each="product : ${products}" class="group relative">
+                        <div class="relative aspect-[3/4] overflow-hidden bg-surface-container mb-6">
+                            <a th:href="@{/product/{id}(id=${product.idSanPham})}" class="block w-full h-full">
+                                <img alt="Product image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                     th:src="${product.imageUrl}" />
+                            </a>
+                            <form th:action="@{/cart/add}" method="post" class="absolute bottom-0 left-0 w-full translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                <input type="hidden" name="productId" th:value="${product.idSanPham}" />
+                                <input type="hidden" name="soLuong" value="1" />
+                                <button type="submit" class="w-full bg-primary text-white py-4 font-label text-[10px] tracking-[0.2em] uppercase hover:bg-secondary transition-colors">
+                                    Thêm vào giỏ hàng
+                                </button>
+                            </form>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="font-serif text-lg">
+                                <a th:href="@{/product/{id}(id=${product.idSanPham})}" th:text="${product.tenSanPham}" class="hover:text-secondary transition-colors">TÊN SẢN PHẨM</a>
+                            </h4>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-outline text-xs font-label tracking-widest uppercase" th:text="${product.category != null ? product.category.tenDanhMuc : 'Essentials'}">CATEGORY</p>
+                                <p class="font-serif text-sm" th:text="${product.giaNiemYet != null ? #numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + 'đ' : '0đ'}">0đ</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Standardized Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script>
+        (function() {
+            function normalizeNode(node) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
+                } else if (node.nodeType === 1) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        normalizeNode(node.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+</html>

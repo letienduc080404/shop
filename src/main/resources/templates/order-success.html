@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('ĐẶT HÀNG THÀNH CÔNG')}"></head>
+
+<body class="bg-background text-primary antialiased selection:bg-secondary selection:text-white">
+    <!-- Top Navigation -->
+    <header class="fixed top-0 w-full z-50 bg-[#fbf9f8]/80 backdrop-blur-md transition-all duration-300">
+        <div class="flex justify-between items-center w-full px-6 md:px-12 py-6">
+            <div class="text-3xl font-bold tracking-tighter text-[#1c1c1c] font-serif">
+                <a href="/">DOMINO</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32 min-h-screen flex items-center justify-center">
+        <div class="max-w-2xl w-full px-6 text-center space-y-12">
+            <div class="space-y-4">
+                <span class="material-symbols-outlined text-secondary text-7xl">task_alt</span>
+                <h1 class="text-5xl md:text-6xl font-black tracking-tighter uppercase">ĐẶT HÀNG THÀNH CÔNG</h1>
+                <p class="text-on-surface-variant uppercase tracking-widest text-sm">Cảm ơn bạn đã tin tưởng lựa chọn DOMINO.</p>
+            </div>
+
+            <div class="bg-surface-container-low p-12 border border-outline-variant/30 space-y-6 shadow-sm">
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-outline">MÃ ĐƠN HÀNG</p>
+                    <p class="text-2xl font-black tracking-tighter" th:text="${order.maDonHang}">ORD-12345678</p>
+                </div>
+                <div class="w-12 h-[1px] bg-primary/20 mx-auto"></div>
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-outline">TỔNG THANH TOÁN</p>
+                    <p class="text-2xl font-black tracking-tighter" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center pt-8">
+                <a th:href="@{/order/track/{ma}(ma=${order.maDonHang})}" class="bg-secondary text-white py-6 px-12 text-xs font-bold uppercase tracking-[0.3em] hover:bg-secondary/90 transition-all shadow-lg hover:shadow-xl">
+                    THEO DÕI KIỆN HÀNG
+                </a>
+                <a href="/" class="bg-primary text-white py-6 px-12 text-xs font-bold uppercase tracking-[0.3em] hover:bg-primary-container transition-all shadow-lg hover:shadow-xl">
+                    VỀ TRANG CHỦ
+                </a>
+            </div>
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-widest block pt-4">Một email xác nhận đã được gửi đến bạn.</p>
+        </div>
+    </main>
+
+    <!-- Standardized Footer (Simplified for Success Page) -->
+    <footer class="bg-[#F5F5F5] pt-24 pb-16 border-t border-outline-variant/30">
+        <div class="max-w-[1440px] mx-auto px-6 md:px-12 text-center">
+             <p class="text-[10px] text-outline/60 uppercase tracking-widest">© 2024 CÔNG TY CỔ PHẦN SÁU ANH TRAI. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

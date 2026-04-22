@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('GIỎ HÀNG')}"></head>
+
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+        <!-- Progress Steps -->
+        <div class="flex items-center justify-start mb-16 gap-4 overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-3 shrink-0">
+                <span
+                    class="text-[10px] font-bold tracking-widest bg-primary text-white w-6 h-6 flex items-center justify-center">01</span>
+                <span class="text-xs font-semibold tracking-widest uppercase">Giỏ hàng</span>
+            </div>
+            <div class="w-12 h-[1px] bg-outline-variant"></div>
+            <div class="flex items-center gap-3 shrink-0 opacity-30">
+                <span
+                    class="text-[10px] font-bold tracking-widest border border-primary w-6 h-6 flex items-center justify-center">02</span>
+                <span class="text-xs font-semibold tracking-widest uppercase text-primary">Thanh toán</span>
+            </div>
+            <div class="w-12 h-[1px] bg-outline-variant"></div>
+            <div class="flex items-center gap-3 shrink-0 opacity-30">
+                <span
+                    class="text-[10px] font-bold tracking-widest border border-primary w-6 h-6 flex items-center justify-center">03</span>
+                <span class="text-xs font-semibold tracking-widest uppercase text-primary">Hoàn tất</span>
+            </div>
+        </div>
+
+        <!-- Empty Cart State -->
+        <div th:if="${cart == null || cart.isEmpty()}" class="py-20 text-center space-y-8">
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-none uppercase">Giỏ hàng trống <span class="text-secondary">.</span></h1>
+            <p class="text-on-surface-variant uppercase tracking-widest text-sm">Cảm hứng cho bộ đồ tiếp theo của bạn đang chờ bạn khám phá.</p>
+            <a href="/shop" class="group inline-flex items-center gap-6 bg-primary text-white py-6 px-12 text-xs font-bold uppercase tracking-[0.2em] hover:bg-primary-container transition-all shadow-lg hover:shadow-xl">
+                <span>Tiếp tục mua sắm</span>
+                <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </a>
+        </div>
+
+        <div th:if="${cart != null && !cart.isEmpty()}" class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+            <!-- Cart Items List -->
+            <div class="lg:col-span-8">
+                <h1 class="text-5xl md:text-6xl font-black mb-12 tracking-tight leading-none uppercase">Túi mua sắm <span
+                        class="text-secondary">.</span></h1>
+                <div class="space-y-12">
+                    <!-- Dynamic Items -->
+                    <div th:each="item, iter : ${cart}" class="flex flex-col md:flex-row gap-8 pb-12 border-b border-outline-variant/30">
+                        <div class="w-full md:w-48 aspect-[3/4] bg-surface-container overflow-hidden shrink-0">
+                            <a th:href="@{/product/{id}(id=${item.idSanPham})}" class="block w-full h-full">
+                                <img th:src="${item.hinhAnh}" th:alt="${item.tenSanPham}"
+                                    class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                            </a>
+                        </div>
+                        <div class="flex flex-col justify-between flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-2xl font-bold uppercase tracking-tight mb-2">
+                                        <a th:href="@{/product/{id}(id=${item.idSanPham})}" th:text="${item.tenSanPham}" class="hover:text-secondary transition-colors">TÊN SẢN PHẨM</a>
+                                    </h3>
+                                    <p class="text-sm text-on-surface-variant uppercase tracking-widest mb-4" th:text="'Size: ' + ${item.kichThuoc}">SIZE</p>
+                                </div>
+                                <form th:action="@{/cart/remove}" method="post">
+                                    <input type="hidden" name="index" th:value="${iter.index}" />
+                                    <button type="submit" class="text-on-surface-variant hover:text-secondary transition-colors">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="flex justify-between items-end mt-8">
+                                <div class="flex items-center border border-outline-variant">
+                                    <form th:action="@{/cart/update}" method="post" class="flex items-center">
+                                        <input type="hidden" name="index" th:value="${iter.index}" />
+                                        <input type="hidden" name="action" value="minus" />
+                                        <button type="submit" class="px-3 py-2 hover:bg-surface-container transition-colors">
+                                            <span class="material-symbols-outlined text-sm">remove</span>
+                                        </button>
+                                    </form>
+                                    <span class="px-4 text-sm font-bold" th:text="${item.soLuong}">1</span>
+                                    <form th:action="@{/cart/update}" method="post" class="flex items-center">
+                                        <input type="hidden" name="index" th:value="${iter.index}" />
+                                        <input type="hidden" name="action" value="plus" />
+                                        <button type="submit" class="px-3 py-2 hover:bg-surface-container transition-colors">
+                                            <span class="material-symbols-outlined text-sm">add</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <span class="text-xl font-black tracking-tighter" th:text="${#numbers.formatDecimal(item.gia * item.soLuong, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-4 sticky top-32">
+                <div class="bg-white p-8 md:p-12 border border-outline-variant/20 shadow-sm">
+                    <h2 class="text-3xl font-bold uppercase tracking-tighter mb-8">Tóm tắt đơn</h2>
+                    <div class="space-y-6 mb-10">
+                        <div class="flex justify-between text-sm uppercase tracking-widest font-medium">
+                            <span class="text-on-surface-variant">Tạm tính</span>
+                            <span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                        </div>
+                        <div class="flex justify-between text-sm uppercase tracking-widest font-medium">
+                            <span class="text-on-surface-variant">Vận chuyển</span>
+                            <span>Miễn phí</span>
+                        </div>
+                        <div class="flex justify-between text-sm uppercase tracking-widest font-medium">
+                            <span class="text-on-surface-variant">Thuế (VAT)</span>
+                            <span>Bao gồm</span>
+                        </div>
+                        <div class="pt-6 border-t border-outline-variant">
+                            <div class="flex justify-between items-end">
+                                <span class="text-xs font-bold uppercase tracking-[0.2em]">Tổng cộng</span>
+                                <span class="text-3xl font-black tracking-tighter" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <a href="/checkout"
+                            class="w-full bg-primary text-white py-6 px-8 text-xs font-bold uppercase tracking-[0.2em] hover:bg-primary-container transition-all flex justify-between items-center group shadow-lg hover:shadow-xl">
+                            <span>Tiến hành thanh toán</span>
+                            <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </a>
+                        <a href="/shop"
+                            class="w-full border border-primary text-primary py-6 px-8 text-xs font-bold uppercase tracking-[0.2em] hover:bg-surface-container transition-all flex justify-between items-center group">
+                            <span>Tiếp tục mua sắm</span>
+                            <span class="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform">keyboard_backspace</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- You Might Also Like Section -->
+    <section class="max-w-[1440px] mx-auto px-6 md:px-12 mb-32">
+        <div class="mb-12">
+            <h2 class="text-xs font-bold tracking-[0.2em] uppercase inline-block pb-2 border-b-2 border-primary">Có thể bạn quan tâm</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Dynamic Recommended Products -->
+            <div th:each="product : ${recommendedProducts}" class="group relative bg-[#f5f5f5] flex flex-col transition-all duration-500 hover:shadow-xl">
+                <a th:href="@{/product/{id}(id=${product.idSanPham})}" class="block w-full h-full">
+                    <div class="h-80 w-full flex items-center justify-center p-8">
+                        <img th:src="${product.getImageUrl()}" th:alt="${product.tenSanPham}" class="max-h-full max-w-full object-contain mix-blend-multiply grayscale group-hover:grayscale-0 transition-all duration-700" />
+                    </div>
+                    <div class="p-8 pt-0 text-left">
+                        <p class="text-[10px] text-on-surface-variant font-bold tracking-widest uppercase mb-1" th:text="${product.category.tenDanhMuc}">CATEGORY</p>
+                        <h3 class="text-sm font-black tracking-tight uppercase" th:text="${product.tenSanPham}">PRODUCT NAME</h3>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Featured Black Card -->
+            <div class="bg-[#1c1c1c] text-white p-12 flex flex-col justify-center items-center text-center h-[420px] order-last md:order-none">
+                <p class="serif italic text-2xl mb-8 leading-relaxed">
+                    "Sự tối giản là đỉnh cao của sự tinh tế."
+                </p>
+                <div class="w-12 h-[1px] bg-white opacity-30 mb-8"></div>
+                <a href="/shop" class="text-[10px] font-bold tracking-[0.3em] uppercase hover:text-secondary transition-colors border-b border-white/20 pb-1">Khám phá BST mới</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Standardized Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script>
+        (function() {
+            function normalizeNode(node) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
+                } else if (node.nodeType === 1) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        normalizeNode(node.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title th:text="${title} + ' | DOMINO'">DOMINO</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "outline": "#747878",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#dae2ff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "inverse-surface": "#303030",
+                        "on-primary-fixed": "#1b1c1c",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#ffb4a7",
+                        "on-background": "#1b1c1c",
+                        "secondary-fixed": "#ffdad4",
+                        "tertiary-fixed-dim": "#b1c5ff",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "surface": "#fbf9f8",
+                        "on-tertiary-fixed-variant": "#00419f",
+                        "on-tertiary-container": "#6996ff",
+                        "surface-tint": "#5f5e5e",
+                        "on-tertiary-fixed": "#001947",
+                        "on-primary-container": "#9a9998",
+                        "on-secondary-container": "#fffbff",
+                        "primary-fixed": "#e4e2e1",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#b71507",
+                        "surface-variant": "#e4e2e1",
+                        "on-primary-fixed-variant": "#474747",
+                        "tertiary-container": "#002d73",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "background": "#fbf9f8",
+                        "outline-variant": "#c4c7c7",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary": "#001949",
+                        "primary-fixed-dim": "#c8c6c6",
+                        "secondary-container": "#dc3220",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#400100",
+                        "on-secondary-fixed-variant": "#920600",
+                        "inverse-primary": "#c8c6c6",
+                        "surface-container": "#f0eded",
+                        "surface-bright": "#fbf9f8",
+                        "primary": "#1c1c1c",
+                        "primary-container": "#313131",
+                        "on-surface-variant": "#444748",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-serif {
+            font-family: 'Noto Serif', serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Fragment -->
+    <header th:fragment="header" class="fixed top-0 w-full z-50 bg-[#fbf9f8]/80 backdrop-blur-md">
+        <div class="flex justify-between items-center w-full px-6 md:px-12 py-6">
+            <div class="text-3xl font-bold tracking-tighter text-[#1c1c1c] font-serif">
+                <a href="/">DOMINO</a>
+            </div>
+            <div class="hidden md:flex items-center gap-10">
+                <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
+                    href="/shop">COLLECTIONS</a>
+                <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
+                    href="/shop">NEW ARRIVALS</a>
+                <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
+                    href="#">EDITORIAL</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <!-- Search Toggle -->
+                <button class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors">search</button>
+                
+                <!-- Account / Login -->
+                <div class="flex items-center gap-4">
+                    <a href="/login" class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors" sec:authorize="isAnonymous()">person</a>
+                    <div th:if="${#authorization.expression('isAuthenticated()')}" class="flex items-center gap-2">
+                        <a href="/profile" class="text-[10px] font-bold uppercase tracking-widest hover:text-secondary transition-colors" sec:authentication="name">User</a>
+                        <form th:action="@{/logout}" method="post" class="inline">
+                            <button type="submit" class="material-symbols-outlined text-primary text-xl hover:text-secondary transition-colors">logout</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Shopping Bag -->
+                <a href="/cart" class="relative group">
+                    <span class="material-symbols-outlined text-primary text-2xl group-hover:text-secondary transition-colors">shopping_bag</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Footer Fragment -->
+    <footer th:fragment="footer" class="bg-[#F5F5F5] pt-24 pb-16 border-t border-outline-variant/30 mt-32">
+        <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24">
+                <div class="space-y-8">
+                    <h3 class="text-xl font-headline font-black tracking-tighter uppercase">DOMINO</h3>
+                    <p class="text-xs text-outline leading-loose tracking-[0.1em] uppercase">97 MAN THIỆN, PHƯỜNG TĂNG NHƠN PHÚ, TP. HỒ CHÍ MINH</p>
+                </div>
+                <div class="space-y-8">
+                    <h3 class="text-xs font-label font-bold tracking-[0.2em] uppercase">QUICK LINKS</h3>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">PRIVACY POLICY</a></li>
+                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">TERMS OF SERVICE</a></li>
+                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">CONTACT</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-8">
+                    <h3 class="text-xs font-label font-bold tracking-[0.2em] uppercase">NEWSLETTER</h3>
+                    <p class="text-[10px] text-outline/60 uppercase tracking-widest">© 2024 CÔNG TY CỔ PHẦN SÁU ANH TRAI. ALL RIGHTS RESERVED.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

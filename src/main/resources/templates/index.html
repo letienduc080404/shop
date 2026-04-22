@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('SỰ TĨNH LẶNG Tuyệt Đối')}"></head>
+
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <!-- TopNavBar -->
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <!-- Hero Section -->
+    <header class="relative h-screen w-full flex items-center overflow-hidden bg-surface-container">
+        <div class="absolute inset-0 z-0">
+            <img class="w-full h-full object-cover object-right grayscale-[0.1]"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0yP3JUBsC9hiGJAo6xr3mIWMvWeKs9Jn_gABdAqFWtPDiR1KVFv9NMLch-7I6NvDhItLFWd4oUjgq5uexl1tE2s_7EK27_OzTyT3BEujPRFJ9OULXNM_GSo8Q1FBOCTtwr5LR8B-NcwlP0m1lgr9obTbseifdflfaBGytW7-7SwcYWu-zqD4j0lthntf76qJ0W2mys0OuzB3hojcq2YWiUIvVej_vXwSfbj6tSjrvu4HYgiLPrtsz_Adslu3NA51o2EUPuWVPu52Y" />
+            <div class="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent"></div>
+        </div>
+        <div class="relative z-10 px-12 md:px-24 w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="space-y-8 max-w-xl">
+                <p class="font-label uppercase tracking-[0.4em] text-xs text-primary/80">Chiến dịch Xuân Hè 2024</p>
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-headline tracking-tighter text-primary leading-none">
+                    SỰ TĨNH LẶNG <br />
+                    <span class="italic text-secondary">Tuyệt Đối</span>
+                </h1>
+                <div class="flex items-center gap-8 pt-8">
+                    <a href="/shop"
+                        class="bg-primary text-white px-12 py-5 font-label text-xs tracking-widest uppercase hover:bg-primary-container transition-all duration-300">
+                        KHÁM PHÁ BỘ SƯU TẬP
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Featured Section (Asymmetric Editorial) -->
+    <section class="py-32 px-12 md:px-24 bg-surface">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+            <div class="md:col-span-7 relative group">
+                <div class="absolute -top-12 -left-12 w-48 h-48 bg-secondary/5 -z-10"></div>
+                <img class="w-full aspect-[4/5] object-cover transition-transform duration-700 group-hover:scale-105"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPRchFWNkQgFdlskWpxBeJmchOwaR-agrt9HgdQwQPcE0v_39kgaz-HJskbx_6o4ivF7mIgz7SAgvJ3tXZjFp58ka8L53x-qFQx2DHen2s7-IpxOCTS2Fxmos4__HUrfhS9UjeDOyAQkGwuuQXw95MA6latmXAqoFkAQfBtYmPWMrVIUCglrxTR2R71a4OiNnga2sxBZ7oF8KtgeWgw1310lqPHeys0ERdn3hcvMH0XaB82K4cx6c7JflB2zDFsAvF-NbL3Y-ejgCW" />
+            </div>
+            <div class="md:col-span-5 md:-ml-24 z-10 bg-surface-container-lowest p-12 shadow-2xl">
+                <h2 class="text-4xl md:text-6xl font-headline mb-6 leading-tight">Chất Liệu <br />Di Sản</h2>
+                <p class="text-primary/70 leading-relaxed font-body mb-8">
+                    Chúng tôi tin rằng sự sang trọng không nằm ở vẻ hào nhoáng bên ngoài, mà kết tinh từ quy trình chế
+                    tác thủ công tỉ mỉ và nguồn nguyên liệu thượng hạng nhất. Mỗi sản phẩm là một câu chuyện về sự
+                    trường tồn.
+                </p>
+                <a class="inline-flex items-center gap-4 text-xs font-label uppercase tracking-widest text-secondary hover:translate-x-2 transition-transform"
+                    href="/shop">
+                    XEM CHI TIẾT <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collection Bento Grid -->
+    <section class="py-24 px-12 bg-surface-container-low">
+        <div class="flex justify-between items-end mb-16 px-4">
+            <div>
+                <span class="font-label text-[10px] tracking-[0.5em] text-secondary uppercase mb-2 block">Danh mục đặc tuyển</span>
+                <h3 class="text-4xl font-headline">Bộ Sưu Tập Nổi Bật</h3>
+            </div>
+            <a class="font-label text-xs border-b border-primary/20 pb-1 hover:border-primary transition-colors"
+                href="/shop">TẤT CẢ SẢN PHẨM</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-8 h-auto md:h-[900px]">
+            <div class="md:col-span-2 md:row-span-2 relative group overflow-hidden">
+                <img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuABA5jVoq0fEvsiugoXYZuEcPcZiV36SYutNhmDpXRNlNYQl7e4bfwe2h1VfWQ3qVjxJMZ9D2VkgYCrQLQY4UX3nFiilnQgnAs76kAYxXIolKAPRUkHDnPyFY0qA2ecrF5pdlv7k6AVqQOvhwb9xHDsPmKGSLS4nzRmAK3lKCfmK3yBcYt2lxqoAwZ74AXWaRONHY5ELIq3VCgmOowfis9D8SiZJp7LRID2XpFAFuJbmS9leD5W2cPMpit3xBO_t02Gyp8oJSA9F5h4" />
+                <div class="absolute bottom-10 left-10 text-white">
+                    <p class="font-label text-[10px] tracking-widest uppercase mb-2">Thanh Lịch Tối Giản</p>
+                    <h4 class="text-3xl font-headline">The Noir Series</h4>
+                </div>
+                <a href="/shop" class="absolute inset-0 z-10"></a>
+            </div>
+            <div class="md:col-span-2 md:row-span-1 relative group overflow-hidden">
+                <img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSDgNCEIGuVAjzw_CyLHPzv1E2MhWz61AvGZx5T3Ni0qhuqICGoDx6WuZPnxEX38l-YLaDtl3zsDaXXDTvc6EgtnIKJdQSuKGB_rfKpC_YoCfGpjW_ran9HQWvJyznzoiZJveGLt1ZaZFe-FaJARqecoB8nMcPgrbUOEsDUFe5TquPvcsVNDDSRDNQQkgRm1Lo-o_Kb4XgoZlUdqYQgp-X4Qb7o6FqoL0MQOn0z5NF9sFTIxjeVaf8TeL1NliL2FJgMEqfnk4NsjJm" />
+                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+                <div class="absolute bottom-10 left-10 text-white">
+                    <h4 class="text-2xl font-headline">Phụ Kiện Da Cao Cấp</h4>
+                </div>
+                <a href="/shop" class="absolute inset-0 z-10"></a>
+            </div>
+            <div class="md:col-span-1 md:row-span-1 relative group overflow-hidden">
+                <img class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-6mmkc3D038ftodTHRjT6rvpc3AqnPofnzL4G4qf54snmRhpnjF2oYcbMdXFvvweUlGZBK-M8GCLtlK0a5OvI3BXLCLsRce57ZwWc9ByIe3xqZcSpTsU8OtCcj9yN8KB4wBRlNkP_gy1GKC2-pIofZmuV2J93qxFSwQjE4gKXQZMNmI3JRhKloGwMNgq99u9An-yQv4lMyaRU1rXrsA8dmVhRkY94DoP7dQOUEW1R0fStZliYSvTIv9NDo5WS70wge7VVqeXMYlT4" />
+                <div class="absolute bottom-6 left-6 text-white">
+                    <h4 class="text-xl font-headline">Thiết Kế Mới</h4>
+                </div>
+                <a href="/shop" class="absolute inset-0 z-10"></a>
+            </div>
+            <div class="md:col-span-1 md:row-span-1 relative group overflow-hidden bg-primary p-10 flex flex-col justify-end">
+                <div class="text-white space-y-4">
+                    <h4 class="text-2xl font-headline italic">Đăng ký bản tin</h4>
+                    <p class="text-white/60 text-xs font-body">Nhận thông tin về các bộ sưu tập giới hạn sớm nhất.</p>
+                    <div sec:authorize="isAnonymous()">
+                        <a href="/login"
+                            class="w-full bg-white/5 border border-white/10 py-3 text-[10px] tracking-widest text-white/50 hover:bg-white/10 transition-colors flex justify-between items-center px-4 group">
+                            ĐĂNG NHẬP ĐỂ ĐĂNG KÝ <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform"
+                                style="font-size: 14px;">arrow_forward</span>
+                        </a>
+                    </div>
+                    <div sec:authorize="isAuthenticated()">
+                        <input
+                            class="w-full bg-transparent border-b border-white/20 py-2 text-xs focus:border-white transition-colors outline-none placeholder:text-white/30"
+                            placeholder="EMAIL CỦA BẠN" type="email" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Standardized Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script>
+        (function () {
+            function normalizeNode(node) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
+                } else if (node.nodeType === 1) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        normalizeNode(node.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+
+</html>ode.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+</html>

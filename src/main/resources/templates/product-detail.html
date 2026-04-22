@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('CHI TIẾT SẢN PHẨM')}"></head>
+
+<body class="bg-surface text-on-surface selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-24 pb-20">
+        <section class="max-w-[1440px] mx-auto px-6 md:px-12 lg:grid lg:grid-cols-12 gap-12 items-start" th:if="${product != null}">
+            <div class="lg:col-span-7 space-y-4">
+                <div class="aspect-[4/5] bg-surface-container overflow-hidden">
+                    <img class="w-full h-full object-cover" 
+                         th:src="${product.imageUrl}" />
+                </div>
+            </div>
+            <div class="lg:col-span-5 pt-8 lg:pt-0 lg:sticky lg:top-32 h-fit">
+                <div class="space-y-8">
+                    <div>
+                        <p class="font-label text-xs tracking-[0.2em] text-secondary font-bold mb-4 uppercase" 
+                           th:text="${product.category != null ? product.category.tenDanhMuc : 'Essentials'}">Sưu tập Thu Đông '24</p>
+                        <h1 class="text-5xl font-headline font-black text-primary leading-tight mb-2 tracking-tighter uppercase" 
+                            th:text="${product.tenSanPham}">TÊN SẢN PHẨM</h1>
+                        <p class="text-2xl text-primary/60 font-light" 
+                           th:text="${product.giaNiemYet != null ? #numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">0 VNĐ</p>
+                    </div>
+                    <div class="space-y-6 pt-6 border-t border-outline-variant/20">
+                        <p class="text-on-surface-variant leading-relaxed text-sm" th:text="${product.moTa}">
+                            Mô tả sản phẩm...
+                        </p>
+                        <div class="flex flex-col gap-4 pt-4">
+                            <form th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${product.idSanPham}" />
+                                <input type="hidden" name="soLuong" value="1" />
+                                <button type="submit"
+                                    class="w-full bg-primary text-white py-5 px-8 font-label text-xs tracking-widest uppercase font-bold hover:bg-primary-container transition-all">
+                                    THÊM VÀO GIỎ HÀNG
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Hoàn thiện phong cách Section -->
+        <section class="mt-32 pt-24 pb-32 bg-[#F5F5F5]">
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12 text-center">
+                <h2 class="text-4xl font-headline font-black tracking-tight uppercase mb-2">HOÀN THIỆN PHONG CÁCH</h2>
+                <p class="text-xs tracking-[0.2em] text-outline uppercase mb-16">Gợi ý các phụ kiện và trang phục phối cùng hoàn hảo</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 text-left">
+                    <article th:each="rec : ${recommendations}" class="group">
+                        <a th:href="@{/product/{id}(id=${rec.idSanPham})}" class="block">
+                            <div class="aspect-[3/4] overflow-hidden bg-white mb-6 relative">
+                                <img th:src="${rec.imageUrl}" alt="Recommendation image"
+                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            </div>
+                            <h3 class="font-headline font-bold text-sm tracking-tight mb-2 uppercase" th:text="${rec.tenSanPham}">SƠ MI OXFORD TRẮNG</h3>
+                            <p class="text-xs text-outline mb-1" th:text="${rec.category != null ? rec.category.tenDanhMuc : 'Essentials'}">SƠ MI</p>
+                            <p class="text-sm font-medium" th:text="${rec.giaNiemYet != null ? #numbers.formatDecimal(rec.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">850,000 VNĐ</p>
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Standardized Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script>
+        (function() {
+            function normalizeNode(node) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
+                } else if (node.nodeType === 1) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        normalizeNode(node.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+</html>

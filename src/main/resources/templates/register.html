@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gia nhập cộng đồng | DOMINO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1c1c1c',
+                        secondary: '#b71507',
+                        outline: '#1c1c1c/50',
+                        'outline-variant': '#1c1c1c/10',
+                        surface: '#fbf9f8',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headline: ['Playfair Display', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-sans text-primary m-0 p-0 selection:bg-secondary selection:text-white">
+    <main class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="max-w-2xl w-full space-y-12">
+            <div class="text-center">
+                <a href="/" class="inline-block">
+                    <h1 class="text-5xl font-headline font-black tracking-tighter uppercase mb-2">DOMINO</h1>
+                </a>
+                <p class="text-xs tracking-[0.4em] uppercase text-outline/60">Gia nhập cộng đồng yêu thời trang tối giản</p>
+            </div>
+
+            <div class="bg-white p-12 shadow-2xl space-y-10">
+                <div class="space-y-3">
+                    <h2 class="text-3xl font-headline font-black tracking-tight uppercase">Tạo tài khoản mới</h2>
+                    <p class="text-xs text-outline italic">Trở thành một phần của hệ sinh thái Aura và nhận những đặc quyền sớm nhất.</p>
+                </div>
+
+                <div th:if="${error}" class="bg-secondary/5 border border-secondary/20 p-4">
+                    <p class="text-secondary text-xs font-medium uppercase tracking-widest" th:text="${error}">Lỗi đăng ký.</p>
+                </div>
+
+                <form th:action="@{/register}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                    <div class="space-y-2">
+                        <label for="hoTen" class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Họ và tên</label>
+                        <input type="text" id="hoTen" name="hoTen" required
+                               class="w-full bg-surface border-b border-outline-variant py-3 px-0 focus:border-primary transition-colors outline-none text-sm font-medium"
+                               placeholder="Nguyễn Văn A">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="email" class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Địa chỉ Email</label>
+                        <input type="email" id="email" name="email" required
+                               class="w-full bg-surface border-b border-outline-variant py-3 px-0 focus:border-primary transition-colors outline-none text-sm font-medium"
+                               placeholder="your@email.com">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="password" class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Mật khẩu</label>
+                        <input type="password" id="password" name="password" required
+                               class="w-full bg-surface border-b border-outline-variant py-3 px-0 focus:border-primary transition-colors outline-none text-sm font-medium"
+                               placeholder="Tối thiểu 6 ký tự">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="soDienThoai" class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Số điện thoại</label>
+                        <input type="tel" id="soDienThoai" name="soDienThoai"
+                               class="w-full bg-surface border-b border-outline-variant py-3 px-0 focus:border-primary transition-colors outline-none text-sm font-medium"
+                               placeholder="09xx xxx xxx">
+                    </div>
+
+                    <div class="space-y-2 md:col-span-2">
+                        <label for="diaChi" class="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Địa chỉ giao hàng</label>
+                        <input type="text" id="diaChi" name="diaChi"
+                               class="w-full bg-surface border-b border-outline-variant py-3 px-0 focus:border-primary transition-colors outline-none text-sm font-medium"
+                               placeholder="Số nhà, tên đường, quận/huyện...">
+                    </div>
+
+                    <div class="pt-6 md:col-span-2">
+                        <button type="submit" 
+                                class="w-full bg-primary text-white py-5 font-bold uppercase tracking-[0.3em] text-xs hover:bg-secondary transition-all duration-500 shadow-lg hover:shadow-secondary/20 group relative overflow-hidden">
+                            <span class="relative z-10">Đồng ý gia nhập</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center pt-2">
+                    <p class="text-xs text-outline">Đã có tài khoản? 
+                        <a href="/login" class="text-primary font-bold hover:text-secondary hover:underline underline-offset-4 transition-all uppercase tracking-widest">Đăng nhập ngay</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center text-[10px] text-outline/40 uppercase tracking-[0.5em] pt-4">
+                &copy; 2024 DOMINO STUDIO
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        (function() {
+            function normalizeNode(node) {
+                if (node.nodeType === 3) {
+                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
+                } else if (node.nodeType === 1) {
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        normalizeNode(node.childNodes[i]);
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+        })();
+    </script>
+</body>
+</html>
