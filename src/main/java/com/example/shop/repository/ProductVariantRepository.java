@@ -12,4 +12,5 @@ import java.util.List;
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, Long> {
     List<ProductVariant> findByProduct(Product product);
     List<ProductVariant> findByProduct_IdSanPhamAndKichThuoc(Long idSanPham, KichThuoc kichThuoc);
+    void deleteByProduct(Product product);
 }

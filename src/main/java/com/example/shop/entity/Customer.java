@@ -34,6 +34,9 @@ public class Customer {
     @Column(name = "HangThanhVien")
     private HangThanhVien hangThanhVien = HangThanhVien.Dong;
 
+    @Column(name = "Role", length = 50)
+    private String role = "ROLE_USER";
+
     public Customer() {}
 
     public Long getIdKhachHang() { return idKhachHang; }
@@ -52,4 +55,6 @@ public class Customer {
     public void setNgayTao(LocalDateTime ngayTao) { this.ngayTao = ngayTao; }
     public HangThanhVien getHangThanhVien() { return hangThanhVien; }
     public void setHangThanhVien(HangThanhVien hangThanhVien) { this.hangThanhVien = hangThanhVien; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

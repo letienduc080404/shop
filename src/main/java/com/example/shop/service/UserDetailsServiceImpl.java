@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -28,11 +29,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     return new UsernameNotFoundException("Không tìm thấy khách hàng với email: " + email);
                 });
 
-        System.out.println(">>> TIM THAY NGUOI DUNG: " + customer.getHoTen() + " - DANG KIEM TRA MAT KHAU...");
+        System.out.println(">>> TIM THAY NGUOI DUNG: " + customer.getHoTen() + " - ROLE: " + customer.getRole());
+        
+        List<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(customer.getRole()));
+
         return new User(
                 customer.getEmail(),
                 customer.getMatKhau(),
-                new ArrayList<>()
+                authorities
         );
     }
 }

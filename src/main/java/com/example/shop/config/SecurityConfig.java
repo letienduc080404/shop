@@ -25,6 +25,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Cho phép truy cập công khai: trang chủ, cửa hàng, chi tiết sản phẩm
                 .requestMatchers("/", "/shop/**", "/product/**", "/register/**", "/login/**", "/css/**", "/js/**", "/images/**").permitAll()
+                // Yêu cầu phân quyền Admin
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Yêu cầu đăng nhập: giỏ hàng, thanh toán, theo dõi đơn hàng
                 .requestMatchers("/cart/**", "/checkout/**", "/order/**").authenticated()
                 .anyRequest().authenticated()

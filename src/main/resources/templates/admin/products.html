@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Quản Lý Sản Phẩm', ~{::content}, 'inventory')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <!-- Header / Top Bar -->
+    <header class="flex justify-between items-center px-12 py-8 bg-surface">
+        <div>
+            <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">Sản Phẩm</h2>
+            <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Quản lý kho hàng &amp; Danh mục Editorial</p>
+        </div>
+        <div class="flex items-center gap-8">
+            <div class="relative group">
+                <input class="bg-transparent border-b border-outline-variant focus:border-secondary focus:ring-0 text-xs tracking-widest py-2 px-0 w-64 transition-all duration-300" placeholder="TÌM KIẾM SẢN PHẨM..." type="text"/>
+                <span class="material-symbols-outlined absolute right-0 bottom-2 text-on-surface-variant text-sm">search</span>
+            </div>
+            <a href="/admin/product/add" class="bg-primary text-white px-10 py-4 text-xs font-bold tracking-widest hover:bg-secondary transition-all duration-300 transform hover:scale-105 inline-block">
+                THÊM SẢN PHẨM MỚI
+            </a>
+        </div>
+    </header>
+
+    <!-- Stats Bento Grid -->
+    <section class="px-12 grid grid-cols-1 md:grid-cols-4 gap-0 border-t border-b border-outline-variant/10">
+        <div class="py-10 border-r border-outline-variant/10">
+            <span class="text-[10px] font-bold tracking-[0.3em] text-secondary uppercase">Tổng Số Lượng</span>
+            <div class="text-4xl font-serif mt-2" th:text="${totalCount}">1,284</div>
+        </div>
+        <div class="py-10 px-8 border-r border-outline-variant/10">
+            <span class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase">Sắp Hết Hàng</span>
+            <div class="text-4xl font-serif mt-2" th:text="${lowStockCount}">12</div>
+        </div>
+        <div class="py-10 px-8 border-r border-outline-variant/10">
+            <span class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase">Đang Kinh Doanh</span>
+            <div class="text-4xl font-serif mt-2" th:text="${activeCount}">842</div>
+        </div>
+        <div class="py-10 px-8">
+            <span class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase">Hết Hàng</span>
+            <div class="text-4xl font-serif mt-2" th:text="${outOfStockCount}">430</div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="px-12 py-6 flex gap-8 items-center text-xs font-bold tracking-[0.2em] text-on-surface-variant uppercase">
+        <span class="text-primary border-b-2 border-secondary pb-1 cursor-pointer">Tất cả</span>
+        <span class="hover:text-secondary transition-colors cursor-pointer">Nam</span>
+        <span class="hover:text-secondary transition-colors cursor-pointer">Nữ</span>
+        <span class="hover:text-secondary transition-colors cursor-pointer">Phụ kiện</span>
+        <span class="hover:text-secondary transition-colors cursor-pointer">Bộ sưu tập mới</span>
+        <div class="ml-auto flex items-center gap-4">
+            <span class="material-symbols-outlined cursor-pointer hover:text-primary">filter_list</span>
+            <span class="material-symbols-outlined cursor-pointer hover:text-primary">sort_by_alpha</span>
+        </div>
+    </section>
+
+    <!-- Product Table -->
+    <section class="px-12 pb-20">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-[10px] tracking-[0.25em] text-on-surface-variant uppercase border-b border-outline-variant/20">
+                        <th class="py-6 font-semibold">Sản Phẩm</th>
+                        <th class="py-6 font-semibold text-center">Danh Mục</th>
+                        <th class="py-6 font-semibold text-center">Tồn Kho</th>
+                        <th class="py-6 font-semibold text-center">Giá Niêm Yết</th>
+                        <th class="py-6 font-semibold text-center">Trạng Thái</th>
+                        <th class="py-6 font-semibold text-right">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    <!-- Product Items -->
+                    <tr th:each="product : ${products}" class="group hover:bg-surface-container-low transition-colors duration-200">
+                        <td class="py-8">
+                            <div class="flex items-center gap-6">
+                                <div class="w-20 h-24 bg-surface-container overflow-hidden">
+                                    <img class="w-full h-full object-cover" th:src="${product.getImageUrl()}" th:alt="${product.tenSanPham}"/>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold tracking-wider uppercase text-primary" th:text="${product.tenSanPham}">Product Name</h4>
+                                    <p class="text-[10px] text-on-surface-variant tracking-widest uppercase mt-1" th:text="'SKU: ' + ${product.maSKU}">SKU</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-8 text-center">
+                            <span class="text-[11px] font-medium tracking-widest text-on-surface-variant uppercase" th:text="${product.category.tenDanhMuc}">CATEGORY</span>
+                        </td>
+                        <td class="py-8 text-center">
+                            <span class="text-sm font-serif" th:text="${productStocks.get(product.idSanPham)}">42</span>
+                        </td>
+                        <td class="py-8 text-center">
+                            <span class="text-sm font-serif" th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + 'đ'">4.250.000đ</span>
+                        </td>
+                        <td class="py-8 text-center">
+                            <span th:with="stock=${productStocks.get(product.idSanPham)}" class="flex items-center justify-center">
+                                <span class="inline-block w-2 h-2 rounded-full mr-2" 
+                                      th:classappend="${stock > 10 ? 'bg-green-500' : (stock > 0 ? 'bg-secondary' : 'bg-outline')}"></span>
+                                <span class="text-[10px] font-bold tracking-widest uppercase"
+                                      th:classappend="${stock > 10 ? 'text-primary' : (stock > 0 ? 'text-secondary' : 'text-outline')}"
+                                      th:text="${stock > 10 ? 'CÒN HÀNG' : (stock > 0 ? 'SẮP HẾT HÀNG' : 'HẾT HÀNG')}">STATUS</span>
+                            </span>
+                        </td>
+                        <td class="py-8 text-right">
+                            <div class="flex justify-end gap-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <button class="hover:text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+                                <button class="hover:text-secondary transition-colors"><span class="material-symbols-outlined text-lg">visibility</span></button>
+                                <a th:href="@{'/admin/product/delete/' + ${product.idSanPham}}" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không? Thao tác này không thể hoàn tác.')"
+                                   class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination (Static for now) -->
+        <div class="mt-12 flex justify-between items-center text-xs tracking-widest uppercase font-bold text-on-surface-variant">
+            <span>Trang 1 / 1</span>
+            <div class="flex gap-10">
+                <button class="flex items-center gap-2 hover:text-secondary transition-colors"><span class="material-symbols-outlined text-sm">arrow_back</span> Trước</button>
+                <div class="flex gap-4">
+                    <span class="text-primary border-b border-primary">01</span>
+                </div>
+                <button class="flex items-center gap-2 hover:text-secondary transition-colors">Tiếp <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

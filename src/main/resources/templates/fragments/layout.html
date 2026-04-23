@@ -127,6 +127,13 @@
                 <div class="flex items-center gap-4">
                     <a href="/login" class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors" sec:authorize="isAnonymous()">person</a>
                     <div th:if="${#authorization.expression('isAuthenticated()')}" class="flex items-center gap-2">
+                        <!-- Admin Shortcut -->
+                        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}" 
+                           href="/admin/products" 
+                           class="mr-2 text-[10px] font-bold uppercase tracking-widest text-secondary hover:underline transition-all">
+                           ADMIN PANEL
+                        </a>
+                        
                         <a href="/profile" class="text-[10px] font-bold uppercase tracking-widest hover:text-secondary transition-colors" sec:authentication="name">User</a>
                         <form th:action="@{/logout}" method="post" class="inline">
                             <button type="submit" class="material-symbols-outlined text-primary text-xl hover:text-secondary transition-colors">logout</button>
