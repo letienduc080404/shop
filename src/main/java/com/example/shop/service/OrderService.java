@@ -11,11 +11,14 @@ import com.example.shop.entity.enums.TrangThaiDonHang;
 import com.example.shop.repository.OrderItemRepository;
 import com.example.shop.repository.OrderRepository;
 import com.example.shop.repository.ProductVariantRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +35,31 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productVariantRepository = productVariantRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Order> getOrdersForAdmin(TrangThaiDonHang status, Pageable pageable) {
+        if (status == null) {
+            return orderRepository.findAll(pageable);
+        }
+        return orderRepository.findByTrangThaiDonHang(status, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public long getTotalOrdersCount() {
+        return orderRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public long getOrdersCountByStatus(TrangThaiDonHang status) {
+        return orderRepository.countByTrangThaiDonHang(status);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal getRevenueForMonth(YearMonth month) {
+        LocalDateTime from = month.atDay(1).atStartOfDay();
+        LocalDateTime to = month.plusMonths(1).atDay(1).atStartOfDay();
+        return orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(from, to, TrangThaiDonHang.HoanThanh);
     }
 
     @Transactional
