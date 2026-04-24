@@ -7,6 +7,7 @@ import com.example.shop.entity.Order;
 import com.example.shop.entity.OrderItem;
 import com.example.shop.entity.enums.TrangThaiDonHang;
 import com.example.shop.repository.CustomerRepository;
+import com.example.shop.repository.OrderItemRepository;
 import com.example.shop.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +25,12 @@ import java.util.Locale;
 @Service
 public class DashboardService {
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
 
-    public DashboardService(OrderRepository orderRepository, CustomerRepository customerRepository) {
+    public DashboardService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
         this.customerRepository = customerRepository;
     }
 
@@ -94,6 +97,8 @@ public class DashboardService {
 
         // 12 tháng doanh thu (Hoàn thành)
         List<MonthlyRevenuePointDto> doanhThu12Thang = buildLast12MonthsRevenueSeries(currentMonth);
+        // 12 tháng lợi nhuận (Hoàn thành) - cần giá vốn (GiaVon) ở ProductVariant
+        List<MonthlyRevenuePointDto> loiNhuan12Thang = buildLast12MonthsProfitSeries(currentMonth);
 
         // Giao dịch gần đây
         List<RecentOrderRowDto> recent = mapRecentOrders(orderRepository.findTop5ByOrderByNgayDatDesc());
@@ -111,6 +116,7 @@ public class DashboardService {
                 tiLeChuyenDoiTrend.text,
                 tiLeChuyenDoiTrend.css,
                 doanhThu12Thang,
+                loiNhuan12Thang,
                 recent
         );
     }
@@ -146,6 +152,42 @@ public class DashboardService {
                         .divide(max, 0, RoundingMode.HALF_UP)
                         .intValue();
                 // Chiều cao tối thiểu giúp nhìn thấy cột nhỏ
+                percent = Math.max(4, percent);
+            }
+            result.add(new MonthlyRevenuePointDto(label, v, clamp(percent, 0, 100)));
+        }
+        return result;
+    }
+
+    private List<MonthlyRevenuePointDto> buildLast12MonthsProfitSeries(YearMonth currentMonth) {
+        List<YearMonth> months = new ArrayList<>();
+        for (int i = 11; i >= 0; i--) {
+            months.add(currentMonth.minusMonths(i));
+        }
+
+        List<BigDecimal> values = new ArrayList<>();
+        for (YearMonth ym : months) {
+            LocalDateTime from = ym.atDay(1).atStartOfDay();
+            LocalDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay();
+            BigDecimal v = orderItemRepository.sumLoiNhuanByNgayDatBetweenAndTrangThai(from, to, TrangThaiDonHang.HoanThanh);
+            values.add(v == null ? BigDecimal.ZERO : v);
+        }
+
+        BigDecimal max = values.stream().reduce(BigDecimal.ZERO, (a, b) -> a.max(b));
+
+        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
+        List<MonthlyRevenuePointDto> result = new ArrayList<>();
+        for (int i = 0; i < months.size(); i++) {
+            String label = months.get(i).atDay(1).format(labelFmt).toUpperCase(Locale.ENGLISH);
+            BigDecimal v = values.get(i);
+            int percent;
+            if (max.compareTo(BigDecimal.ZERO) == 0) {
+                percent = 12;
+            } else {
+                percent = v
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(max, 0, RoundingMode.HALF_UP)
+                        .intValue();
                 percent = Math.max(4, percent);
             }
             result.add(new MonthlyRevenuePointDto(label, v, clamp(percent, 0, 100)));

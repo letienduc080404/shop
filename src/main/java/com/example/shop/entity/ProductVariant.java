@@ -2,6 +2,7 @@ package com.example.shop.entity;
 
 import com.example.shop.entity.enums.KichThuoc;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product_variants", uniqueConstraints = {
@@ -27,6 +28,14 @@ public class ProductVariant {
     @Column(name = "SoLuongTon", nullable = false)
     private Integer soLuongTon = 0;
 
+    /**
+     * Giá vốn (chi phí nhập/giá gốc) của 1 sản phẩm theo biến thể.
+     * Dùng để tính "Lợi nhuận" = (Giá bán - Giá vốn) * Số lượng.
+     * Nếu chưa nhập giá vốn, hệ thống coi như 0 để tránh lỗi.
+     */
+    @Column(name = "GiaVon", precision = 12, scale = 2)
+    private BigDecimal giaVon = BigDecimal.ZERO;
+
     public ProductVariant() {}
 
     public Long getIdBienThe() { return idBienThe; }
@@ -39,4 +48,7 @@ public class ProductVariant {
     public void setMauSac(String mauSac) { this.mauSac = mauSac; }
     public Integer getSoLuongTon() { return soLuongTon; }
     public void setSoLuongTon(Integer soLuongTon) { this.soLuongTon = soLuongTon; }
+
+    public BigDecimal getGiaVon() { return giaVon; }
+    public void setGiaVon(BigDecimal giaVon) { this.giaVon = giaVon; }
 }

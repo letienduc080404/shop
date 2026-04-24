@@ -84,13 +84,19 @@
 <p class="text-xs font-label tracking-widest text-primary/40 uppercase">Dữ liệu 12 tháng gần nhất</p>
 </div>
 <div class="flex gap-4">
-<button class="text-[10px] font-bold tracking-widest border-b-2 border-secondary pb-1">DOANH THU</button>
-<button class="text-[10px] font-bold tracking-widest text-primary/30 pb-1">LỢI NHUẬN</button>
+<button id="tabRevenue" class="text-[10px] font-bold tracking-widest border-b-2 border-secondary pb-1">DOANH THU</button>
+<button id="tabProfit" class="text-[10px] font-bold tracking-widest text-primary/30 pb-1">LỢI NHUẬN</button>
 </div>
 </div>
 <!-- Visual Chart Area (dựa trên dữ liệu backend) -->
-<div class="h-80 w-full flex items-end gap-2 group">
+<div id="chartRevenue" class="h-80 w-full flex items-end gap-2 group">
 <div class="flex-1 bg-surface-container flex flex-col justify-end" th:each="p : ${dashboard.doanhThu12Thang}">
+<div class="bg-primary-container/20 w-full hover:bg-secondary transition-colors"
+     th:style="'height: ' + ${p.percent} + '%'"></div>
+</div>
+</div>
+<div id="chartProfit" class="h-80 w-full hidden items-end gap-2 group">
+<div class="flex-1 bg-surface-container flex flex-col justify-end" th:each="p : ${dashboard.loiNhuan12Thang}">
 <div class="bg-primary-container/20 w-full hover:bg-secondary transition-colors"
      th:style="'height: ' + ${p.percent} + '%'"></div>
 </div>
@@ -110,6 +116,50 @@
                 </button>
 </div>
 </section>
+
+<script>
+  (() => {
+    const tabRevenue = document.getElementById('tabRevenue');
+    const tabProfit = document.getElementById('tabProfit');
+    const chartRevenue = document.getElementById('chartRevenue');
+    const chartProfit = document.getElementById('chartProfit');
+
+    if (!tabRevenue || !tabProfit || !chartRevenue || !chartProfit) return;
+
+    const activeClass = 'border-b-2 border-secondary';
+    const inactiveClass = 'text-primary/30';
+
+    function showRevenue() {
+      tabRevenue.classList.add(...activeClass.split(' '));
+      tabRevenue.classList.remove(...inactiveClass.split(' '));
+      tabProfit.classList.remove(...activeClass.split(' '));
+      tabProfit.classList.add(...inactiveClass.split(' '));
+
+      chartRevenue.classList.remove('hidden');
+      chartRevenue.classList.add('flex');
+      chartProfit.classList.add('hidden');
+      chartProfit.classList.remove('flex');
+    }
+
+    function showProfit() {
+      tabProfit.classList.add(...activeClass.split(' '));
+      tabProfit.classList.remove(...inactiveClass.split(' '));
+      tabRevenue.classList.remove(...activeClass.split(' '));
+      tabRevenue.classList.add(...inactiveClass.split(' '));
+
+      chartProfit.classList.remove('hidden');
+      chartProfit.classList.add('flex');
+      chartRevenue.classList.add('hidden');
+      chartRevenue.classList.remove('flex');
+    }
+
+    tabRevenue.addEventListener('click', showRevenue);
+    tabProfit.addEventListener('click', showProfit);
+
+    // Mặc định hiển thị doanh thu
+    showRevenue();
+  })();
+</script>
 <!-- Transactions Table -->
 <section class="bg-surface-container-low p-10 mx-12">
 <div class="flex justify-between items-center mb-10">

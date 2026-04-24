@@ -42,4 +42,18 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("status") TrangThaiDonHang status,
             Pageable pageable
     );
+
+    @Query("""
+        select coalesce(sum((oi.giaBan - coalesce(pv.giaVon, 0)) * oi.soLuong), 0)
+        from OrderItem oi
+        join oi.order o
+        join oi.productVariant pv
+        where o.ngayDat >= :from and o.ngayDat < :to
+          and o.trangThaiDonHang = :status
+    """)
+    BigDecimal sumLoiNhuanByNgayDatBetweenAndTrangThai(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("status") TrangThaiDonHang status
+    );
 }

@@ -19,6 +19,7 @@ public class DashboardSummaryDto {
     private final String tiLeChuyenDoiXuHuongCss;
 
     private final List<MonthlyRevenuePointDto> doanhThu12Thang;
+    private final List<MonthlyRevenuePointDto> loiNhuan12Thang;
     private final List<RecentOrderRowDto> giaoDichGanDay;
 
     public DashboardSummaryDto(
@@ -34,6 +35,7 @@ public class DashboardSummaryDto {
             String tiLeChuyenDoiXuHuongText,
             String tiLeChuyenDoiXuHuongCss,
             List<MonthlyRevenuePointDto> doanhThu12Thang,
+            List<MonthlyRevenuePointDto> loiNhuan12Thang,
             List<RecentOrderRowDto> giaoDichGanDay
     ) {
         this.doanhThuThang = doanhThuThang;
@@ -48,6 +50,7 @@ public class DashboardSummaryDto {
         this.tiLeChuyenDoiXuHuongText = tiLeChuyenDoiXuHuongText;
         this.tiLeChuyenDoiXuHuongCss = tiLeChuyenDoiXuHuongCss;
         this.doanhThu12Thang = doanhThu12Thang;
+        this.loiNhuan12Thang = loiNhuan12Thang;
         this.giaoDichGanDay = giaoDichGanDay;
     }
 
@@ -97,6 +100,10 @@ public class DashboardSummaryDto {
 
     public List<MonthlyRevenuePointDto> getDoanhThu12Thang() {
         return doanhThu12Thang;
+    }
+
+    public List<MonthlyRevenuePointDto> getLoiNhuan12Thang() {
+        return loiNhuan12Thang;
     }
 
     public List<RecentOrderRowDto> getGiaoDichGanDay() {
