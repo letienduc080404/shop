@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,12 +60,20 @@ public class AdminController {
                              @RequestParam("idDanhMuc") Long idDanhMuc,
                              @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
                              @RequestParam("moTa") String moTa,
-                             @RequestParam("mauSacs") String mauSacs,
-                             @RequestParam("sizes") List<String> sizes,
-                             @RequestParam("soLuong") Integer soLuong,
+                             @RequestParam(name = "variantSizes", required = false) List<String> variantSizes,
+                             @RequestParam(name = "variantColors", required = false) List<String> variantColors,
+                             @RequestParam(name = "variantStocks", required = false) List<Integer> variantStocks,
+                             @RequestParam(name = "variantCosts", required = false) List<BigDecimal> variantCosts,
                              @RequestParam("files") MultipartFile[] files) {
-        
-        productService.createProduct(tenSanPham, idDanhMuc, giaNiemYet, moTa, mauSacs, sizes, soLuong, files);
+
+        productService.createProduct(
+                tenSanPham, idDanhMuc, giaNiemYet, moTa,
+                variantSizes == null ? Collections.emptyList() : variantSizes,
+                variantColors == null ? Collections.emptyList() : variantColors,
+                variantStocks == null ? Collections.emptyList() : variantStocks,
+                variantCosts == null ? Collections.emptyList() : variantCosts,
+                files
+        );
         return "redirect:/admin/products";
     }
 
@@ -85,9 +94,18 @@ public class AdminController {
                                 @RequestParam("idDanhMuc") Long idDanhMuc,
                                 @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
                                 @RequestParam("moTa") String moTa,
+                                @RequestParam(name = "variantIds", required = false) List<Long> variantIds,
+                                @RequestParam(name = "variantStocks", required = false) List<Integer> variantStocks,
+                                @RequestParam(name = "variantCosts", required = false) List<BigDecimal> variantCosts,
                                 @RequestParam("files") MultipartFile[] files) {
-        
-        productService.updateProduct(id, tenSanPham, idDanhMuc, giaNiemYet, moTa, files);
+
+        productService.updateProduct(
+                id, tenSanPham, idDanhMuc, giaNiemYet, moTa,
+                variantIds == null ? Collections.emptyList() : variantIds,
+                variantStocks == null ? Collections.emptyList() : variantStocks,
+                variantCosts == null ? Collections.emptyList() : variantCosts,
+                files
+        );
         return "redirect:/admin/products";
     }
 

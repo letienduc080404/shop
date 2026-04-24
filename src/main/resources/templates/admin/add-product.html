@@ -109,7 +109,7 @@
                             <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4">Chọn Kích Cỡ</label>
                             <div class="grid grid-cols-3 gap-2">
                                 <label th:each="size : ${kichThuocs}" class="relative group cursor-pointer">
-                                    <input type="checkbox" name="sizes" th:value="${size}" class="peer sr-only">
+                                    <input type="checkbox" name="sizeCheck" th:value="${size}" class="peer sr-only variant-trigger">
                                     <div class="border border-outline-variant/30 py-3 text-center text-[10px] font-bold hover:border-primary transition-colors uppercase peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary"
                                          th:text="${size}">S</div>
                                 </label>
@@ -119,15 +119,23 @@
                         <div class="group">
                             <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Màu Sắc (Cách nhau bằng dấu phẩy)</label>
                             <input type="text" name="mauSacs" required
+                                   id="variantColorsInput"
                                    class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
                                    placeholder="Trắng, Đen, Xanh Rêu">
                         </div>
 
-                        <div class="group">
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Số Lượng Mỗi Biến Thể</label>
-                            <input type="number" name="soLuong" required min="0" value="100"
-                                   class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
-                                   placeholder="100">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">Nhập chi tiết từng biến thể</label>
+                                <button type="button" id="generateVariantsBtn"
+                                        class="text-[10px] font-bold tracking-widest uppercase px-3 py-2 border border-outline-variant/30 hover:border-primary">
+                                    Tạo bảng biến thể
+                                </button>
+                            </div>
+                            <div id="variantRows" class="space-y-3"></div>
+                            <p class="text-[9px] text-on-surface-variant mt-3 uppercase tracking-wider opacity-70">
+                                Chọn size + nhập màu, sau đó bấm "Tạo bảng biến thể" để nhập số lượng và giá vốn từng dòng.
+                            </p>
                         </div>
                     </div>
 
@@ -143,5 +151,68 @@
         </form>
     </main>
 </div>
+<script>
+    (() => {
+        const colorsInput = document.getElementById('variantColorsInput');
+        const generateBtn = document.getElementById('generateVariantsBtn');
+        const rowsContainer = document.getElementById('variantRows');
+
+        function getSelectedSizes() {
+            return Array.from(document.querySelectorAll('input[name="sizeCheck"]:checked')).map(el => el.value);
+        }
+
+        function getColors() {
+            return (colorsInput.value || '')
+                .split(',')
+                .map(c => c.trim())
+                .filter(Boolean);
+        }
+
+        function buildRow(size, color) {
+            return `
+                <div class="grid grid-cols-12 gap-2 items-end border border-outline-variant/15 p-3">
+                    <div class="col-span-4">
+                        <label class="block text-[9px] uppercase tracking-widest mb-1">Biến thể</label>
+                        <div class="text-[11px] font-bold">${color} - ${size}</div>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-[9px] uppercase tracking-widest mb-1">Số lượng</label>
+                        <input type="number" name="variantStocks" min="0" value="0" required
+                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs">
+                    </div>
+                    <div class="col-span-5">
+                        <label class="block text-[9px] uppercase tracking-widest mb-1">Giá vốn (VND)</label>
+                        <input type="number" name="variantCosts" min="0" step="1000" value="0" required
+                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs">
+                    </div>
+                    <input type="hidden" name="variantSizes" value="${size}">
+                    <input type="hidden" name="variantColors" value="${color}">
+                </div>
+            `;
+        }
+
+        function generateRows() {
+            const sizes = getSelectedSizes();
+            const colors = getColors();
+            rowsContainer.innerHTML = '';
+
+            if (!sizes.length || !colors.length) return;
+
+            const html = [];
+            colors.forEach(color => {
+                sizes.forEach(size => {
+                    html.push(buildRow(size, color));
+                });
+            });
+            rowsContainer.innerHTML = html.join('');
+        }
+
+        generateBtn.addEventListener('click', generateRows);
+        document.querySelectorAll('.variant-trigger').forEach(el => {
+            el.addEventListener('change', generateRows);
+        });
+        colorsInput.addEventListener('blur', generateRows);
+    })();
+</script>
 </body>
 </html>

@@ -91,14 +91,14 @@
 <!-- Visual Chart Area (dựa trên dữ liệu backend) -->
 <div id="chartRevenue" class="h-80 w-full flex items-end gap-2 group">
 <div class="flex-1 bg-surface-container flex flex-col justify-end" th:each="p : ${dashboard.doanhThu12Thang}">
-<div class="bg-primary-container/20 w-full hover:bg-secondary transition-colors"
-     th:style="'height: ' + ${p.percent} + '%'"></div>
+<div class="bg-secondary/60 w-full hover:bg-secondary transition-colors"
+     th:style="'height: max(' + ${p.percent} + '%, 12px)'"></div>
 </div>
 </div>
 <div id="chartProfit" class="h-80 w-full hidden items-end gap-2 group">
 <div class="flex-1 bg-surface-container flex flex-col justify-end" th:each="p : ${dashboard.loiNhuan12Thang}">
-<div class="bg-primary-container/20 w-full hover:bg-secondary transition-colors"
-     th:style="'height: ' + ${p.percent} + '%'"></div>
+<div class="bg-primary/70 w-full hover:bg-secondary transition-colors"
+     th:style="'height: max(' + ${p.percent} + '%, 12px)'"></div>
 </div>
 </div>
 <div class="flex justify-between mt-6 px-1 text-[10px] font-bold text-primary/30 tracking-widest uppercase">

@@ -117,17 +117,29 @@
                         
                         <div>
                             <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4">Danh sách biến thể hiện có</label>
-                            <div class="space-y-2">
-                                <div th:each="v : ${variants}" class="flex justify-between items-center bg-surface-container-highest/50 px-4 py-3 text-[10px] font-bold tracking-widest uppercase border border-outline-variant/5">
-                                    <span th:text="${v.mauSac} + ' - ' + ${v.kichThuoc}">MÀU - SIZE</span>
-                                    <span class="text-primary font-serif italic" th:text="'Kho: ' + ${v.soLuongTon}">100</span>
+                            <div class="space-y-3">
+                                <div th:each="v : ${variants}" class="grid grid-cols-12 gap-2 items-end bg-surface-container-highest/50 px-4 py-3 text-[10px] font-bold tracking-widest uppercase border border-outline-variant/5">
+                                    <input type="hidden" name="variantIds" th:value="${v.idBienThe}">
+                                    <div class="col-span-4">
+                                        <p th:text="${v.mauSac} + ' - ' + ${v.kichThuoc}">MÀU - SIZE</p>
+                                    </div>
+                                    <div class="col-span-4">
+                                        <label class="block text-[9px] mb-1">Số lượng</label>
+                                        <input type="number" name="variantStocks" min="0" th:value="${v.soLuongTon}" required
+                                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
+                                    </div>
+                                    <div class="col-span-4">
+                                        <label class="block text-[9px] mb-1">Giá vốn</label>
+                                        <input type="number" name="variantCosts" min="0" step="1000" th:value="${v.giaVon}" required
+                                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="bg-amber-50 p-4 border-l-4 border-amber-400">
                              <p class="text-[10px] text-amber-800 font-bold tracking-widest uppercase">Lưu ý</p>
-                             <p class="text-[9px] text-amber-700 mt-1 uppercase tracking-wider">Việc chỉnh sửa thông tin cơ bản không làm ảnh hưởng đến số lượng tồn kho của các biến thể hiện tại.</p>
+                             <p class="text-[9px] text-amber-700 mt-1 uppercase tracking-wider">Bạn có thể cập nhật trực tiếp tồn kho và giá vốn cho từng biến thể ngay tại đây.</p>
                         </div>
                     </div>
 
