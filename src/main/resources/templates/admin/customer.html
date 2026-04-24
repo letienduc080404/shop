@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html th:replace="~{admin/layout :: layout('Khách Hàng', ~{::content}, 'customers')}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{admin/layout :: layout('KHÁCH HÀNG', ~{::content}, 'customers')}" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="content">
     <div class="p-12 max-w-[1600px]">
@@ -7,7 +7,7 @@
         <header class="flex justify-between items-end mb-16">
             <div class="space-y-2">
                 <span class="font-label text-[11px] tracking-[0.3em] text-secondary font-bold uppercase">Database 2024</span>
-                <h2 class="text-6xl font-headline font-black tracking-tighter text-primary">Khách Hàng.</h2>
+                <h2 class="text-6xl font-headline font-black tracking-tighter text-primary">KHÁCH HÀNG.</h2>
             </div>
             <form class="flex items-center gap-8 border-b border-outline-variant pb-2" method="get" th:action="@{/admin/customers}">
                 <span class="material-symbols-outlined text-outline">search</span>
