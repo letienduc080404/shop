@@ -14,10 +14,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
-import java.time.LocalDate;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -95,10 +94,9 @@ public class DashboardService {
         BigDecimal tiLeChuyenDoiTruoc = calcRatePercent(khachCoDon30NgayTruoc, tongKhachHang);
         TrendView tiLeChuyenDoiTrend = calcTrendPercent(tiLeChuyenDoi, tiLeChuyenDoiTruoc);
 
-        // 12 tháng doanh thu (Hoàn thành)
-        List<MonthlyRevenuePointDto> doanhThu12Thang = buildLast12MonthsRevenueSeries(currentMonth);
-        // 12 tháng lợi nhuận (Hoàn thành) - cần giá vốn (GiaVon) ở ProductVariant
-        List<MonthlyRevenuePointDto> loiNhuan12Thang = buildLast12MonthsProfitSeries(currentMonth);
+        // 7 ngày gần nhất (dễ quan sát xu hướng tuần)
+        List<MonthlyRevenuePointDto> doanhThu12Thang = buildLast7DaysRevenueSeries(now);
+        List<MonthlyRevenuePointDto> loiNhuan12Thang = buildLast7DaysProfitSeries(now);
 
         // Giao dịch gần đây
         List<RecentOrderRowDto> recent = mapRecentOrders(orderRepository.findTop5ByOrderByNgayDatDesc());
@@ -121,37 +119,31 @@ public class DashboardService {
         );
     }
 
-    private List<MonthlyRevenuePointDto> buildLast12MonthsRevenueSeries(YearMonth currentMonth) {
-        List<YearMonth> months = new ArrayList<>();
-        for (int i = 11; i >= 0; i--) {
-            months.add(currentMonth.minusMonths(i));
-        }
-
+    private List<MonthlyRevenuePointDto> buildLast7DaysRevenueSeries(LocalDateTime now) {
         List<BigDecimal> values = new ArrayList<>();
-        for (YearMonth ym : months) {
-            LocalDateTime from = ym.atDay(1).atStartOfDay();
-            LocalDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay();
+        List<LocalDateTime> starts = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDateTime from = now.minusDays(i).toLocalDate().atStartOfDay();
+            LocalDateTime to = from.plusDays(1);
+            starts.add(from);
             BigDecimal v = orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(from, to, TrangThaiDonHang.HoanThanh);
             values.add(v == null ? BigDecimal.ZERO : v);
         }
 
         BigDecimal max = values.stream().reduce(BigDecimal.ZERO, (a, b) -> a.max(b));
 
-        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
         List<MonthlyRevenuePointDto> result = new ArrayList<>();
-        for (int i = 0; i < months.size(); i++) {
-            String label = months.get(i).atDay(1).format(labelFmt).toUpperCase(Locale.ENGLISH);
+        for (int i = 0; i < starts.size(); i++) {
+            String label = dayLabel(starts.get(i).getDayOfWeek());
             BigDecimal v = values.get(i);
             int percent;
             if (max.compareTo(BigDecimal.ZERO) == 0) {
-                // Nếu tất cả tháng đều 0 (chưa có dữ liệu), vẫn vẽ cột “placeholder” để UI không bị trắng
                 percent = 12;
             } else {
                 percent = v
                         .multiply(BigDecimal.valueOf(100))
                         .divide(max, 0, RoundingMode.HALF_UP)
                         .intValue();
-                // Chiều cao tối thiểu giúp nhìn thấy cột nhỏ
                 percent = Math.max(4, percent);
             }
             result.add(new MonthlyRevenuePointDto(label, v, clamp(percent, 0, 100)));
@@ -159,26 +151,22 @@ public class DashboardService {
         return result;
     }
 
-    private List<MonthlyRevenuePointDto> buildLast12MonthsProfitSeries(YearMonth currentMonth) {
-        List<YearMonth> months = new ArrayList<>();
-        for (int i = 11; i >= 0; i--) {
-            months.add(currentMonth.minusMonths(i));
-        }
-
+    private List<MonthlyRevenuePointDto> buildLast7DaysProfitSeries(LocalDateTime now) {
         List<BigDecimal> values = new ArrayList<>();
-        for (YearMonth ym : months) {
-            LocalDateTime from = ym.atDay(1).atStartOfDay();
-            LocalDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay();
+        List<LocalDateTime> starts = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDateTime from = now.minusDays(i).toLocalDate().atStartOfDay();
+            LocalDateTime to = from.plusDays(1);
+            starts.add(from);
             BigDecimal v = orderItemRepository.sumLoiNhuanByNgayDatBetweenAndTrangThai(from, to, TrangThaiDonHang.HoanThanh);
             values.add(v == null ? BigDecimal.ZERO : v);
         }
 
         BigDecimal max = values.stream().reduce(BigDecimal.ZERO, (a, b) -> a.max(b));
 
-        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
         List<MonthlyRevenuePointDto> result = new ArrayList<>();
-        for (int i = 0; i < months.size(); i++) {
-            String label = months.get(i).atDay(1).format(labelFmt).toUpperCase(Locale.ENGLISH);
+        for (int i = 0; i < starts.size(); i++) {
+            String label = dayLabel(starts.get(i).getDayOfWeek());
             BigDecimal v = values.get(i);
             int percent;
             if (max.compareTo(BigDecimal.ZERO) == 0) {
@@ -193,6 +181,18 @@ public class DashboardService {
             result.add(new MonthlyRevenuePointDto(label, v, clamp(percent, 0, 100)));
         }
         return result;
+    }
+
+    private String dayLabel(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "T2";
+            case TUESDAY -> "T3";
+            case WEDNESDAY -> "T4";
+            case THURSDAY -> "T5";
+            case FRIDAY -> "T6";
+            case SATURDAY -> "T7";
+            case SUNDAY -> "CN";
+        };
     }
 
     private List<RecentOrderRowDto> mapRecentOrders(List<Order> orders) {
