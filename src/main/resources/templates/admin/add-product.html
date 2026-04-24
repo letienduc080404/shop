@@ -124,19 +124,25 @@
                         </div>
 
                         <div>
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center justify-between mb-3 gap-2">
                                 <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">Nhập chi tiết từng biến thể</label>
-                                <button type="button" id="generateVariantsBtn"
-                                        class="text-[10px] font-bold tracking-widest uppercase px-3 py-2 border border-outline-variant/30 hover:border-primary">
-                                    Tạo bảng biến thể
-                                </button>
+                                <div class="flex gap-2">
+                                    <button type="button" id="addVariantRowBtn"
+                                            class="text-[10px] font-bold tracking-widest uppercase px-3 py-2 border border-outline-variant/30 hover:border-primary">
+                                        + Thêm dòng
+                                    </button>
+                                    <button type="button" id="generateVariantsBtn"
+                                            class="text-[10px] font-bold tracking-widest uppercase px-3 py-2 border border-outline-variant/30 hover:border-primary">
+                                        Tạo từ size + màu
+                                    </button>
+                                </div>
                             </div>
                             <div id="variantRows" class="space-y-3"></div>
                             <p id="variantError" class="hidden text-[10px] text-secondary font-bold tracking-widest uppercase">
-                                Bạn cần tạo ít nhất 1 biến thể trước khi lưu sản phẩm.
+                                Bạn cần có ít nhất 1 biến thể hợp lệ trước khi lưu.
                             </p>
                             <p class="text-[9px] text-on-surface-variant mt-3 uppercase tracking-wider opacity-70">
-                                Chọn size + nhập màu, sau đó bấm "Tạo bảng biến thể" để nhập số lượng và giá vốn từng dòng.
+                                Mỗi biến thể đều có ô nhập số lượng tồn kho và giá vốn riêng.
                             </p>
                         </div>
                     </div>
@@ -157,9 +163,13 @@
     (() => {
         const form = document.getElementById('addProductForm');
         const colorsInput = document.getElementById('variantColorsInput');
+        const addRowBtn = document.getElementById('addVariantRowBtn');
         const generateBtn = document.getElementById('generateVariantsBtn');
         const rowsContainer = document.getElementById('variantRows');
         const variantError = document.getElementById('variantError');
+        const normalizedSizeOptions = Array.from(document.querySelectorAll('input[name="sizeCheck"]'))
+            .map(el => el.value)
+            .filter(Boolean);
 
         function getSelectedSizes() {
             return Array.from(document.querySelectorAll('input[name="sizeCheck"]:checked')).map(el => el.value);
@@ -172,25 +182,39 @@
                 .filter(Boolean);
         }
 
-        function buildRow(size, color) {
+        function buildRow(size = '', color = '') {
+            const optionsHtml = normalizedSizeOptions.map(s => {
+                const selected = s === size ? 'selected' : '';
+                return `<option value="${s}" ${selected}>${s}</option>`;
+            }).join('');
+
             return `
                 <div class="grid grid-cols-12 gap-2 items-end border border-outline-variant/15 p-3">
-                    <div class="col-span-4">
-                        <label class="block text-[9px] uppercase tracking-widest mb-1">Biến thể</label>
-                        <div class="text-[11px] font-bold">${color} - ${size}</div>
+                    <div class="col-span-3">
+                        <label class="block text-[9px] uppercase tracking-widest mb-1">Size</label>
+                        <select name="variantSizes" required class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-[9px] uppercase tracking-widest mb-1">Màu</label>
+                        <input type="text" name="variantColors" value="${color}" required
+                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs"
+                               placeholder="Đen">
                     </div>
                     <div class="col-span-3">
                         <label class="block text-[9px] uppercase tracking-widest mb-1">Số lượng</label>
                         <input type="number" name="variantStocks" min="0" value="0" required
                                class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs">
                     </div>
-                    <div class="col-span-5">
+                    <div class="col-span-2">
                         <label class="block text-[9px] uppercase tracking-widest mb-1">Giá vốn (VND)</label>
                         <input type="number" name="variantCosts" min="0" step="1000" value="0" required
                                class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-xs">
                     </div>
-                    <input type="hidden" name="variantSizes" value="${size}">
-                    <input type="hidden" name="variantColors" value="${color}">
+                    <div class="col-span-1">
+                        <button type="button" class="remove-row w-full h-[34px] border border-outline-variant/30 text-xs hover:border-secondary">X</button>
+                    </div>
                 </div>
             `;
         }
@@ -212,24 +236,35 @@
             variantError.classList.add('hidden');
         }
 
+        function addManualRow() {
+            rowsContainer.insertAdjacentHTML('beforeend', buildRow(normalizedSizeOptions[0] || 'M', ''));
+            variantError.classList.add('hidden');
+        }
+
         generateBtn.addEventListener('click', generateRows);
+        addRowBtn.addEventListener('click', addManualRow);
         document.querySelectorAll('.variant-trigger').forEach(el => {
             el.addEventListener('change', generateRows);
         });
         colorsInput.addEventListener('blur', generateRows);
 
-        form.addEventListener('submit', (e) => {
-            // Tự động sinh lại bảng biến thể trước khi submit để tránh người dùng quên bấm nút
-            if (!rowsContainer.querySelector('input[name="variantSizes"]')) {
-                generateRows();
+        rowsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-row')) {
+                e.target.closest('.grid').remove();
             }
+        });
 
-            if (!rowsContainer.querySelector('input[name="variantSizes"]')) {
+        form.addEventListener('submit', (e) => {
+            const hasVariant = rowsContainer.querySelector('select[name="variantSizes"], input[name="variantSizes"]');
+            if (!hasVariant) {
                 e.preventDefault();
                 variantError.classList.remove('hidden');
                 rowsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
+
+        // Mặc định luôn có 1 dòng để người dùng nhập trực tiếp
+        addManualRow();
     })();
 </script>
 </body>
