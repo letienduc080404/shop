@@ -16,20 +16,20 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file) {
         try {
-            // Create directory if it doesn't exist
+            // Tạo thư mục lưu nếu chưa tồn tại
             Path copyLocation = Paths.get(uploadDir);
             if (!Files.exists(copyLocation)) {
                 Files.createDirectories(copyLocation);
             }
 
-            // Generate a unique file name to avoid collisions
+            // Tạo tên file duy nhất để tránh trùng
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
             Path targetLocation = copyLocation.resolve(fileName);
 
-            // Copy file to the target location
+            // Sao chép file vào vị trí đích
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            // Return the relative path to be stored in the database
+            // Trả về đường dẫn tương đối để lưu vào CSDL
             return "/images/uploads/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("Could not store file " + file.getOriginalFilename() + ". Please try again!", e);
@@ -38,15 +38,15 @@ public class FileStorageService {
 
     public void deleteFile(String relativePath) {
         if (relativePath == null || !relativePath.startsWith("/images/uploads/")) {
-            return; // Only delete files in our managed uploads directory
+            return; // Chỉ xoá file trong thư mục upload do hệ thống quản lý
         }
 
         try {
-            // Convert relative web path back to physical path
+            // Đổi đường dẫn web tương đối về đường dẫn vật lý
             String fileName = relativePath.replace("/images/uploads/", "");
             Path filePath = Paths.get(uploadDir).resolve(fileName);
             
-            // Delete the file if it exists
+            // Xoá file nếu tồn tại
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
             System.err.println("Failed to delete physical file: " + relativePath);

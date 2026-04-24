@@ -67,9 +67,9 @@ public class Product {
 
     public int getTotalStock() {
         if (idSanPham == null) return 0;
-        // This is a bit inefficient if called many times, but for admin view it's okay for now
-        // A better way would be a custom query or a field
-        return 0; // Will be handled by service or custom query for better performance
+        // Cách này hơi kém tối ưu nếu gọi nhiều lần; hiện tại admin sẽ tính tồn kho ở service
+        // Tối ưu hơn là dùng truy vấn aggregate hoặc một cột lưu sẵn tổng tồn
+        return 0; // Tồn kho sẽ được xử lý ở service/truy vấn tuỳ nhu cầu
     }
 
     public String getImageUrl() {

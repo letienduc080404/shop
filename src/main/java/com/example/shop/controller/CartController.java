@@ -33,7 +33,7 @@ public class CartController {
         model.addAttribute("cart", cart);
         model.addAttribute("total", total);
 
-        // Fetch a few recommended products
+        // Lấy một vài sản phẩm gợi ý
         List<Product> allProducts = productService.getAllProducts();
         List<Product> recommendedProducts = allProducts.stream().limit(2).toList();
         model.addAttribute("recommendedProducts", recommendedProducts);

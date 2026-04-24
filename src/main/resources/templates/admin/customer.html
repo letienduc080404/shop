@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DOMINO ADMIN - Quản Lý Khách Hàng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "outline": "#747878",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#dae2ff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "inverse-surface": "#303030",
+                        "on-primary-fixed": "#1b1c1c",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#ffb4a7",
+                        "on-background": "#1b1c1c",
+                        "secondary-fixed": "#ffdad4",
+                        "tertiary-fixed-dim": "#b1c5ff",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "surface": "#fbf9f8",
+                        "on-tertiary-fixed-variant": "#00419f",
+                        "on-tertiary-container": "#6996ff",
+                        "surface-tint": "#5f5e5e",
+                        "on-tertiary-fixed": "#001947",
+                        "on-primary-container": "#9a9998",
+                        "on-secondary-container": "#fffbff",
+                        "primary-fixed": "#e4e2e1",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#b71507",
+                        "surface-variant": "#e4e2e1",
+                        "on-primary-fixed-variant": "#474747",
+                        "tertiary-container": "#002d73",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "background": "#fbf9f8",
+                        "outline-variant": "#c4c7c7",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary": "#001949",
+                        "primary-fixed-dim": "#c8c6c6",
+                        "secondary-container": "#dc3220",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#400100",
+                        "on-secondary-fixed-variant": "#920600",
+                        "inverse-primary": "#c8c6c6",
+                        "surface-container": "#f0eded",
+                        "surface-bright": "#fbf9f8",
+                        "primary": "#1c1c1c",
+                        "primary-container": "#313131",
+                        "on-surface-variant": "#444748",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #fbf9f8; }
+        ::-webkit-scrollbar-thumb { background: #1c1c1c; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen" xmlns:th="http://www.thymeleaf.org">
+<!-- Thanh điều hướng bên trái -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#313131] flex flex-col py-8 z-50">
+<div class="px-8 mb-12">
+<h1 class="text-lg font-headline tracking-widest text-[#fbf9f8]">DOMINO ADMIN</h1>
+<p class="text-[10px] font-label tracking-widest text-[#fbf9f8]/40 uppercase mt-1">System Controller</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-[#fbf9f8]/60 flex items-center gap-4 px-8 py-4 hover:bg-[#1c1c1c] transition-all hover:translate-x-2 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">DASHBOARD</span>
+</a>
+<a class="text-[#fbf9f8]/60 flex items-center gap-4 px-8 py-4 hover:bg-[#1c1c1c] transition-all hover:translate-x-2 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">INVENTORY</span>
+</a>
+<a class="text-[#fbf9f8]/60 flex items-center gap-4 px-8 py-4 hover:bg-[#1c1c1c] transition-all hover:translate-x-2 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">ORDERS</span>
+</a>
+<!-- Active State: Analytics / Customers Context -->
+<a class="bg-[#b71507] text-white flex items-center gap-4 px-8 py-4" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">CUSTOMERS</span>
+</a>
+<a class="text-[#fbf9f8]/60 flex items-center gap-4 px-8 py-4 hover:bg-[#1c1c1c] transition-all hover:translate-x-2 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">ANALYTICS</span>
+</a>
+<a class="text-[#fbf9f8]/60 flex items-center gap-4 px-8 py-4 hover:bg-[#1c1c1c] transition-all hover:translate-x-2 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label text-[11px] font-semibold tracking-wider">SETTINGS</span>
+</a>
+</nav>
+<div class="px-8 mt-auto pt-8">
+<button class="w-full bg-[#b71507] text-white py-4 font-label text-[10px] tracking-widest font-bold hover:opacity-90 transition-opacity">
+                NEW CAMPAIGN
+            </button>
+<a class="mt-4 flex items-center gap-4 py-4 text-[#fbf9f8]/40 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label text-[11px] font-semibold tracking-wider uppercase">LOGOUT</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-12 max-w-[1600px]">
+<!-- Phần tiêu đề -->
+<header class="flex justify-between items-end mb-16">
+<div class="space-y-2">
+<span class="font-label text-[11px] tracking-[0.3em] text-secondary font-bold uppercase">Database 2024</span>
+<h2 class="text-6xl font-headline font-black tracking-tighter text-primary">Khách Hàng.</h2>
+</div>
+<form class="flex items-center gap-8 border-b border-outline-variant pb-2" method="get" th:action="@{/admin/customers}">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 font-label text-xs tracking-widest uppercase w-64 placeholder:text-outline-variant"
+       name="q"
+       placeholder="TÌM KIẾM THEO TÊN, EMAIL HOẶC ID..."
+       th:value="${q}"
+       type="text"/>
+<input name="size" th:value="${page.size}" type="hidden"/>
+</form>
+</header>
+<!-- Thống kê nhanh -->
+<div class="grid grid-cols-4 gap-0 mb-20">
+<div class="bg-surface-container-low p-8 border-r border-background flex flex-col justify-between h-48">
+<span class="font-label text-[10px] tracking-widest text-primary/60 font-bold uppercase">Tổng thành viên</span>
+<span class="text-5xl font-headline font-light" th:text="${totalCustomers}">0</span>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="text-[10px] font-label font-bold uppercase tracking-wider">Cập nhật theo dữ liệu</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 border-r border-background flex flex-col justify-between h-48">
+<span class="font-label text-[10px] tracking-widest text-primary/60 font-bold uppercase">Hạng Kim Cương</span>
+<span class="text-5xl font-headline font-light text-tertiary" th:text="${diamondCustomers}">0</span>
+<span class="text-[10px] font-label font-bold uppercase tracking-widest text-primary/40">Thành viên V.I.P</span>
+</div>
+<div class="bg-surface-container-low p-8 border-r border-background flex flex-col justify-between h-48">
+<span class="font-label text-[10px] tracking-widest text-primary/60 font-bold uppercase">Giá trị trung bình</span>
+<span class="text-5xl font-headline font-light" th:text="${#numbers.formatDecimal(avgOrderValue, 0, 'COMMA', 0, 'POINT')}">0</span>
+<span class="text-[10px] font-label font-bold uppercase tracking-widest text-primary/40">VND / Đơn hàng</span>
+</div>
+<div class="bg-primary p-8 flex flex-col justify-between h-48 text-white">
+<span class="font-label text-[10px] tracking-widest text-white/60 font-bold uppercase">Tỷ lệ giữ chân</span>
+<span class="text-5xl font-headline font-light" th:text="${#numbers.formatDecimal(retentionRate, 0, 'POINT', 0, 'POINT')} + '%'}">0%</span>
+<div class="h-1 bg-white/20 w-full overflow-hidden">
+<div class="h-full bg-secondary" th:style="'width:' + ${retentionRate} + '%'"></div>
+</div>
+</div>
+</div>
+<!-- Section Title -->
+<div class="flex items-center justify-between mb-10">
+<h3 class="text-2xl font-headline font-bold">Danh sách Định danh</h3>
+<div class="flex gap-4">
+<button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase">Lọc phân hạng</button>
+<button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase">Xuất báo cáo</button>
+</div>
+</div>
+<!-- Bảng dữ liệu -->
+<div class="w-full">
+<!-- Header bảng -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 bg-surface-container-highest border-b-2 border-primary">
+<div class="col-span-4 font-label text-[10px] tracking-[0.2em] font-black uppercase">Khách hàng / Liên hệ</div>
+<div class="col-span-2 font-label text-[10px] tracking-[0.2em] font-black uppercase">Phân hạng</div>
+<div class="col-span-2 font-label text-[10px] tracking-[0.2em] font-black uppercase">Chi tiêu (VND)</div>
+<div class="col-span-3 font-label text-[10px] tracking-[0.2em] font-black uppercase">Lịch sử gần nhất</div>
+<div class="col-span-1 font-label text-[10px] tracking-[0.2em] font-black uppercase text-right">Tác vụ</div>
+</div>
+<!-- Dòng dữ liệu -->
+<div class="divide-y divide-outline-variant/10">
+<div class="grid grid-cols-12 gap-4 px-6 py-10 items-center hover:bg-surface-container-low transition-colors group"
+     th:each="c : ${page.content}">
+<div class="col-span-4 flex items-center gap-6">
+<div class="w-16 h-16 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+     alt="Ảnh đại diện"
+     src="https://images.unsplash.com/photo-1520975869018-7d18c6f31c7b?w=300"/>
+</div>
+<div>
+<p class="font-headline font-bold text-lg leading-none" th:text="${c.hoTen}">Họ tên</p>
+<p class="font-label text-[10px] text-primary/40 mt-1 uppercase tracking-widest"
+   th:text="'ID: ' + ${c.idKhachHang}">ID</p>
+<p class="font-label text-[11px] text-primary/60 mt-1" th:text="${c.email}">email</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="inline-block px-3 py-1 font-label text-[9px] tracking-widest font-black uppercase"
+      th:classappend="${c.hangThanhVien?.name() == 'KimCuong'} ? ' bg-tertiary text-white' : ' bg-surface-container-highest text-primary border border-primary/10'"
+      th:text="${c.hangThanhVien}">HẠNG</span>
+</div>
+<div class="col-span-2">
+<p class="font-headline text-xl font-bold"
+   th:text="${#numbers.formatDecimal(c.tongChiTieu, 0, 'COMMA', 0, 'POINT')}">0</p>
+<p class="font-label text-[10px] text-primary/40 uppercase mt-1"
+   th:text="'Số đơn: ' + ${c.soDonHang}">Số đơn</p>
+</div>
+<div class="col-span-3">
+<div class="flex items-start gap-4">
+<div class="pt-1"><div class="w-2 h-2 rounded-full bg-secondary"></div></div>
+<div>
+<p class="font-label text-[11px] font-bold uppercase" th:text="${c.ngayDonGanNhat == null ? 'Chưa có đơn hàng' : 'Đơn gần nhất'}">Đơn gần nhất</p>
+<p class="font-label text-[10px] text-primary/40 uppercase mt-1"
+   th:text="${c.ngayDonGanNhat == null ? '' : #temporals.format(c.ngayDonGanNhat, 'dd/MM/yyyy HH:mm')}">Ngày</p>
+</div>
+</div>
+</div>
+<div class="col-span-1 text-right">
+<a class="material-symbols-outlined text-primary/20 hover:text-secondary transition-colors"
+   data-icon="more_vert"
+   th:href="@{/admin/customers(selectedId=${c.idKhachHang},q=${q},page=${page.number},size=${page.size})}">more_vert</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Phân trang -->
+<footer class="mt-16 flex justify-between items-center">
+<span class="font-label text-[10px] tracking-widest text-primary/40 uppercase"
+      th:text="'Hiển thị ' + ${(page.number * page.size) + 1} + '-' + ${(page.number * page.size) + page.numberOfElements} + ' của ' + ${page.totalElements} + ' kết quả'">
+Hiển thị
+</span>
+<div class="flex gap-2">
+<a class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:border-primary transition-colors font-label text-xs"
+   th:if="${page.number > 0}"
+   th:href="@{/admin/customers(q=${q},page=${page.number-1},size=${page.size})}">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right" style="transform: rotate(180deg)">chevron_right</span>
+</a>
+<span class="w-12 h-12 flex items-center justify-center font-label text-xs"
+      th:text="${page.number + 1}">1</span>
+<a class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:border-primary transition-colors font-label text-xs"
+   th:if="${page.number + 1 < page.totalPages}"
+   th:href="@{/admin/customers(q=${q},page=${page.number+1},size=${page.size})}">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</footer>
+</main>
+<!-- Khung chi tiết khách hàng -->
+<div class="fixed right-0 top-0 h-full w-[400px] bg-white border-l border-outline-variant/10 shadow-2xl p-12 hidden lg:block"
+     th:classappend="${selectedCustomer != null} ? '' : ' translate-x-full'">
+<div class="h-full flex flex-col">
+<div class="flex justify-between items-start mb-12">
+<span class="font-label text-[10px] tracking-widest font-bold text-secondary uppercase">Hồ sơ chi tiết</span>
+<a class="material-symbols-outlined" data-icon="close" th:href="@{/admin/customers(q=${q},page=${page.number},size=${page.size})}">close</a>
+</div>
+<div class="text-center mb-10">
+<div class="w-32 h-32 bg-surface-container mx-auto mb-6">
+<img class="w-full h-full object-cover" data-alt="Professional studio portrait of a business person in monochromatic high fashion attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNhtlzeCGp-54Pxz67fXyNinHPqoBEoOypMsea4mwdMXzm82dDG3vHJkElfJEoQ55iQFrGkkO4dV4CNp-_E_kjxXvgWNn2bYdkxKl6ra6jUQ9iAqVBl9jKg6OjzShZbnXGQdaDqntGOMg2FYrHrTfBDaaoF3IDiVZAAmWaiWC_YoADMEh1jP_MDu-E_VRW4RBNXYC75ZVtTh8N2DSpqlFM4cMkdKqr-bibuIhvzejOOXbDgz5Aarru1fA1aEEzQ7Ues2reF75qczBq"/>
+</div>
+<h4 class="font-headline text-3xl font-black" th:text="${selectedCustomer?.hoTen}">Tên khách</h4>
+<p class="font-label text-[11px] tracking-widest text-primary/40 uppercase mt-2"
+   th:text="${selectedCustomer?.hangThanhVien}">Hạng</p>
+</div>
+<div class="space-y-10 flex-1 overflow-y-auto pr-2">
+<div>
+<h5 class="font-label text-[10px] tracking-widest font-black uppercase mb-4 text-primary/40">Thông tin liên hệ</h5>
+<div class="space-y-4">
+<div>
+<p class="font-label text-[10px] text-primary/40 uppercase">Số điện thoại</p>
+<p class="font-label text-sm font-bold" th:text="${selectedCustomer?.soDienThoai}">-</p>
+</div>
+<div>
+<p class="font-label text-[10px] text-primary/40 uppercase">Địa chỉ</p>
+<p class="font-label text-sm font-bold" th:text="${selectedCustomer?.diaChi}">-</p>
+</div>
+</div>
+</div>
+<div>
+<h5 class="font-label text-[10px] tracking-widest font-black uppercase mb-4 text-primary/40">Thống kê mua sắm</h5>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4">
+<p class="font-label text-[9px] text-primary/40 uppercase">Số đơn hàng</p>
+<p class="font-headline text-xl font-bold" th:text="${selectedCustomerOrders.size()}">0</p>
+</div>
+<div class="bg-surface-container-low p-4">
+<p class="font-label text-[9px] text-primary/40 uppercase">Tỷ lệ hoàn</p>
+<p class="font-headline text-xl font-bold">-</p>
+</div>
+</div>
+</div>
+<div>
+<h5 class="font-label text-[10px] tracking-widest font-black uppercase mb-4 text-primary/40">Lịch sử giao dịch</h5>
+<div class="space-y-6">
+<div class="flex justify-between items-center" th:each="o : ${selectedCustomerOrders}">
+<div>
+<p class="font-label text-[11px] font-bold uppercase" th:text="${'#' + o.maDonHang}">#ORD</p>
+<p class="font-label text-[10px] text-primary/40" th:text="${#temporals.format(o.ngayDat, 'dd/MM/yyyy HH:mm')}">Ngày</p>
+</div>
+<p class="font-label text-sm font-bold" th:text="${#numbers.formatDecimal(o.tongTien, 0, 'COMMA', 0, 'POINT')}">0</p>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-8 w-full bg-primary text-white py-5 font-label text-[11px] font-black tracking-[0.2em] uppercase">Gửi thông báo ưu đãi</button>
+</div>
+</div>
+</body></html>

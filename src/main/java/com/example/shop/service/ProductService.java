@@ -71,18 +71,18 @@ public class ProductService {
     public void deleteProductById(Long id) {
         Product product = productRepository.findById(id).orElse(null);
         if (product != null) {
-            // 1. Delete main thumbnail image from disk
+            // 1. Xoá ảnh đại diện chính khỏi ổ đĩa
             fileStorageService.deleteFile(product.getHinhAnh());
             
-            // 2. Delete additional pictures from disk (if any)
+            // 2. Xoá các ảnh bổ sung khỏi ổ đĩa (nếu có)
             if (product.getImages() != null) {
                 product.getImages().forEach(img -> fileStorageService.deleteFile(img.getDuongDan()));
             }
 
-            // 3. Delete associated variants from DB
+            // 3. Xoá các biến thể liên quan trong CSDL
             productVariantRepository.deleteByProduct(product);
             
-            // 4. Delete product from DB (images records in DB will be deleted via CascadeType.ALL)
+            // 4. Xoá sản phẩm trong CSDL (bản ghi ảnh sẽ bị xoá theo CascadeType.ALL)
             productRepository.delete(product);
         }
     }
@@ -102,7 +102,7 @@ public class ProductService {
         
         Product savedProduct = productRepository.save(product);
         
-        // Handle images
+        // Xử lý ảnh
         if (files != null && files.length > 0) {
             for (int i = 0; i < files.length; i++) {
                 if (files[i].isEmpty()) continue;
@@ -118,7 +118,7 @@ public class ProductService {
             }
         }
         
-        // Handle Variants
+        // Xử lý biến thể (màu + size)
         String[] colorList = mauSacs.split(",");
         for (String color : colorList) {
             String trimmedColor = color.trim();
@@ -129,7 +129,7 @@ public class ProductService {
                 variant.setProduct(savedProduct);
                 variant.setMauSac(trimmedColor);
                 variant.setKichThuoc(KichThuoc.valueOf(sizeStr));
-                variant.setSoLuongTon(100); // Default stock
+                variant.setSoLuongTon(100); // Tồn kho mặc định
                 productVariantRepository.save(variant);
             }
         }

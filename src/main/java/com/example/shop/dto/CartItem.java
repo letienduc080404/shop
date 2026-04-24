@@ -8,7 +8,7 @@ public class CartItem {
     private int soLuong;
     private String kichThuoc;
 
-    // Getters and Setters
+    // Getter và Setter
     public Long getIdSanPham() { return idSanPham; }
     public void setIdSanPham(Long idSanPham) { this.idSanPham = idSanPham; }
 

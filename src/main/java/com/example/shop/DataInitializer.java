@@ -55,7 +55,7 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- DA THEM TAI KHOAN TEST: user@gmail.com / 123 ---");
         }
 
-        // 1. Cap nhat Danh Muc (Kiem tra ton tai truoc khi insert)
+        // 1. Cập nhật danh mục (kiểm tra tồn tại trước khi thêm)
         java.util.List<String> tenDanhMucs = java.util.List.of("ÁO", "QUẦN", "PHỤ KIỆN", "ÁO KHOÁC", "VÁY");
         for (String ten : tenDanhMucs) {
             if (!categoryRepository.existsByTenDanhMuc(ten)) {
@@ -63,14 +63,14 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
 
-        // 2. Them San Pham Mau (Neu chua co du san pham)
+        // 2. Thêm sản phẩm mẫu (nếu chưa có đủ sản phẩm)
         if (productRepository.count() < 2) {
             Category aoKhoac = categoryRepository.findAll().stream()
                     .filter(c -> c.getTenDanhMuc().equals("ÁO KHOÁC")).findFirst().orElse(null);
             Category vayStr = categoryRepository.findAll().stream()
                     .filter(c -> c.getTenDanhMuc().equals("VÁY")).findFirst().orElse(null);
 
-            // San pham 1: Ao Khoac
+            // Sản phẩm 1: Áo khoác
             if (aoKhoac != null && productRepository.findByCategory_IdDanhMuc(aoKhoac.getIdDanhMuc()).isEmpty()) {
                 Product p1 = new Product();
                 p1.setTenSanPham("Blazer Linen Cấu Trúc");
@@ -94,7 +94,7 @@ public class DataInitializer implements CommandLineRunner {
                 }
             }
 
-            // San pham 2: Vay
+            // Sản phẩm 2: Váy
             if (vayStr != null && productRepository.findByCategory_IdDanhMuc(vayStr.getIdDanhMuc()).isEmpty()) {
                 Product p2 = new Product();
                 p2.setTenSanPham("Váy Lụa Slip Dress");

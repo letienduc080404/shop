@@ -69,12 +69,12 @@ public class CheckoutController {
         try {
             phuongThuc = PhuongThucThanhToan.valueOf(payment);
         } catch (IllegalArgumentException e) {
-            phuongThuc = PhuongThucThanhToan.COD; // Default
+            phuongThuc = PhuongThucThanhToan.COD; // Mặc định
         }
 
         Order order = orderService.createOrder(customer, cart, diaChi, soDienThoai, phuongThuc);
         
-        // Clear cart
+        // Xoá giỏ hàng sau khi đặt
         session.setAttribute("cart", new ArrayList<CartItem>());
         
         model.addAttribute("order", order);

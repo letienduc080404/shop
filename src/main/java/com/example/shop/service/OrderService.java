@@ -85,7 +85,7 @@ public class OrderService {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
             
-            // Try to find matching variant
+            // Thử tìm biến thể sản phẩm phù hợp (theo size)
             ProductVariant variant = productVariantRepository.findByProduct_IdSanPhamAndKichThuoc(
                     cartItem.getIdSanPham(), 
                     KichThuoc.valueOf(cartItem.getKichThuoc())
@@ -97,7 +97,7 @@ public class OrderService {
                 orderItem.setGiaBan(BigDecimal.valueOf(cartItem.getGia()));
                 orderItemRepository.save(orderItem);
                 
-                // Optional: Update stock
+                // (Tuỳ chọn) cập nhật tồn kho
                 variant.setSoLuongTon(variant.getSoLuongTon() - cartItem.getSoLuong());
                 productVariantRepository.save(variant);
             }
