@@ -2,11 +2,14 @@ package com.example.shop.controller;
 
 import com.example.shop.entity.Product;
 import com.example.shop.service.ProductService;
+import com.example.shop.entity.enums.KichThuoc;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -21,13 +24,18 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public String listProducts(Model model) {
-        List<Product> products = productService.getAllProducts();
+    public String listProducts(Model model, 
+                               @RequestParam(name = "search", required = false) String search,
+                               @RequestParam(name = "category", required = false) Long categoryId) {
+        List<Product> products = productService.searchProducts(search, categoryId);
         Map<Long, Integer> productStocks = productService.getProductStockMap(products);
 
         model.addAttribute("products", products);
         model.addAttribute("productStocks", productStocks);
+        model.addAttribute("categories", productService.getAllCategories());
         model.addAttribute("totalCount", products.size());
+        model.addAttribute("currentSearch", search);
+        model.addAttribute("currentCategory", categoryId);
         
         long lowStockCount = productStocks.values().stream().filter(s -> s > 0 && s < 10).count();
         model.addAttribute("lowStockCount", lowStockCount);
@@ -42,26 +50,55 @@ public class AdminController {
     @GetMapping("/product/add")
     public String addProductForm(Model model) {
         model.addAttribute("categories", productService.getAllCategories());
-        model.addAttribute("kichThuocs", com.example.shop.entity.enums.KichThuoc.values());
+        model.addAttribute("kichThuocs", KichThuoc.values());
         return "admin/add-product";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/product/add")
-    public String addProduct(@org.springframework.web.bind.annotation.RequestParam("tenSanPham") String tenSanPham,
-                             @org.springframework.web.bind.annotation.RequestParam("idDanhMuc") Long idDanhMuc,
-                             @org.springframework.web.bind.annotation.RequestParam("giaNiemYet") java.math.BigDecimal giaNiemYet,
-                             @org.springframework.web.bind.annotation.RequestParam("moTa") String moTa,
-                             @org.springframework.web.bind.annotation.RequestParam("mauSacs") String mauSacs,
-                             @org.springframework.web.bind.annotation.RequestParam("sizes") List<String> sizes,
-                             @org.springframework.web.bind.annotation.RequestParam("files") org.springframework.web.multipart.MultipartFile[] files) {
+    @PostMapping("/product/add")
+    public String addProduct(@RequestParam("tenSanPham") String tenSanPham,
+                             @RequestParam("idDanhMuc") Long idDanhMuc,
+                             @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
+                             @RequestParam("moTa") String moTa,
+                             @RequestParam("mauSacs") String mauSacs,
+                             @RequestParam("sizes") List<String> sizes,
+                             @RequestParam("soLuong") Integer soLuong,
+                             @RequestParam("files") MultipartFile[] files) {
         
-        productService.createProduct(tenSanPham, idDanhMuc, giaNiemYet, moTa, mauSacs, sizes, files);
+        productService.createProduct(tenSanPham, idDanhMuc, giaNiemYet, moTa, mauSacs, sizes, soLuong, files);
         return "redirect:/admin/products";
     }
 
-    @org.springframework.web.bind.annotation.GetMapping("/product/delete/{id}")
-    public String deleteProduct(@org.springframework.web.bind.annotation.PathVariable("id") Long id) {
-        productService.deleteProductById(id);
+    @GetMapping("/product/edit/{id}")
+    public String editProductForm(@PathVariable("id") Long id, Model model) {
+        Product product = productService.getProductById(id);
+        if (product == null) return "redirect:/admin/products";
+        
+        model.addAttribute("product", product);
+        model.addAttribute("categories", productService.getAllCategories());
+        model.addAttribute("variants", productService.getVariantsByProduct(product));
+        return "admin/edit-product";
+    }
+
+    @PostMapping("/product/edit/{id}")
+    public String updateProduct(@PathVariable("id") Long id,
+                                @RequestParam("tenSanPham") String tenSanPham,
+                                @RequestParam("idDanhMuc") Long idDanhMuc,
+                                @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
+                                @RequestParam("moTa") String moTa,
+                                @RequestParam("files") MultipartFile[] files) {
+        
+        productService.updateProduct(id, tenSanPham, idDanhMuc, giaNiemYet, moTa, files);
+        return "redirect:/admin/products";
+    }
+
+    @GetMapping("/product/delete/{id}")
+    public String deleteProduct(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        try {
+            productService.deleteProductById(id);
+            redirectAttributes.addFlashAttribute("success", "Xóa sản phẩm thành công.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/products";
     }
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Quản Lý Danh Mục', ~{::content}, 'categories')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <!-- Header / Top Bar -->
+    <header class="flex justify-between items-center px-12 py-8 bg-surface">
+        <div>
+            <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">Danh Mục</h2>
+            <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Phân loại sản phẩm Editorial</p>
+        </div>
+        <div class="flex items-center gap-8">
+            <a href="/admin/categories/add" class="bg-primary text-white px-10 py-4 text-xs font-bold tracking-widest hover:bg-secondary transition-all duration-300 transform hover:scale-105 inline-block">
+                THÊM DANH MỤC MỚI
+            </a>
+        </div>
+    </header>
+
+    <!-- Alerts -->
+    <div th:if="${success}" class="mx-12 mb-6 p-4 bg-green-100 text-green-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="mx-12 mb-6 p-4 bg-red-100 text-red-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- Category Table -->
+    <section class="px-12 pb-20">
+        <div class="w-full max-w-4xl overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-[10px] tracking-[0.2em] text-on-surface-variant uppercase border-b border-outline-variant/20">
+                        <th class="py-6 font-semibold">ID</th>
+                        <th class="py-6 font-semibold">Tên Danh Mục</th>
+                        <th class="py-6 font-semibold text-right">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    <tr th:each="cat : ${categories}" class="group hover:bg-surface-container-low transition-colors duration-200">
+                        <td class="py-8 text-sm font-serif" th:text="${cat.idDanhMuc}">ID</td>
+                        <td class="py-8">
+                            <span class="text-sm font-bold tracking-wider uppercase text-primary" th:text="${cat.tenDanhMuc}">CATEGORY NAME</span>
+                        </td>
+                        <td class="py-8 text-right">
+                            <div class="flex justify-end gap-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <a th:href="@{'/admin/categories/edit/' + ${cat.idDanhMuc}}" class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                </a>
+                                <a th:href="@{'/admin/categories/delete/' + ${cat.idDanhMuc}}" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này không?')"
+                                   class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

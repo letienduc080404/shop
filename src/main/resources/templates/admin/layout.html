@@ -109,11 +109,23 @@
                 <span class="material-symbols-outlined">inventory_2</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">INVENTORY</span>
             </a>
+            <a th:href="@{/admin/categories}" 
+               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+               th:classappend="${currentTab == 'categories' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+                <span class="material-symbols-outlined">category</span>
+                <span class="text-[11px] font-semibold tracking-wider uppercase">CATEGORIES</span>
+            </a>
             <a th:href="@{/admin/orders}" 
                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
                th:classappend="${currentTab == 'orders' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">ORDERS</span>
+            </a>
+            <a th:href="@{/admin/customers}" 
+               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+               th:classappend="${currentTab == 'customers' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+                <span class="material-symbols-outlined">person</span>
+                <span class="text-[11px] font-semibold tracking-wider uppercase">CUSTOMERS</span>
             </a>
             <a th:href="@{/admin/analytics}" 
                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"

@@ -6,6 +6,7 @@ import com.example.shop.repository.ProductRepository;
 import com.example.shop.repository.ProductVariantRepository;
 import com.example.shop.repository.CategoryRepository;
 import com.example.shop.repository.ProductImageRepository;
+import com.example.shop.repository.OrderItemRepository;
 import com.example.shop.entity.Category;
 import com.example.shop.entity.ProductImage;
 import com.example.shop.entity.enums.KichThuoc;
@@ -25,22 +26,39 @@ public class ProductService {
     private final ProductVariantRepository productVariantRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final OrderItemRepository orderItemRepository;
     private final FileStorageService fileStorageService;
 
     public ProductService(ProductRepository productRepository, 
                           ProductVariantRepository productVariantRepository,
                           CategoryRepository categoryRepository,
                           ProductImageRepository productImageRepository,
+                          OrderItemRepository orderItemRepository,
                           FileStorageService fileStorageService) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.categoryRepository = categoryRepository;
         this.productImageRepository = productImageRepository;
+        this.orderItemRepository = orderItemRepository;
         this.fileStorageService = fileStorageService;
     }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    public List<Product> searchProducts(String keyword, Long categoryId) {
+        if (keyword != null && !keyword.isEmpty()) {
+            if (categoryId != null) {
+                return productRepository.findByTenSanPhamContainingIgnoreCaseAndCategory_IdDanhMuc(keyword, categoryId);
+            } else {
+                return productRepository.findByTenSanPhamContainingIgnoreCase(keyword);
+            }
+        } else if (categoryId != null) {
+            return productRepository.findByCategory_IdDanhMuc(categoryId);
+        } else {
+            return productRepository.findAll();
+        }
     }
 
     public List<Category> getAllCategories() {
@@ -59,6 +77,10 @@ public class ProductService {
         return productVariantRepository.findByProduct(product);
     }
 
+    public ProductVariant getVariantById(Long id) {
+        return productVariantRepository.findById(id).orElse(null);
+    }
+
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }
@@ -71,6 +93,11 @@ public class ProductService {
     public void deleteProductById(Long id) {
         Product product = productRepository.findById(id).orElse(null);
         if (product != null) {
+            // Kiểm tra xem sản phẩm đã có trong đơn hàng nào chưa
+            if (orderItemRepository.existsByProductVariant_Product_IdSanPham(id)) {
+                throw new RuntimeException("Không thể xóa sản phẩm này vì nó đã tồn tại trong các đơn hàng. Vui lòng cập nhật trạng thái ngừng kinh doanh thay vì xóa.");
+            }
+
             // 1. Xoá ảnh đại diện chính khỏi ổ đĩa
             fileStorageService.deleteFile(product.getHinhAnh());
             
@@ -89,7 +116,7 @@ public class ProductService {
 
     @Transactional
     public Product createProduct(String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa, 
-                                String mauSacs, List<String> sizes, MultipartFile[] files) {
+                                 String mauSacs, List<String> sizes, Integer soLuong, MultipartFile[] files) {
         
         Product product = new Product();
         product.setTenSanPham(tenSanPham);
@@ -129,12 +156,45 @@ public class ProductService {
                 variant.setProduct(savedProduct);
                 variant.setMauSac(trimmedColor);
                 variant.setKichThuoc(KichThuoc.valueOf(sizeStr));
-                variant.setSoLuongTon(100); // Tồn kho mặc định
+                variant.setSoLuongTon(soLuong != null ? soLuong : 0);
                 productVariantRepository.save(variant);
             }
         }
         
         return savedProduct;
+    }
+
+    @Transactional
+    public void updateProduct(Long id, String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa, MultipartFile[] files) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
+        
+        product.setTenSanPham(tenSanPham);
+        product.setGiaNiemYet(giaNiemYet);
+        product.setMoTa(moTa);
+        
+        Category category = categoryRepository.findById(idDanhMuc).orElse(null);
+        product.setCategory(category);
+        
+        // Nếu có tải lên ảnh mới
+        if (files != null && files.length > 0 && !files[0].isEmpty()) {
+            // Xoá ảnh cũ (về mặt vật lý và DB)
+            if (product.getImages() != null) {
+                // Không xóa toàn bộ ảnh cũ trong DB nếu Cascade chưa chuẩn, ta sẽ xóa rõ ràng
+                productImageRepository.deleteByProduct(product);
+                product.getImages().clear();
+            }
+            
+            // Lưu ảnh mới
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isEmpty()) continue;
+                String path = fileStorageService.storeFile(files[i]);
+                ProductImage productImage = new ProductImage(path, product);
+                productImageRepository.save(productImage);
+                if (i == 0) product.setHinhAnh(path);
+            }
+        }
+        
+        productRepository.save(product);
     }
 
     public Map<Long, Integer> getProductStockMap(List<Product> products) {

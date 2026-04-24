@@ -35,24 +35,152 @@
                         <p class="text-2xl text-primary/60 font-light" 
                            th:text="${product.giaNiemYet != null ? #numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">0 VNĐ</p>
                     </div>
+
                     <div class="space-y-6 pt-6 border-t border-outline-variant/20">
                         <p class="text-on-surface-variant leading-relaxed text-sm" th:text="${product.moTa}">
                             Mô tả sản phẩm...
                         </p>
+                        
+                        <!-- Variant Selectors -->
+                        <div class="space-y-6">
+                            <!-- Color Selection -->
+                            <div class="space-y-3" th:if="${rawVariants != null && !rawVariants.isEmpty()}">
+                                <span class="text-[10px] font-bold tracking-[0.25em] text-on-surface-variant uppercase">MÀU SẮC</span>
+                                <div class="flex flex-wrap gap-3">
+                                    <button th:each="v : ${rawVariants}"
+                                            th:if="${vStat.first || v.mauSac != rawVariants[vStat.index-1].mauSac}"
+                                            type="button"
+                                            th:text="${v.mauSac}"
+                                            th:data-color="${v.mauSac}"
+                                            onclick="selectColor(this)"
+                                            class="color-btn px-6 py-2 border border-outline-variant text-[10px] font-bold tracking-widest uppercase hover:border-primary transition-all">
+                                        MÀU
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Size Selection -->
+                            <div class="space-y-3" th:if="${rawVariants != null && !rawVariants.isEmpty()}">
+                                <span class="text-[10px] font-bold tracking-[0.25em] text-on-surface-variant uppercase">KÍCH THƯỚC</span>
+                                <div class="flex flex-wrap gap-3">
+                                    <button th:each="sizeValue : ${T(com.example.shop.entity.enums.KichThuoc).values()}"
+                                            type="button"
+                                            th:text="${sizeValue}"
+                                            th:data-size="${sizeValue}"
+                                            onclick="selectSize(this)"
+                                            class="size-btn px-6 py-2 border border-outline-variant text-[10px] font-bold tracking-widest uppercase hover:border-primary transition-all">
+                                        SIZE
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Stock Status -->
+                            <div id="stockStatus" class="font-label text-[10px] font-bold tracking-widest uppercase h-4 flex items-center"></div>
+                        </div>
+
                         <div class="flex flex-col gap-4 pt-4">
-                            <form th:action="@{/cart/add}" method="post">
+                            <form th:action="@{/cart/add}" method="post" id="addToCartForm">
                                 <input type="hidden" name="productId" th:value="${product.idSanPham}" />
+                                <input type="hidden" name="variantId" id="selectedVariantId" value="" />
                                 <input type="hidden" name="soLuong" value="1" />
-                                <button type="submit"
-                                    class="w-full bg-primary text-white py-5 px-8 font-label text-xs tracking-widest uppercase font-bold hover:bg-primary-container transition-all">
+                                
+                                <button type="submit" id="addToCartBtn" disabled
+                                    class="w-full bg-primary text-white py-5 px-8 font-label text-xs tracking-widest uppercase font-bold hover:bg-primary-container transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                                     THÊM VÀO GIỎ HÀNG
                                 </button>
+                                <p id="selectionWarning" class="text-[10px] text-red-500 font-bold tracking-widest uppercase mt-4 text-center">
+                                    VUI LÒNG CHỌN MÀU VÀ SIZE
+                                </p>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Product Variants Data (for JS) -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const variants = /*[[${variants}]]*/ []; 
+            /*]]>*/
+
+            let selectedColor = null;
+            let selectedSize = null;
+
+            function normalizeVietnamese(str) {
+                if (!str) return "";
+                return str.normalize("NFC").trim().toLowerCase();
+            }
+
+            function selectColor(btn) {
+                selectedColor = btn.getAttribute('data-color');
+                document.querySelectorAll('.color-btn').forEach(b => {
+                    b.style.backgroundColor = "transparent";
+                    b.style.color = "inherit";
+                    b.style.borderColor = "";
+                });
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#000";
+                updateSelection();
+            }
+
+            function selectSize(btn) {
+                selectedSize = btn.getAttribute('data-size');
+                document.querySelectorAll('.size-btn').forEach(b => {
+                    b.style.backgroundColor = "transparent";
+                    b.style.color = "inherit";
+                    b.style.borderColor = "";
+                });
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#000";
+                updateSelection();
+            }
+
+            function updateSelection() {
+                const stockDisplay = document.getElementById('stockStatus');
+                const variantIdInput = document.getElementById('selectedVariantId');
+                const addBtn = document.getElementById('addToCartBtn');
+                const warning = document.getElementById('selectionWarning');
+
+                if (selectedColor && selectedSize) {
+                    const normColor = normalizeVietnamese(selectedColor);
+                    const normSize = normalizeVietnamese(selectedSize);
+
+                    const match = variants.find(v => 
+                        normalizeVietnamese(v.color) === normColor && 
+                        normalizeVietnamese(v.size) === normSize
+                    );
+                    
+                    if (match) {
+                        variantIdInput.value = match.id;
+                        if (match.stock > 0) {
+                            stockDisplay.innerHTML = `<span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>CÒN HÀNG: ${match.stock} SẢN PHẨM`;
+                            stockDisplay.style.color = "#2E7D32";
+                            addBtn.disabled = false;
+                            addBtn.style.opacity = "1";
+                            warning.classList.add('hidden');
+                        } else {
+                            stockDisplay.innerHTML = `<span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>HẾT HÀNG`;
+                            stockDisplay.style.color = "#D32F2F";
+                            addBtn.disabled = true;
+                            addBtn.style.opacity = "0.5";
+                            warning.innerText = 'SẢN PHẨM HIỆN ĐANG HẾT HÀNG';
+                            warning.classList.remove('hidden');
+                        }
+                    } else {
+                        variantIdInput.value = "";
+                        stockDisplay.innerHTML = `<span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>KHÔNG CÓ SẴN TỔ HỢP NÀY`;
+                        stockDisplay.style.color = "#666";
+                        addBtn.disabled = true;
+                        addBtn.style.opacity = "0.5";
+                        warning.innerText = 'KHÔNG TÌM THẤY SIZE NÀY CHO MÀU ĐÃ CHỌN';
+                        warning.classList.remove('hidden');
+                    }
+                }
+            }
+        </script>
         
         <!-- Hoàn thiện phong cách Section -->
         <section class="mt-32 pt-24 pb-32 bg-[#F5F5F5]">
@@ -64,11 +192,12 @@
                     <article th:each="rec : ${recommendations}" class="group">
                         <a th:href="@{/product/{id}(id=${rec.idSanPham})}" class="block">
                             <div class="aspect-[3/4] overflow-hidden bg-white mb-6 relative">
-                                <img th:src="${rec.imageUrl}" alt="Recommendation image"
+                                <img th:src="${rec.getImageUrl()}" alt="Recommendation image"
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                             </div>
                             <h3 class="font-headline font-bold text-sm tracking-tight mb-2 uppercase" th:text="${rec.tenSanPham}">SƠ MI OXFORD TRẮNG</h3>
-                            <p class="text-xs text-outline mb-1" th:text="${rec.category != null ? rec.category.tenDanhMuc : 'Essentials'}">SƠ MI</p>
+                            <p class="text-xs text-outline mb-1" 
+                               th:text="${rec.category != null ? rec.category.tenDanhMuc : 'Essentials'}">CATEGORY</p>
                             <p class="text-sm font-medium" th:text="${rec.giaNiemYet != null ? #numbers.formatDecimal(rec.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">850,000 VNĐ</p>
                         </a>
                     </article>

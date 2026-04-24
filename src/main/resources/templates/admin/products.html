@@ -9,15 +9,24 @@
             <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Quản lý kho hàng &amp; Danh mục Editorial</p>
         </div>
         <div class="flex items-center gap-8">
-            <div class="relative group">
-                <input class="bg-transparent border-b border-outline-variant focus:border-secondary focus:ring-0 text-xs tracking-widest py-2 px-0 w-64 transition-all duration-300" placeholder="TÌM KIẾM SẢN PHẨM..." type="text"/>
-                <span class="material-symbols-outlined absolute right-0 bottom-2 text-on-surface-variant text-sm">search</span>
-            </div>
+            <form action="/admin/products" method="get" class="relative group">
+                <input name="search" th:value="${currentSearch}" class="bg-transparent border-b border-outline-variant focus:border-secondary focus:ring-0 text-xs tracking-widest py-2 px-0 w-64 transition-all duration-300" placeholder="TÌM KIẾM SẢN PHẨM..." type="text"/>
+                <button type="submit" class="material-symbols-outlined absolute right-0 bottom-2 text-on-surface-variant text-sm">search</button>
+                <input type="hidden" name="category" th:value="${currentCategory}" th:if="${currentCategory != null}"/>
+            </form>
             <a href="/admin/product/add" class="bg-primary text-white px-10 py-4 text-xs font-bold tracking-widest hover:bg-secondary transition-all duration-300 transform hover:scale-105 inline-block">
                 THÊM SẢN PHẨM MỚI
             </a>
         </div>
     </header>
+    
+    <!-- Alerts -->
+    <div th:if="${success}" class="mx-12 mb-6 p-4 bg-green-100 text-green-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="mx-12 mb-6 p-4 bg-red-100 text-red-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${error}"></span>
+    </div>
 
     <!-- Stats Bento Grid -->
     <section class="px-12 grid grid-cols-1 md:grid-cols-4 gap-0 border-t border-b border-outline-variant/10">
@@ -41,11 +50,15 @@
 
     <!-- Filters Section -->
     <section class="px-12 py-6 flex gap-8 items-center text-xs font-bold tracking-[0.2em] text-on-surface-variant uppercase">
-        <span class="text-primary border-b-2 border-secondary pb-1 cursor-pointer">Tất cả</span>
-        <span class="hover:text-secondary transition-colors cursor-pointer">Nam</span>
-        <span class="hover:text-secondary transition-colors cursor-pointer">Nữ</span>
-        <span class="hover:text-secondary transition-colors cursor-pointer">Phụ kiện</span>
-        <span class="hover:text-secondary transition-colors cursor-pointer">Bộ sưu tập mới</span>
+        <a th:href="@{/admin/products(search=${currentSearch})}" 
+           class="pb-1 transition-colors"
+           th:classappend="${currentCategory == null ? 'text-primary border-b-2 border-secondary' : 'hover:text-secondary'}">Tất cả</a>
+        
+        <a th:each="cat : ${categories}" 
+           th:href="@{/admin/products(category=${cat.idDanhMuc}, search=${currentSearch})}"
+           class="pb-1 transition-colors"
+           th:classappend="${currentCategory == cat.idDanhMuc ? 'text-primary border-b-2 border-secondary' : 'hover:text-secondary'}"
+           th:text="${cat.tenDanhMuc}">CATEGORY</a>
         <div class="ml-auto flex items-center gap-4">
             <span class="material-symbols-outlined cursor-pointer hover:text-primary">filter_list</span>
             <span class="material-symbols-outlined cursor-pointer hover:text-primary">sort_by_alpha</span>
@@ -100,8 +113,12 @@
                         </td>
                         <td class="py-8 text-right">
                             <div class="flex justify-end gap-6 opacity-40 group-hover:opacity-100 transition-opacity">
-                                <button class="hover:text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
-                                <button class="hover:text-secondary transition-colors"><span class="material-symbols-outlined text-lg">visibility</span></button>
+                                <a th:href="@{'/admin/product/edit/' + ${product.idSanPham}}" class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                </a>
+                                <a th:href="@{'/product/' + ${product.idSanPham}}" target="_blank" class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">visibility</span>
+                                </a>
                                 <a th:href="@{'/admin/product/delete/' + ${product.idSanPham}}" 
                                    onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không? Thao tác này không thể hoàn tác.')"
                                    class="hover:text-secondary transition-colors">

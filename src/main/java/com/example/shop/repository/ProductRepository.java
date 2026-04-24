@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategory_IdDanhMuc(Long categoryId);
+    List<Product> findByTenSanPhamContainingIgnoreCase(String keyword);
+    List<Product> findByTenSanPhamContainingIgnoreCaseAndCategory_IdDanhMuc(String keyword, Long categoryId);
 }

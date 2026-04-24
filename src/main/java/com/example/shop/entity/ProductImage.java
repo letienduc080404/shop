@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID_Anh")
     private Long idAnh;
 
     @Column(name = "DuongDan", nullable = false, length = 1000)

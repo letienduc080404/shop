@@ -1,16 +1,20 @@
 package com.example.shop;
 
 import com.example.shop.entity.Category;
+import com.example.shop.entity.Customer;
 import com.example.shop.entity.Product;
 import com.example.shop.entity.ProductVariant;
 import com.example.shop.entity.enums.KichThuoc;
 import com.example.shop.repository.CategoryRepository;
+import com.example.shop.repository.CustomerRepository;
 import com.example.shop.repository.ProductRepository;
 import com.example.shop.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -26,15 +30,15 @@ public class DataInitializer implements CommandLineRunner {
     private ProductVariantRepository productVariantRepository;
 
     @Autowired
-    private com.example.shop.repository.CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
     @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
         if (customerRepository.findByEmail("admin@gmail.com").isEmpty()) {
-            com.example.shop.entity.Customer admin = new com.example.shop.entity.Customer();
+            Customer admin = new Customer();
             admin.setHoTen("Quản Trị Viên");
             admin.setEmail("admin@gmail.com");
             admin.setMatKhau(passwordEncoder.encode("123"));
@@ -44,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (customerRepository.findByEmail("user@gmail.com").isEmpty()) {
-            com.example.shop.entity.Customer testUser = new com.example.shop.entity.Customer();
+            Customer testUser = new Customer();
             testUser.setHoTen("Khách Hàng Thử Nghiệm");
             testUser.setEmail("user@gmail.com");
             testUser.setMatKhau(passwordEncoder.encode("123"));
@@ -55,28 +59,27 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- DA THEM TAI KHOAN TEST: user@gmail.com / 123 ---");
         }
 
-        // 1. Cập nhật danh mục (kiểm tra tồn tại trước khi thêm)
-        java.util.List<String> tenDanhMucs = java.util.List.of("ÁO", "QUẦN", "PHỤ KIỆN", "ÁO KHOÁC", "VÁY");
+        // 1. Cập nhật danh mục
+        List<String> tenDanhMucs = List.of("ÁO", "QUẦN", "PHỤ KIỆN", "ÁO KHOÁC", "VÁY");
         for (String ten : tenDanhMucs) {
             if (!categoryRepository.existsByTenDanhMuc(ten)) {
                 categoryRepository.save(new Category(ten));
             }
         }
 
-        // 2. Thêm sản phẩm mẫu (nếu chưa có đủ sản phẩm)
+        // 2. Thêm sản phẩm mẫu
         if (productRepository.count() < 2) {
             Category aoKhoac = categoryRepository.findAll().stream()
                     .filter(c -> c.getTenDanhMuc().equals("ÁO KHOÁC")).findFirst().orElse(null);
             Category vayStr = categoryRepository.findAll().stream()
                     .filter(c -> c.getTenDanhMuc().equals("VÁY")).findFirst().orElse(null);
 
-            // Sản phẩm 1: Áo khoác
-            if (aoKhoac != null && productRepository.findByCategory_IdDanhMuc(aoKhoac.getIdDanhMuc()).isEmpty()) {
+            if (aoKhoac != null) {
                 Product p1 = new Product();
                 p1.setTenSanPham("Blazer Linen Cấu Trúc");
                 p1.setMaSKU("BLZ-LINEN");
                 p1.setMoTa("Sự tĩnh lặng tuyệt đối với kiểu dáng suông dài, tôn lên vẻ thanh lịch.");
-                p1.setGiaNiemYet(new java.math.BigDecimal("2450000.00"));
+                p1.setGiaNiemYet(new BigDecimal("2450000.00"));
                 p1.setCategory(aoKhoac);
                 p1.setChatLieu("Vải Linen Cao Cấp");
                 p1.setHinhAnh("https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800");
@@ -94,13 +97,12 @@ public class DataInitializer implements CommandLineRunner {
                 }
             }
 
-            // Sản phẩm 2: Váy
-            if (vayStr != null && productRepository.findByCategory_IdDanhMuc(vayStr.getIdDanhMuc()).isEmpty()) {
+            if (vayStr != null) {
                 Product p2 = new Product();
                 p2.setTenSanPham("Váy Lụa Slip Dress");
                 p2.setMaSKU("VY-LUA");
                 p2.setMoTa("Thanh lịch tối giản với chất liệu lụa tơ tằm.");
-                p2.setGiaNiemYet(new java.math.BigDecimal("1890000.00"));
+                p2.setGiaNiemYet(new BigDecimal("1890000.00"));
                 p2.setCategory(vayStr);
                 p2.setChatLieu("Lụa tơ tằm");
                 p2.setHinhAnh("https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800");
@@ -113,7 +115,6 @@ public class DataInitializer implements CommandLineRunner {
                 v.setSoLuongTon(15);
                 productVariantRepository.save(v);
             }
-
             System.out.println("--- DA KHOI TAO DU LIEU MAU THANH CONG ---");
         }
     }

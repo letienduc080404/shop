@@ -43,7 +43,7 @@ public class CartController {
 
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam("productId") Long productId,
-                            @RequestParam(value = "kichThuoc", required = false, defaultValue = "OS") String kichThuoc,
+                            @RequestParam(value = "variantId", required = false) Long variantId,
                             @RequestParam(value = "soLuong", defaultValue = "1") int soLuong,
                             HttpSession session) {
         
@@ -53,10 +53,21 @@ public class CartController {
         }
 
         Product product = productService.getProductById(productId);
+        com.example.shop.entity.ProductVariant variant = null;
+        if (variantId != null) {
+            variant = productService.getVariantById(variantId);
+        }
+
         if (product != null) {
+            String kichThuoc = (variant != null) ? variant.getKichThuoc().toString() : "OS";
+            String mauSac = (variant != null) ? variant.getMauSac() : "N/A";
+            
             boolean exists = false;
             for (CartItem item : cart) {
-                if (item.getIdSanPham().equals(productId) && item.getKichThuoc().equals(kichThuoc)) {
+                // Kiểm tra trùng lặp dựa trên cả sản phẩm, kích thước và màu sắc
+                if (item.getIdSanPham().equals(productId) && 
+                    item.getKichThuoc().equals(kichThuoc) && 
+                    item.getMauSac().equals(mauSac)) {
                     item.setSoLuong(item.getSoLuong() + soLuong);
                     exists = true;
                     break;
@@ -69,6 +80,8 @@ public class CartController {
                 newItem.setGia(product.getGiaNiemYet().doubleValue());
                 newItem.setSoLuong(soLuong);
                 newItem.setKichThuoc(kichThuoc);
+                newItem.setMauSac(mauSac);
+                newItem.setIdBienThe(variantId);
                 newItem.setHinhAnh(product.getImageUrl());
                 cart.add(newItem);
             }

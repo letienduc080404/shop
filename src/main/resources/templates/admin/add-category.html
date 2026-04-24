@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Chi Tiết Danh Mục', ~{::content}, 'categories')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <!-- Header -->
+    <header class="px-12 py-8 bg-surface border-b border-outline-variant/10">
+        <a href="/admin/categories" class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant flex items-center gap-2 hover:text-secondary transition-colors mb-4 uppercase">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại danh sách
+        </a>
+        <h2 class="text-4xl font-black tracking-tighter uppercase font-serif" th:text="${category.idDanhMuc == null ? 'Thêm Danh Mục Mới' : 'Cập Nhật Danh Mục'}">Chi Tiết Danh Mục</h2>
+    </header>
+
+    <!-- Form Section -->
+    <section class="p-12 max-w-2xl">
+        <form th:action="@{/admin/categories/save}" th:object="${category}" method="post" class="space-y-12">
+            <input type="hidden" th:field="*{idDanhMuc}" />
+            
+            <div class="space-y-4">
+                <label class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase block">Tên Danh Mục</label>
+                <input type="text" th:field="*{tenDanhMuc}" required
+                       class="w-full bg-transparent border border-outline-variant px-6 py-4 text-xs tracking-widest uppercase focus:border-secondary focus:ring-0 transition-all duration-300" 
+                       placeholder="VÍ DỤ: ÁO SƠ MI, QUẦN JEAN..."/>
+                <p th:if="${error}" class="text-[10px] font-bold text-secondary uppercase" th:text="${error}"></p>
+            </div>
+
+            <button type="submit" class="w-full bg-primary text-white py-6 text-xs font-bold tracking-[0.3em] hover:bg-secondary transition-all duration-300 uppercase shadow-xl">
+                Lưu Danh Mục
+            </button>
+        </form>
+    </section>
+</div>
+</body>
+</html>

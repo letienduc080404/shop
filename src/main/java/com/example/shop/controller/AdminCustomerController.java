@@ -37,15 +37,18 @@ public class AdminCustomerController {
         long totalCustomers = customerService.getTotalCustomers();
         long diamondCustomers = customerService.getDiamondCustomers();
         BigDecimal avgOrderValue = customerService.getAverageOrderValue();
+        if (avgOrderValue == null) avgOrderValue = BigDecimal.ZERO;
+        
         double retentionRate = customerService.getRetentionRatePercent(90);
 
-        Customer selectedCustomer = customerService.getCustomerById(selectedId);
+        Customer selectedCustomer = selectedId == null ? null : customerService.getCustomerById(selectedId);
         List<Order> selectedCustomerOrders = selectedCustomer == null
                 ? List.of()
                 : customerService.getLatestOrdersOfCustomer(selectedCustomer.getIdKhachHang(), 5);
 
         model.addAttribute("page", customersPage);
         model.addAttribute("q", q);
+        model.addAttribute("currentTab", "customers");
 
         model.addAttribute("totalCustomers", totalCustomers);
         model.addAttribute("diamondCustomers", diamondCustomers);

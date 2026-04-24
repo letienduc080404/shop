@@ -7,6 +7,8 @@ public class CartItem {
     private Double gia;
     private int soLuong;
     private String kichThuoc;
+    private String mauSac;
+    private Long idBienThe;
 
     // Getter và Setter
     public Long getIdSanPham() { return idSanPham; }
@@ -26,4 +28,10 @@ public class CartItem {
 
     public String getKichThuoc() { return kichThuoc; }
     public void setKichThuoc(String kichThuoc) { this.kichThuoc = kichThuoc; }
+    
+    public String getMauSac() { return mauSac; }
+    public void setMauSac(String mauSac) { this.mauSac = mauSac; }
+    
+    public Long getIdBienThe() { return idBienThe; }
+    public void setIdBienThe(Long idBienThe) { this.idBienThe = idBienThe; }
 }
