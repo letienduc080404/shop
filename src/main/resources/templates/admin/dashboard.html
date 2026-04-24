@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Dashboard', ~{::content}, 'dashboard')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+<!-- Top Navigation Context -->
+<header class="flex justify-between items-baseline mb-16 px-12 pt-12">
+<div>
+<p class="text-[10px] tracking-[0.3em] font-label text-secondary font-bold uppercase mb-2">HỆ THỐNG ĐIỀU KHIỂN</p>
+<h2 class="text-4xl font-headline font-black tracking-tighter text-primary">TỔNG QUAN DOANH THU</h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative">
+<span class="material-symbols-outlined absolute right-0 top-2 opacity-40">search</span>
+<input class="bg-transparent border-0 border-b border-outline-variant py-2 pr-10 text-xs tracking-wider focus:ring-0 focus:border-secondary transition-all w-64 uppercase"
+       placeholder="Tìm kiếm dữ liệu..." type="text"/>
+</div>
+</div>
+</header>
+
+<!-- Bento Grid Statistics -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 px-12">
+<div class="bg-surface-container-low p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-[10px] font-label tracking-widest text-primary/60 uppercase font-bold mb-4">DOANH THU THÁNG</p>
+<h3 class="text-4xl font-headline font-black text-primary">
+<span th:text="${dashboard.doanhThuThang}">0</span>
+<span class="text-xs font-body font-normal text-secondary tracking-normal">VND</span>
+</h3>
+<div class="flex items-center gap-2 mt-4 text-[10px] font-bold tracking-widest" th:classappend="${dashboard.doanhThuThangXuHuongCss}">
+<span class="material-symbols-outlined text-sm" th:text="${dashboard.doanhThuThangXuHuongText.startsWith('-') ? 'trending_down' : 'trending_up'}">trending_up</span>
+<span th:text="${dashboard.doanhThuThangXuHuongText}">+0.0%</span>
+                    </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="payments">payments</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-[10px] font-label tracking-widest text-primary/60 uppercase font-bold mb-4">ĐƠN HÀNG MỚI</p>
+<h3 class="text-4xl font-headline font-black text-primary" th:text="${dashboard.donHangMoi}">0</h3>
+<div class="flex items-center gap-2 mt-4 text-[10px] font-bold tracking-widest" th:classappend="${dashboard.donHangMoiXuHuongCss}">
+<span class="material-symbols-outlined text-sm" th:text="${dashboard.donHangMoiXuHuongText.startsWith('-') ? 'trending_down' : 'trending_up'}">trending_up</span>
+<span th:text="${dashboard.donHangMoiXuHuongText}">+0.0%</span>
+                    </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="shopping_bag">shopping_bag</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-[10px] font-label tracking-widest text-primary/60 uppercase font-bold mb-4">KHÁCH HÀNG</p>
+<h3 class="text-4xl font-headline font-black text-primary" th:text="${dashboard.tongKhachHang}">0</h3>
+<div class="flex items-center gap-2 mt-4 text-[10px] text-primary/40 font-bold tracking-widest">
+<span class="material-symbols-outlined text-sm">remove</span>
+<span th:text="${dashboard.tongKhachHangGhiChuText}">ỔN ĐỊNH</span>
+                    </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="group">group</span>
+</div>
+</div>
+<div class="bg-primary text-white p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-[10px] font-label tracking-widest text-white/60 uppercase font-bold mb-4">TỈ LỆ CHUYỂN ĐỔI</p>
+<h3 class="text-4xl font-headline font-black text-white" th:text="${dashboard.tiLeChuyenDoi}">0%</h3>
+<div class="flex items-center gap-2 mt-4 text-[10px] font-bold tracking-widest" th:classappend="${dashboard.tiLeChuyenDoiXuHuongCss}">
+<span class="material-symbols-outlined text-sm" th:text="${dashboard.tiLeChuyenDoiXuHuongText.startsWith('-') ? 'trending_down' : 'trending_up'}">trending_up</span>
+<span th:text="${dashboard.tiLeChuyenDoiXuHuongText}">+0.0%</span>
+                    </div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-[0.1] group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="ads_click">ads_click</span>
+</div>
+</div>
+</section>
+<!-- Revenue Chart & Asymmetric Insight -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 px-12">
+<div class="lg:col-span-2 bg-surface-container-lowest p-10">
+<div class="flex justify-between items-end mb-12">
+<div>
+<h4 class="text-xl font-headline font-bold mb-1">BIỂU ĐỒ TĂNG TRƯỞNG</h4>
+<p class="text-xs font-label tracking-widest text-primary/40 uppercase">Dữ liệu 12 tháng gần nhất</p>
+</div>
+<div class="flex gap-4">
+<button class="text-[10px] font-bold tracking-widest border-b-2 border-secondary pb-1">DOANH THU</button>
+<button class="text-[10px] font-bold tracking-widest text-primary/30 pb-1">LỢI NHUẬN</button>
+</div>
+</div>
+<!-- Visual Chart Area (dựa trên dữ liệu backend) -->
+<div class="h-80 w-full flex items-end gap-2 group">
+<div class="flex-1 bg-surface-container flex flex-col justify-end" th:each="p : ${dashboard.doanhThu12Thang}">
+<div class="bg-primary-container/20 w-full hover:bg-secondary transition-colors"
+     th:style="'height: ' + ${p.percent} + '%'"></div>
+</div>
+</div>
+<div class="flex justify-between mt-6 px-1 text-[10px] font-bold text-primary/30 tracking-widest uppercase">
+<span th:each="p : ${dashboard.doanhThu12Thang}" th:text="${p.label}">JAN</span>
+</div>
+</div>
+<div class="bg-secondary text-white p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-4xl mb-6" data-icon="auto_awesome">auto_awesome</span>
+<h4 class="text-3xl font-headline font-black leading-tight mb-4">PHÂN TÍCH<br/>CHIẾN LƯỢC</h4>
+<p class="text-sm opacity-80 font-light leading-relaxed mb-8">Dựa trên dữ liệu tuần này, bộ sưu tập "Minimalist Winter" đang có tỉ lệ quan tâm cao nhất. Đề xuất tăng ngân sách quảng cáo 15%.</p>
+</div>
+<button class="w-full border border-white/30 py-4 text-[10px] tracking-[0.2em] font-black hover:bg-white hover:text-secondary transition-all">
+                    XEM CHI TIẾT BÁO CÁO
+                </button>
+</div>
+</section>
+<!-- Transactions Table -->
+<section class="bg-surface-container-low p-10 mx-12">
+<div class="flex justify-between items-center mb-10">
+<h4 class="text-xl font-headline font-bold">GIAO DỊCH GẦN ĐÂY</h4>
+<a class="text-[10px] font-black tracking-widest text-secondary hover:underline underline-offset-8" th:href="@{/admin/orders}">XEM TẤT CẢ</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="border-b border-primary/10">
+<tr>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase">Mã Đơn</th>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase">Khách Hàng</th>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase">Ngày Giờ</th>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase">Sản Phẩm</th>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase">Giá Trị</th>
+<th class="pb-6 text-[10px] font-bold tracking-widest text-primary/40 uppercase text-right">Trạng Thái</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<tr class="group hover:bg-white transition-colors" th:each="r : ${dashboard.giaoDichGanDay}">
+<td class="py-6 font-mono text-xs font-bold" th:text="${r.maDon}">#DM-0000</td>
+<td class="py-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-surface-container-highest flex items-center justify-center text-[10px] font-bold"
+     th:text="${#strings.isEmpty(r.khachHang) ? 'KH' : #strings.substring(r.khachHang,0,1)}">KH</div>
+<span class="text-xs font-semibold" th:text="${r.khachHang}">Khách hàng</span>
+</div>
+</td>
+<td class="py-6 text-xs text-primary/60" th:text="${r.ngayGio}">00:00 - 01/01</td>
+<td class="py-6 text-xs italic serif" th:text="${r.sanPham}">Sản phẩm</td>
+<td class="py-6 text-xs font-bold" th:text="${r.giaTri}">0đ</td>
+<td class="py-6 text-right">
+<span class="text-[9px] font-black tracking-widest px-3 py-1 uppercase"
+      th:classappend="${r.trangThaiCss}"
+      th:text="${r.trangThaiLabel}">Trạng thái</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</body>
+</html>

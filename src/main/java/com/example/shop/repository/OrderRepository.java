@@ -48,6 +48,31 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     """)
     long countDistinctCustomersByNgayDatAfter(LocalDateTime from);
 
+    @Query("""
+        select count(distinct o.customer.idKhachHang)
+        from Order o
+        where o.ngayDat >= :from and o.ngayDat < :to
+    """)
+    long countDistinctCustomersByNgayDatBetween(LocalDateTime from, LocalDateTime to);
+
+    @Query("""
+        select count(o)
+        from Order o
+        where o.ngayDat >= :from and o.ngayDat < :to
+    """)
+    long countByNgayDatBetween(LocalDateTime from, LocalDateTime to);
+
+    @Query("""
+        select count(o)
+        from Order o
+        where o.ngayDat >= :from and o.ngayDat < :to
+          and o.trangThaiDonHang <> :excluded
+    """)
+    long countByNgayDatBetweenAndTrangThaiDonHangNot(LocalDateTime from, LocalDateTime to, TrangThaiDonHang excluded);
+
+    @EntityGraph(attributePaths = {"customer", "orderItems", "orderItems.productVariant", "orderItems.productVariant.product"})
+    List<Order> findTop5ByOrderByNgayDatDesc();
+
     List<Order> findTop5ByCustomer_IdKhachHangOrderByNgayDatDesc(Long idKhachHang);
 
     interface CustomerOrderAggView {
