@@ -166,6 +166,35 @@ public class AnalyticsService {
                     hs.css
             ));
         }
+
+        // Fallback: nếu kỳ báo cáo chưa phát sinh đơn (bảng trống), vẫn hiển thị sản phẩm thật (0 đã bán, 0 doanh thu)
+        if (result.isEmpty()) {
+            List<Product> latest = productRepository.findTop3ByOrderByIdSanPhamDesc();
+            for (int i = 0; i < latest.size(); i++) {
+                Product p = latest.get(i);
+                String ten = (p != null) ? p.getTenSanPham() : "Sản phẩm";
+                String dm = (p != null && p.getCategory() != null) ? p.getCategory().getTenDanhMuc() : "Khác";
+                String img = (p != null) ? p.getImageUrl() : "";
+                String gia = (p != null) ? formatMoneyVnd(p.getGiaNiemYet()) : "0 ₫";
+
+                HieuSuatView hs = switch (i) {
+                    case 0 -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
+                    case 1 -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
+                    default -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
+                };
+
+                result.add(new TopProductAnalyticsRowDto(
+                        ten,
+                        "Collections: " + dm,
+                        img,
+                        gia,
+                        0,
+                        "0 ₫",
+                        hs.label,
+                        hs.css
+                ));
+            }
+        }
         return result;
     }
 

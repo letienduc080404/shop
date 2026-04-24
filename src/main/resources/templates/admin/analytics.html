@@ -5,7 +5,7 @@
 <!-- Header Section -->
 <header class="mb-16 flex justify-between items-end">
 <div>
-<h2 class="text-4xl font-serif text-primary mb-2">Báo Cáo Hiệu Suất</h2>
+<h2 class="text-4xl font-serif text-primary mb-2">BÁO CÁO HIỆU SUẤT</h2>
 <p class="text-xs font-label uppercase tracking-[0.3em] text-on-surface-variant">Phân tích chuyên sâu hệ thống Domino / 2024</p>
 </div>
 <div class="flex gap-4">
@@ -180,6 +180,11 @@ T6: 0 ₫
 </tr>
 </thead>
 <tbody class="divide-y divide-primary/5">
+<tr th:if="${#lists.isEmpty(analytics.topProducts)}">
+<td class="py-10 text-sm text-on-surface-variant" colspan="5">
+Chưa có dữ liệu bán hàng trong kỳ báo cáo này.
+</td>
+</tr>
 <tr th:each="p : ${analytics.topProducts}">
 <td class="py-6 flex items-center gap-4">
 <div class="w-12 h-16 bg-surface-container-high shrink-0 overflow-hidden">

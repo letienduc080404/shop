@@ -136,12 +136,17 @@ public class DashboardService {
         for (int i = 0; i < months.size(); i++) {
             String label = months.get(i).atDay(1).format(labelFmt).toUpperCase(Locale.ENGLISH);
             BigDecimal v = values.get(i);
-            int percent = 0;
-            if (max.compareTo(BigDecimal.ZERO) > 0) {
+            int percent;
+            if (max.compareTo(BigDecimal.ZERO) == 0) {
+                // Nếu tất cả tháng đều 0 (chưa có dữ liệu), vẫn vẽ cột “placeholder” để UI không bị trắng
+                percent = 12;
+            } else {
                 percent = v
                         .multiply(BigDecimal.valueOf(100))
                         .divide(max, 0, RoundingMode.HALF_UP)
                         .intValue();
+                // Chiều cao tối thiểu giúp nhìn thấy cột nhỏ
+                percent = Math.max(4, percent);
             }
             result.add(new MonthlyRevenuePointDto(label, v, clamp(percent, 0, 100)));
         }
