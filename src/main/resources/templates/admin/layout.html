@@ -145,7 +145,8 @@
                 NEW CAMPAIGN
             </button>
             <div class="mt-8 border-t border-white/10 pt-6">
-                <a th:href="@{/logout}" class="text-[#fbf9f8]/60 flex items-center gap-4 hover:text-white transition-colors">
+                <form th:action="@{/logout}" method="post" id="logoutForm" class="hidden"></form>
+                <a href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit()" class="text-[#fbf9f8]/60 flex items-center gap-4 hover:text-white transition-colors">
                     <span class="material-symbols-outlined">logout</span>
                     <span class="text-[11px] font-semibold tracking-wider uppercase">LOGOUT</span>
                 </a>

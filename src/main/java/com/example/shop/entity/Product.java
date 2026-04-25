@@ -74,11 +74,18 @@ public class Product {
 
     public String getImageUrl() {
         if (hinhAnh != null && !hinhAnh.isEmpty()) {
+            // Nếu đã là URL đầy đủ hoặc path bắt đầu bằng /, trả về trực tiếp
             if (hinhAnh.startsWith("http") || hinhAnh.startsWith("/")) {
                 return hinhAnh;
             }
-            return "/images/" + hinhAnh;
+            // Nếu không chứa dấu "." (không có extension), coi là Google Drive ID
+            if (!hinhAnh.contains(".")) {
+                return "https://lh3.googleusercontent.com/d/" + hinhAnh;
+            }
+            // Fallback cũ (các ảnh lưu chỉ theo tên file)
+            return "/uploads/" + hinhAnh;
         }
+        // Placeholder dựa theo ID sản phẩm
         if (idSanPham == null) return "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800";
         int mod = (int) (idSanPham % 6);
         return switch (mod) {

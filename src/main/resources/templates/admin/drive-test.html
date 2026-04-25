@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Drive Upload Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background:#111; color:#0f0; }
+        pre { background:#222; padding:20px; white-space:pre-wrap; word-break:break-all; }
+        button { padding:10px 20px; background:#0f0; color:#000; border:none; cursor:pointer; font-size:16px; margin: 10px 5px; }
+        input[type=file] { color:#0f0; margin:10px 0; }
+        h2 { color: #ff0; }
+    </style>
+</head>
+<body>
+<h2>🔧 Google Drive Upload Test</h2>
+
+<h3>1. Service Status</h3>
+<button onclick="checkStatus()">Check Drive Status</button>
+<pre id="statusResult">Click button to check...</pre>
+
+<h3>2. Upload Test (Select a file)</h3>
+<input type="file" id="testFile" />
+<button onclick="testUpload()">Upload to Drive</button>
+<pre id="uploadResult">Select a file and click Upload...</pre>
+
+<script>
+function checkStatus() {
+    document.getElementById('statusResult').textContent = 'Loading...';
+    fetch('/admin/drive-test/status')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('statusResult').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(e => {
+            document.getElementById('statusResult').textContent = 'ERROR: ' + e.message;
+        });
+}
+
+function testUpload() {
+    const fileInput = document.getElementById('testFile');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a file first!');
+        return;
+    }
+    const file = fileInput.files[0];
+    document.getElementById('uploadResult').textContent = 'Uploading ' + file.name + ' (' + file.size + ' bytes)...';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('/admin/drive-test/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('uploadResult').textContent = JSON.stringify(data, null, 2);
+        if (data.status === 'SUCCESS' && data.viewUrl) {
+            const img = document.createElement('img');
+            img.src = data.viewUrl;
+            img.style.maxWidth = '300px';
+            img.style.marginTop = '10px';
+            document.getElementById('uploadResult').after(img);
+        }
+    })
+    .catch(e => {
+        document.getElementById('uploadResult').textContent = 'FETCH ERROR: ' + e.message;
+    });
+}
+
+// Auto check status on load
+window.onload = checkStatus;
+</script>
+</body>
+</html>

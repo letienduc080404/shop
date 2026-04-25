@@ -6,81 +6,82 @@ import com.example.shop.entity.Product;
 import com.example.shop.entity.enums.TrangThaiDonHang;
 import com.example.shop.repository.CustomerRepository;
 import com.example.shop.repository.OrderItemRepository;
-import com.example.shop.repository.OrderRepository;
 import com.example.shop.repository.ProductRepository;
+import com.example.shop.util.FormatUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.*;
 
 @Service
 public class AnalyticsService {
-    private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final StatisticsService statisticsService;
 
-    public AnalyticsService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
-                            ProductRepository productRepository, CustomerRepository customerRepository) {
-        this.orderRepository = orderRepository;
+    public AnalyticsService(OrderItemRepository orderItemRepository,
+                            ProductRepository productRepository, CustomerRepository customerRepository,
+                            StatisticsService statisticsService) {
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
+        this.statisticsService = statisticsService;
     }
 
     public AnalyticsSummaryDto buildAnalytics(LocalDate from, LocalDate to) {
-        // CỐ ĐỊNH NĂM 2025 CHO TRANG ANALYTICS
-        LocalDateTime fromDt = LocalDateTime.of(2025, 1, 1, 0, 0);
-        LocalDateTime toDt = LocalDateTime.of(2025, 12, 31, 23, 59);
+        // Nếu không có 'from'/'to' từ request, dùng mặc định năm nay
+        int year = (from != null) ? from.getYear() : LocalDate.now().getYear();
+        
+        LocalDateTime startYear = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime endYear = LocalDateTime.of(year, 12, 31, 23, 59);
 
-        // Năm 2024 làm mốc so sánh
-        LocalDateTime prevFromDt = LocalDateTime.of(2024, 1, 1, 0, 0);
-        LocalDateTime prevToDt = LocalDateTime.of(2024, 12, 31, 23, 59);
+        LocalDateTime prevStartYear = startYear.minusYears(1);
+        LocalDateTime prevEndYear = endYear.minusYears(1);
 
-        BigDecimal doanhThu = safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(fromDt, toDt, TrangThaiDonHang.DaHuy));
-        BigDecimal doanhThuPrev = safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(prevFromDt, prevToDt, TrangThaiDonHang.DaHuy));
+        BigDecimal doanhThu = statisticsService.sumRevenueBetween(startYear, endYear);
+        BigDecimal doanhThuPrev = statisticsService.sumRevenueBetween(prevStartYear, prevEndYear);
         TrendView doanhThuTrend = calcTrendPercent(doanhThu, doanhThuPrev);
 
-        long tongGiaoDich = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(fromDt, toDt, TrangThaiDonHang.DaHuy);
-        long donMoiThangCuoi = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(LocalDateTime.of(2025,12,1,0,0), toDt, TrangThaiDonHang.DaHuy);
+        long tongGiaoDich = statisticsService.countOrdersBetween(startYear, endYear);
+        
+        // Đơn mới tháng cuối (Tháng 12 hoặc tháng hiện tại)
+        int lastMonth = (year == LocalDate.now().getYear()) ? LocalDate.now().getMonthValue() : 12;
+        long donMoiThangCuoi = statisticsService.countOrdersBetween(
+                LocalDateTime.of(year, lastMonth, 1, 0, 0), endYear);
 
         BigDecimal aov = tongGiaoDich > 0 ? doanhThu.divide(BigDecimal.valueOf(tongGiaoDich), 0, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
         long tongKhach = customerRepository.count();
-        long khachCoDon = orderRepository.countDistinctCustomersByNgayDatBetween(fromDt, toDt);
+        long khachCoDon = statisticsService.countUniqueCustomersBetween(startYear, endYear);
         BigDecimal tiLe = calcRatePercent(khachCoDon, tongKhach);
-        BigDecimal tiLePrev = calcRatePercent(orderRepository.countDistinctCustomersByNgayDatBetween(prevFromDt, prevToDt), tongKhach);
+        BigDecimal tiLePrev = calcRatePercent(statisticsService.countUniqueCustomersBetween(prevStartYear, prevEndYear), tongKhach);
         TrendView tiLeTrend = calcTrendPercent(tiLe, tiLePrev);
 
-        // Biểu đồ xu hướng 12 tháng năm 2025 vs 2024
-        List<BigDecimal> seriesNow = buildMonthlySeries(2025);
-        List<BigDecimal> seriesPrev = buildMonthlySeries(2024);
-        SvgSeriesView svg = buildSvgPaths(seriesNow, seriesPrev);
+        // Biểu đồ xu hướng 12 tháng (Bulk query)
+        Map<Integer, BigDecimal> monthlyNow = statisticsService.getMonthlyRevenueForYear(year);
+        Map<Integer, BigDecimal> monthlyPrev = statisticsService.getMonthlyRevenueForYear(year - 1);
+        
+        List<BigDecimal> seriesNow = new ArrayList<>();
+        List<BigDecimal> seriesPrev = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            seriesNow.add(monthlyNow.getOrDefault(i, BigDecimal.ZERO));
+            seriesPrev.add(monthlyPrev.getOrDefault(i, BigDecimal.ZERO));
+        }
 
-        List<TopProductAnalyticsRowDto> topProducts = buildTopProducts(fromDt, toDt);
+        SvgSeriesView svg = buildSvgPaths(seriesNow, seriesPrev);
+        List<TopProductAnalyticsRowDto> topProducts = buildTopProducts(startYear, endYear);
 
         return new AnalyticsSummaryDto(
-                "Năm 2025", formatMoneyVnd(doanhThu), doanhThuTrend.text, doanhThuTrend.css,
-                formatPercent2(tiLe) + "%", tiLeTrend.text, tiLeTrend.css,
-                formatCount(donMoiThangCuoi) + " ĐƠN", formatCount(tongGiaoDich), formatMoneyVnd(aov),
+                "Năm " + year, FormatUtils.formatMoneyVnd(doanhThu), doanhThuTrend.text, doanhThuTrend.css,
+                FormatUtils.formatPercent(tiLe, 2) + "%", tiLeTrend.text, tiLeTrend.css,
+                FormatUtils.formatCount(donMoiThangCuoi) + " ĐƠN", FormatUtils.formatCount(tongGiaoDich), FormatUtils.formatMoneyVnd(aov),
                 svg.pathNow, svg.pathPrev, svg.tooltipText, svg.tooltipLeftCss, topProducts
         );
-    }
-
-    private List<BigDecimal> buildMonthlySeries(int year) {
-        List<BigDecimal> result = new ArrayList<>();
-        for (int m = 1; m <= 12; m++) {
-            LocalDateTime start = LocalDateTime.of(year, m, 1, 0, 0);
-            LocalDateTime end = start.plusMonths(1);
-            result.add(safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(start, end, TrangThaiDonHang.DaHuy)));
-        }
-        return result;
     }
 
     private List<TopProductAnalyticsRowDto> buildTopProducts(LocalDateTime from, LocalDateTime to) {
@@ -96,15 +97,16 @@ public class AnalyticsService {
             String hieuSuat = i == 0 ? "CAO NHẤT" : (i == 1 ? "ỔN ĐỊNH" : "TIỀM NĂNG");
             String hsCss = i == 0 ? "bg-secondary/10 text-secondary" : (i == 1 ? "bg-primary/10 text-primary" : "bg-tertiary/10 text-tertiary");
 
+            long daBan = r.getDaBan() != null ? r.getDaBan() : 0L;
             result.add(new TopProductAnalyticsRowDto(p.getTenSanPham(), "Collections: " + dm, p.getImageUrl(),
-                    formatMoneyVnd(p.getGiaNiemYet()), r.getDaBan() != null ? r.getDaBan() : 0, 
-                    formatCompactVnd(r.getDoanhThu()) + " ₫", hieuSuat, hsCss));
+                    FormatUtils.formatMoneyVnd(p.getGiaNiemYet()), daBan, 
+                    FormatUtils.formatCompactVnd(r.getDoanhThu()) + " ₫", hieuSuat, hsCss));
         }
 
         if (result.isEmpty()) {
             productRepository.findTop3ByOrderByIdSanPhamDesc().forEach(p -> {
                 result.add(new TopProductAnalyticsRowDto(p.getTenSanPham(), "Collections: " + (p.getCategory() != null ? p.getCategory().getTenDanhMuc() : "Khác"),
-                        p.getImageUrl(), formatMoneyVnd(p.getGiaNiemYet()), 0, "0 ₫", "CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant"));
+                        p.getImageUrl(), FormatUtils.formatMoneyVnd(p.getGiaNiemYet()), 0, "0 ₫", "CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant"));
             });
         }
         return result;
@@ -114,8 +116,8 @@ public class AnalyticsService {
     private record SvgSeriesView(String pathNow, String pathPrev, String tooltipText, String tooltipLeftCss) {}
 
     private TrendView calcTrendPercent(BigDecimal current, BigDecimal previous) {
-        BigDecimal cur = safeBig(current);
-        BigDecimal prev = safeBig(previous);
+        BigDecimal cur = current == null ? BigDecimal.ZERO : current;
+        BigDecimal prev = previous == null ? BigDecimal.ZERO : previous;
         if (prev.compareTo(BigDecimal.ZERO) == 0) return new TrendView(cur.compareTo(BigDecimal.ZERO) == 0 ? "+0.0%" : "+100.0%", "text-on-surface-variant");
         BigDecimal delta = cur.subtract(prev).multiply(BigDecimal.valueOf(100)).divide(prev, 1, RoundingMode.HALF_UP);
         return new TrendView((delta.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "") + delta.toPlainString() + "%", "text-secondary");
@@ -124,25 +126,6 @@ public class AnalyticsService {
     private BigDecimal calcRatePercent(long num, long den) {
         if (den <= 0) return BigDecimal.ZERO;
         return BigDecimal.valueOf(num).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(den), 2, RoundingMode.HALF_UP);
-    }
-
-    private String formatPercent2(BigDecimal value) { return safeBig(value).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString(); }
-    private BigDecimal safeBig(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
-
-    private String formatMoneyVnd(BigDecimal money) {
-        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
-        nf.setMaximumFractionDigits(0);
-        return nf.format(safeBig(money)) + " ₫";
-    }
-
-    private String formatCount(long value) { return NumberFormat.getInstance(Locale.forLanguageTag("vi-VN")).format(value); }
-
-    private String formatCompactVnd(BigDecimal vnd) {
-        BigDecimal v = safeBig(vnd).abs();
-        if (v.compareTo(BigDecimal.valueOf(1_000_000_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000_000_000L), 0, RoundingMode.HALF_UP).toPlainString() + "B";
-        if (v.compareTo(BigDecimal.valueOf(1_000_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000_000L), 0, RoundingMode.HALF_UP).toPlainString() + "M";
-        if (v.compareTo(BigDecimal.valueOf(1_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000L), 0, RoundingMode.HALF_UP).toPlainString() + "K";
-        return v.toPlainString();
     }
 
     private SvgSeriesView buildSvgPaths(List<BigDecimal> seriesNow, List<BigDecimal> seriesPrev) {
@@ -157,7 +140,7 @@ public class AnalyticsService {
 
         int idxMax = 0;
         for (int i = 1; i < n; i++) if (seriesNow.get(i).compareTo(seriesNow.get(idxMax)) > 0) idxMax = i;
-        String tooltipText = "Tháng " + (idxMax + 1) + ": " + formatCompactVnd(seriesNow.get(idxMax)) + " ₫";
+        String tooltipText = "Tháng " + (idxMax + 1) + ": " + FormatUtils.formatCompactVnd(seriesNow.get(idxMax)) + " ₫";
 
         int leftPercent = Math.max(10, Math.min(90, (int) Math.round((idxMax * 100.0) / (n - 1))));
         return new SvgSeriesView(pathNow, pathPrev, tooltipText, "left-[" + leftPercent + "%]");

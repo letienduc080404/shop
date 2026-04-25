@@ -61,8 +61,10 @@ public class CustomerService {
             );
             OrderRepository.CustomerOrderAggView agg = aggMap.get(c.getIdKhachHang());
             if (agg != null) {
-                dto.setTongChiTieu(agg.getTongChiTieu() == null ? BigDecimal.ZERO : agg.getTongChiTieu());
-                dto.setSoDonHang(agg.getSoDonHang() == null ? 0L : agg.getSoDonHang());
+                BigDecimal spending = agg.getTongChiTieu();
+                dto.setTongChiTieu(spending != null ? spending : BigDecimal.ZERO);
+                Long count = agg.getSoDonHang();
+                dto.setSoDonHang(count != null ? count : 0L);
                 dto.setNgayDonGanNhat(agg.getNgayDonGanNhat());
             }
             return dto;

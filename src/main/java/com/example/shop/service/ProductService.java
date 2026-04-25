@@ -28,20 +28,20 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final OrderItemRepository orderItemRepository;
-    private final FileStorageService fileStorageService;
+    private final GoogleDriveService googleDriveService;
 
     public ProductService(ProductRepository productRepository, 
                           ProductVariantRepository productVariantRepository,
                           CategoryRepository categoryRepository,
                           ProductImageRepository productImageRepository,
                           OrderItemRepository orderItemRepository,
-                          FileStorageService fileStorageService) {
+                          GoogleDriveService googleDriveService) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.categoryRepository = categoryRepository;
         this.productImageRepository = productImageRepository;
         this.orderItemRepository = orderItemRepository;
-        this.fileStorageService = fileStorageService;
+        this.googleDriveService = googleDriveService;
     }
 
     public List<Product> getAllProducts() {
@@ -99,12 +99,22 @@ public class ProductService {
                 throw new RuntimeException("Không thể xóa sản phẩm này vì nó đã tồn tại trong các đơn hàng. Vui lòng cập nhật trạng thái ngừng kinh doanh thay vì xóa.");
             }
 
-            // 1. Xoá ảnh đại diện chính khỏi ổ đĩa
-            fileStorageService.deleteFile(product.getHinhAnh());
+            // 1. Xoá ảnh khỏi Google Drive
+            try {
+                googleDriveService.deleteFile(product.getHinhAnh());
+            } catch (Exception e) {
+                System.err.println("GDRIVE DELETE ERROR: " + e.getMessage());
+            }
             
-            // 2. Xoá các ảnh bổ sung khỏi ổ đĩa (nếu có)
+            // 2. Xoá các ảnh bổ sung
             if (product.getImages() != null) {
-                product.getImages().forEach(img -> fileStorageService.deleteFile(img.getDuongDan()));
+                product.getImages().forEach(img -> {
+                    try {
+                        googleDriveService.deleteFile(img.getDuongDan());
+                    } catch (Exception e) {
+                        System.err.println("GDRIVE DELETE ERROR: " + e.getMessage());
+                    }
+                });
             }
 
             // 3. Xoá các biến thể liên quan trong CSDL
@@ -133,17 +143,24 @@ public class ProductService {
         
         // Xử lý ảnh
         if (files != null && files.length > 0) {
+            List<ProductImage> images = new ArrayList<>();
             for (int i = 0; i < files.length; i++) {
-                if (files[i].isEmpty()) continue;
-                String path = fileStorageService.storeFile(files[i]);
-                
-                ProductImage productImage = new ProductImage(path, savedProduct);
-                productImageRepository.save(productImage);
-                
-                if (i == 0) {
-                    savedProduct.setHinhAnh(path);
-                    productRepository.save(savedProduct);
+                if (files[i] == null || files[i].isEmpty()) continue;
+                try {
+                    String path = googleDriveService.uploadFile(files[i]);
+                    System.out.println("GDRIVE: Stored file at ID: " + path);
+                    
+                    images.add(new ProductImage(path, savedProduct));
+                    if (i == 0) savedProduct.setHinhAnh(path);
+                } catch (java.io.IOException | RuntimeException e) {
+                    System.err.println("GDRIVE UPLOAD ERROR (createProduct): " + e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("GDRIVE CRITICAL ERROR (createProduct): " + e.getMessage());
                 }
+            }
+            if (!images.isEmpty()) {
+                productImageRepository.saveAll(images);
+                productRepository.save(savedProduct);
             }
         }
         
@@ -182,12 +199,22 @@ public class ProductService {
             }
             
             // Lưu ảnh mới
+            List<ProductImage> newImages = new ArrayList<>();
             for (int i = 0; i < files.length; i++) {
-                if (files[i].isEmpty()) continue;
-                String path = fileStorageService.storeFile(files[i]);
-                ProductImage productImage = new ProductImage(path, product);
-                productImageRepository.save(productImage);
-                if (i == 0) product.setHinhAnh(path);
+                if (files[i] == null || files[i].isEmpty()) continue;
+                try {
+                    String path = googleDriveService.uploadFile(files[i]);
+                    System.out.println("GDRIVE: Stored file at ID: " + path);
+                    newImages.add(new ProductImage(path, product));
+                    if (i == 0) product.setHinhAnh(path);
+                } catch (java.io.IOException | RuntimeException e) {
+                    System.err.println("GDRIVE UPLOAD ERROR (updateProduct): " + e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("GDRIVE CRITICAL ERROR (updateProduct): " + e.getMessage());
+                }
+            }
+            if (!newImages.isEmpty()) {
+                productImageRepository.saveAll(newImages);
             }
         }
         
@@ -210,13 +237,18 @@ public class ProductService {
     }
 
     public Map<Long, Integer> getProductStockMap(List<Product> products) {
+        if (products == null || products.isEmpty()) return new HashMap<>();
+        
+        List<Long> ids = products.stream().map(Product::getIdSanPham).toList();
+        List<ProductVariantRepository.ProductStockView> stocks = productVariantRepository.sumStockByProductIds(ids);
+        
         Map<Long, Integer> productStocks = new HashMap<>();
-        for (Product product : products) {
-            List<ProductVariant> variants = productVariantRepository.findByProduct(product);
-            int totalStock = variants.stream()
-                    .mapToInt(ProductVariant::getSoLuongTon)
-                    .sum();
-            productStocks.put(product.getIdSanPham(), totalStock);
+        // Khởi tạo tất cả là 0
+        for (Long id : ids) productStocks.put(id, 0);
+        // Cập nhật từ dữ liệu DB
+        for (var s : stocks) {
+            Integer total = s.getTotalStock();
+            productStocks.put(s.getProductId(), total != null ? total : 0);
         }
         return productStocks;
     }

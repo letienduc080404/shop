@@ -21,7 +21,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // Cho phép truy cập công khai: trang chủ, cửa hàng, chi tiết sản phẩm
                 .requestMatchers("/", "/shop/**", "/product/**", "/register/**", "/login/**", "/css/**", "/js/**", "/images/**").permitAll()

@@ -91,4 +91,14 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("to") LocalDateTime to,
             @Param("excludedStatus") TrangThaiDonHang excludedStatus
     );
+
+    @Query("""
+        select month(o.ngayDat) as month, coalesce(sum((oi.giaBan - coalesce(pv.giaVon, 0)) * oi.soLuong), 0) as value
+        from OrderItem oi
+        join oi.order o
+        join oi.productVariant pv
+        where year(o.ngayDat) = :year and o.trangThaiDonHang <> :excludedStatus
+        group by month(o.ngayDat)
+    """)
+    List<OrderRepository.MonthlyDataView> sumLoiNhuanByYearAndTrangThaiDonHangNot(@Param("year") int year, @Param("excludedStatus") TrangThaiDonHang excludedStatus);
 }
