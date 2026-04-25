@@ -18,6 +18,7 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByMaDonHang(String maDonHang);
 
+    @Override
     @EntityGraph(attributePaths = {"customer"})
     Page<Order> findAll(Pageable pageable);
 
@@ -40,6 +41,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
           and o.trangThaiDonHang = :status
     """)
     BigDecimal sumTongTienByNgayDatBetweenAndTrangThai(LocalDateTime from, LocalDateTime to, TrangThaiDonHang status);
+
+    @Query("""
+        select coalesce(sum(o.tongTien), 0)
+        from Order o
+        where o.ngayDat >= :from and o.ngayDat < :to
+          and o.trangThaiDonHang <> :excludedStatus
+    """)
+    BigDecimal sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(LocalDateTime from, LocalDateTime to, TrangThaiDonHang excludedStatus);
 
     @Query("""
         select count(distinct o.customer.idKhachHang)

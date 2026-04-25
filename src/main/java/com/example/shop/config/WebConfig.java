@@ -12,18 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Ánh xạ đường dẫn /images/uploads/** vào thư mục vật lý trên ổ cứng
-        Path uploadDir = Paths.get("src/main/resources/static/images/uploads");
+        // Ánh xạ /uploads/** vào thư mục uploads ở gốc dự án
+        Path uploadDir = Paths.get("uploads");
         String uploadPath = uploadDir.toFile().getAbsolutePath();
         
-        // Sử dụng file: prefix để Spring biết đây là đường dẫn vật lý
-        registry.addResourceHandler("/images/uploads/**")
+        registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath + "/");
-                
-        // Khai báo lại cả thư mục images mặc định để đảm bảo không bị ghi đè
-        Path imagesDir = Paths.get("src/main/resources/static/images");
-        String imagesPath = imagesDir.toFile().getAbsolutePath();
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + imagesPath + "/");
     }
 }

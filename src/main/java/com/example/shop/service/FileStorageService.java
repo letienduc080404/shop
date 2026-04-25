@@ -12,44 +12,39 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    private final String uploadDir = "src/main/resources/static/images/uploads/";
+    private final Path fileStorageLocation;
 
-    public String storeFile(MultipartFile file) {
+    public FileStorageService() {
+        this.fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
         try {
-            // Tạo thư mục lưu nếu chưa tồn tại
-            Path copyLocation = Paths.get(uploadDir);
-            if (!Files.exists(copyLocation)) {
-                Files.createDirectories(copyLocation);
-            }
-
-            // Tạo tên file duy nhất để tránh trùng
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            Path targetLocation = copyLocation.resolve(fileName);
-
-            // Sao chép file vào vị trí đích
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            // Trả về đường dẫn tương đối để lưu vào CSDL
-            return "/images/uploads/" + fileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not store file " + file.getOriginalFilename() + ". Please try again!", e);
+            Files.createDirectories(this.fileStorageLocation);
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
 
-    public void deleteFile(String relativePath) {
-        if (relativePath == null || !relativePath.startsWith("/images/uploads/")) {
-            return; // Chỉ xoá file trong thư mục upload do hệ thống quản lý
-        }
-
+    public String storeFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+        
+        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
         try {
-            // Đổi đường dẫn web tương đối về đường dẫn vật lý
-            String fileName = relativePath.replace("/images/uploads/", "");
-            Path filePath = Paths.get(uploadDir).resolve(fileName);
-            
-            // Xoá file nếu tồn tại
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/" + fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
+        }
+    }
+
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || !fileUrl.startsWith("/uploads/")) return;
+        
+        try {
+            String fileName = fileUrl.replace("/uploads/", "");
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            System.err.println("Failed to delete physical file: " + relativePath);
+        } catch (IOException ex) {
+            System.err.println("Could not delete file: " + fileUrl);
         }
     }
 }

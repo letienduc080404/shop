@@ -17,7 +17,6 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -27,322 +26,141 @@ public class AnalyticsService {
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
 
-    public AnalyticsService(
-            OrderRepository orderRepository,
-            OrderItemRepository orderItemRepository,
-            ProductRepository productRepository,
-            CustomerRepository customerRepository
-    ) {
+    public AnalyticsService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
+                            ProductRepository productRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.customerRepository = customerRepository;
     }
 
-    /**
-     * Tính dữ liệu analytics theo kỳ báo cáo.
-     * - from/to là ngày (LocalDate). Backend quy đổi về LocalDateTime [from, toNextDay) để query.
-     */
     public AnalyticsSummaryDto buildAnalytics(LocalDate from, LocalDate to) {
-        LocalDate safeFrom = (from != null) ? from : YearMonth.now().atDay(1);
-        LocalDate safeTo = (to != null) ? to : YearMonth.now().atEndOfMonth();
+        // CỐ ĐỊNH NĂM 2025 CHO TRANG ANALYTICS
+        LocalDateTime fromDt = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime toDt = LocalDateTime.of(2025, 12, 31, 23, 59);
 
-        LocalDateTime fromDt = safeFrom.atStartOfDay();
-        LocalDateTime toDt = safeTo.plusDays(1).atStartOfDay(); // loại trừ toDt, nên +1 ngày
+        // Năm 2024 làm mốc so sánh
+        LocalDateTime prevFromDt = LocalDateTime.of(2024, 1, 1, 0, 0);
+        LocalDateTime prevToDt = LocalDateTime.of(2024, 12, 31, 23, 59);
 
-        // Kỳ trước: lấy cùng số ngày ngay trước kỳ hiện tại
-        long days = Math.max(1, safeFrom.until(safeTo).getDays() + 1L);
-        LocalDate prevTo = safeFrom.minusDays(1);
-        LocalDate prevFrom = prevTo.minusDays(days - 1);
-        LocalDateTime prevFromDt = prevFrom.atStartOfDay();
-        LocalDateTime prevToDt = prevTo.plusDays(1).atStartOfDay();
-
-        BigDecimal doanhThu = orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(fromDt, toDt, TrangThaiDonHang.HoanThanh);
-        BigDecimal doanhThuPrev = orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(prevFromDt, prevToDt, TrangThaiDonHang.HoanThanh);
-
+        BigDecimal doanhThu = safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(fromDt, toDt, TrangThaiDonHang.DaHuy));
+        BigDecimal doanhThuPrev = safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(prevFromDt, prevToDt, TrangThaiDonHang.DaHuy));
         TrendView doanhThuTrend = calcTrendPercent(doanhThu, doanhThuPrev);
 
-        // Tổng giao dịch: toàn bộ đơn trong kỳ (trừ huỷ)
         long tongGiaoDich = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(fromDt, toDt, TrangThaiDonHang.DaHuy);
+        long donMoiThangCuoi = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(LocalDateTime.of(2025,12,1,0,0), toDt, TrangThaiDonHang.DaHuy);
 
-        // Đơn hàng mới: các đơn trong 7 ngày gần nhất của kỳ (trừ huỷ) để giống ý “mới”
-        LocalDateTime last7From = toDt.minusDays(7);
-        long donMoi7Ngay = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(last7From, toDt, TrangThaiDonHang.DaHuy);
+        BigDecimal aov = tongGiaoDich > 0 ? doanhThu.divide(BigDecimal.valueOf(tongGiaoDich), 0, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
-        // AOV: doanh thu / số đơn hoàn thành trong kỳ
-        long soDonHoanThanh = orderRepository.countByNgayDatBetweenAndTrangThaiDonHangNot(fromDt, toDt, TrangThaiDonHang.DaHuy);
-        BigDecimal aov = BigDecimal.ZERO;
-        if (soDonHoanThanh > 0) {
-            aov = safeBig(doanhThu).divide(BigDecimal.valueOf(soDonHoanThanh), 0, RoundingMode.HALF_UP);
-        }
-
-        // Tỉ lệ chuyển đổi (theo dữ liệu DB hiện có): số khách có đơn trong kỳ / tổng khách
         long tongKhach = customerRepository.count();
         long khachCoDon = orderRepository.countDistinctCustomersByNgayDatBetween(fromDt, toDt);
         BigDecimal tiLe = calcRatePercent(khachCoDon, tongKhach);
-
-        long khachCoDonPrev = orderRepository.countDistinctCustomersByNgayDatBetween(prevFromDt, prevToDt);
-        BigDecimal tiLePrev = calcRatePercent(khachCoDonPrev, tongKhach);
+        BigDecimal tiLePrev = calcRatePercent(orderRepository.countDistinctCustomersByNgayDatBetween(prevFromDt, prevToDt), tongKhach);
         TrendView tiLeTrend = calcTrendPercent(tiLe, tiLePrev);
 
-        // Series 7 ngày gần nhất: so sánh 7 ngày cuối kỳ vs 7 ngày trước đó
-        List<BigDecimal> seriesNow = buildDailyRevenueSeries(toDt.minusDays(7), toDt);
-        List<BigDecimal> seriesPrev = buildDailyRevenueSeries(toDt.minusDays(14), toDt.minusDays(7));
+        // Biểu đồ xu hướng 12 tháng năm 2025 vs 2024
+        List<BigDecimal> seriesNow = buildMonthlySeries(2025);
+        List<BigDecimal> seriesPrev = buildMonthlySeries(2024);
         SvgSeriesView svg = buildSvgPaths(seriesNow, seriesPrev);
 
-        // Top sản phẩm theo doanh thu trong kỳ (top 3)
         List<TopProductAnalyticsRowDto> topProducts = buildTopProducts(fromDt, toDt);
 
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM", Locale.forLanguageTag("vi-VN"));
-        String kyBaoCaoLabel = safeFrom.format(fmt) + " - " + safeTo.format(fmt) + "/" + safeTo.getYear();
-
         return new AnalyticsSummaryDto(
-                kyBaoCaoLabel,
-                formatMoneyVnd(doanhThu),
-                doanhThuTrend.text,
-                doanhThuTrend.css,
-                formatPercent2(tiLe) + "%",
-                tiLeTrend.text,
-                tiLeTrend.css,
-                formatCount(donMoi7Ngay) + " ĐƠN",
-                formatCount(tongGiaoDich),
-                formatMoneyVnd(aov),
-                svg.pathNow,
-                svg.pathPrev,
-                svg.tooltipText,
-                svg.tooltipLeftCss,
-                topProducts
+                "Năm 2025", formatMoneyVnd(doanhThu), doanhThuTrend.text, doanhThuTrend.css,
+                formatPercent2(tiLe) + "%", tiLeTrend.text, tiLeTrend.css,
+                formatCount(donMoiThangCuoi) + " ĐƠN", formatCount(tongGiaoDich), formatMoneyVnd(aov),
+                svg.pathNow, svg.pathPrev, svg.tooltipText, svg.tooltipLeftCss, topProducts
         );
     }
 
-    private List<BigDecimal> buildDailyRevenueSeries(LocalDateTime from, LocalDateTime to) {
+    private List<BigDecimal> buildMonthlySeries(int year) {
         List<BigDecimal> result = new ArrayList<>();
-        LocalDateTime cur = from;
-        while (cur.isBefore(to)) {
-            LocalDateTime next = cur.plusDays(1);
-            BigDecimal v = orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(cur, next, TrangThaiDonHang.HoanThanh);
-            result.add(safeBig(v));
-            cur = next;
+        for (int m = 1; m <= 12; m++) {
+            LocalDateTime start = LocalDateTime.of(year, m, 1, 0, 0);
+            LocalDateTime end = start.plusMonths(1);
+            result.add(safeBig(orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(start, end, TrangThaiDonHang.DaHuy)));
         }
         return result;
     }
 
     private List<TopProductAnalyticsRowDto> buildTopProducts(LocalDateTime from, LocalDateTime to) {
-        var rows = orderItemRepository.topProductsByRevenue(from, to, TrangThaiDonHang.HoanThanh, PageRequest.of(0, 3));
-        List<Long> ids = rows.stream().map(OrderItemRepository.ProductSalesAggView::getProductId).toList();
-        Map<Long, Product> productMap = new HashMap<>();
-        if (!ids.isEmpty()) {
-            for (Product p : productRepository.findAllById(ids)) {
-                productMap.put(p.getIdSanPham(), p);
-            }
-        }
-
-        // Xếp hạng hiệu suất đơn giản theo thứ tự doanh thu
+        var rows = orderItemRepository.topProductsByRevenueDonHangNot(from, to, TrangThaiDonHang.DaHuy, PageRequest.of(0, 3));
         List<TopProductAnalyticsRowDto> result = new ArrayList<>();
+        
         for (int i = 0; i < rows.size(); i++) {
             var r = rows.get(i);
-            Product p = productMap.get(r.getProductId());
-            String ten = (p != null) ? p.getTenSanPham() : "Sản phẩm";
-            String dm = (p != null && p.getCategory() != null) ? p.getCategory().getTenDanhMuc() : "Khác";
-            String img = (p != null) ? p.getImageUrl() : "";
-            String gia = (p != null) ? formatMoneyVnd(p.getGiaNiemYet()) : "0đ";
-            long daBan = (r.getDaBan() == null) ? 0 : r.getDaBan();
-            String doanhThu = formatCompactVnd(r.getDoanhThu()) + " ₫";
+            Product p = productRepository.findById(r.getProductId()).orElse(null);
+            if (p == null) continue;
+            
+            String dm = p.getCategory() != null ? p.getCategory().getTenDanhMuc() : "Khác";
+            String hieuSuat = i == 0 ? "CAO NHẤT" : (i == 1 ? "ỔN ĐỊNH" : "TIỀM NĂNG");
+            String hsCss = i == 0 ? "bg-secondary/10 text-secondary" : (i == 1 ? "bg-primary/10 text-primary" : "bg-tertiary/10 text-tertiary");
 
-            HieuSuatView hs = switch (i) {
-                case 0 -> new HieuSuatView("CAO NHẤT", "bg-secondary/10 text-secondary");
-                case 1 -> new HieuSuatView("ỔN ĐỊNH", "bg-primary/10 text-primary");
-                default -> new HieuSuatView("TIỀM NĂNG", "bg-tertiary/10 text-tertiary");
-            };
-
-            result.add(new TopProductAnalyticsRowDto(
-                    ten,
-                    "Collections: " + dm,
-                    img,
-                    gia,
-                    daBan,
-                    doanhThu,
-                    hs.label,
-                    hs.css
-            ));
+            result.add(new TopProductAnalyticsRowDto(p.getTenSanPham(), "Collections: " + dm, p.getImageUrl(),
+                    formatMoneyVnd(p.getGiaNiemYet()), r.getDaBan() != null ? r.getDaBan() : 0, 
+                    formatCompactVnd(r.getDoanhThu()) + " ₫", hieuSuat, hsCss));
         }
 
-        // Fallback: nếu kỳ báo cáo chưa phát sinh đơn (bảng trống), vẫn hiển thị sản phẩm thật (0 đã bán, 0 doanh thu)
         if (result.isEmpty()) {
-            List<Product> latest = productRepository.findTop3ByOrderByIdSanPhamDesc();
-            for (int i = 0; i < latest.size(); i++) {
-                Product p = latest.get(i);
-                String ten = (p != null) ? p.getTenSanPham() : "Sản phẩm";
-                String dm = (p != null && p.getCategory() != null) ? p.getCategory().getTenDanhMuc() : "Khác";
-                String img = (p != null) ? p.getImageUrl() : "";
-                String gia = (p != null) ? formatMoneyVnd(p.getGiaNiemYet()) : "0 ₫";
-
-                HieuSuatView hs = switch (i) {
-                    case 0 -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
-                    case 1 -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
-                    default -> new HieuSuatView("CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant");
-                };
-
-                result.add(new TopProductAnalyticsRowDto(
-                        ten,
-                        "Collections: " + dm,
-                        img,
-                        gia,
-                        0,
-                        "0 ₫",
-                        hs.label,
-                        hs.css
-                ));
-            }
+            productRepository.findTop3ByOrderByIdSanPhamDesc().forEach(p -> {
+                result.add(new TopProductAnalyticsRowDto(p.getTenSanPham(), "Collections: " + (p.getCategory() != null ? p.getCategory().getTenDanhMuc() : "Khác"),
+                        p.getImageUrl(), formatMoneyVnd(p.getGiaNiemYet()), 0, "0 ₫", "CHƯA CÓ ĐƠN", "bg-outline-variant/20 text-on-surface-variant"));
+            });
         }
         return result;
     }
 
-    private static class HieuSuatView {
-        private final String label;
-        private final String css;
+    private record TrendView(String text, String css) {}
+    private record SvgSeriesView(String pathNow, String pathPrev, String tooltipText, String tooltipLeftCss) {}
 
-        private HieuSuatView(String label, String css) {
-            this.label = label;
-            this.css = css;
-        }
-    }
-
-    private static class TrendView {
-        private final String text;
-        private final String css;
-
-        private TrendView(String text, String css) {
-            this.text = text;
-            this.css = css;
-        }
-    }
-
-    /**
-     * Tính % thay đổi giữa kỳ hiện tại và kỳ trước.
-     * - Nếu kỳ trước = 0: tránh chia 0.
-     */
     private TrendView calcTrendPercent(BigDecimal current, BigDecimal previous) {
         BigDecimal cur = safeBig(current);
         BigDecimal prev = safeBig(previous);
-
-        if (prev.compareTo(BigDecimal.ZERO) == 0) {
-            if (cur.compareTo(BigDecimal.ZERO) == 0) {
-                return new TrendView("+0.0%", "text-on-surface-variant");
-            }
-            return new TrendView("+100.0%", "text-secondary");
-        }
-
-        BigDecimal delta = cur.subtract(prev)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(prev, 1, RoundingMode.HALF_UP);
-
-        String sign = delta.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "";
-        String text = sign + delta.toPlainString() + "%";
-        String css = delta.compareTo(BigDecimal.ZERO) >= 0 ? "text-secondary" : "text-secondary";
-        return new TrendView(text, css);
+        if (prev.compareTo(BigDecimal.ZERO) == 0) return new TrendView(cur.compareTo(BigDecimal.ZERO) == 0 ? "+0.0%" : "+100.0%", "text-on-surface-variant");
+        BigDecimal delta = cur.subtract(prev).multiply(BigDecimal.valueOf(100)).divide(prev, 1, RoundingMode.HALF_UP);
+        return new TrendView((delta.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "") + delta.toPlainString() + "%", "text-secondary");
     }
 
-    private BigDecimal calcRatePercent(long numerator, long denominator) {
-        if (denominator <= 0) return BigDecimal.ZERO;
-        return BigDecimal.valueOf(numerator)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(BigDecimal.valueOf(denominator), 2, RoundingMode.HALF_UP);
+    private BigDecimal calcRatePercent(long num, long den) {
+        if (den <= 0) return BigDecimal.ZERO;
+        return BigDecimal.valueOf(num).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(den), 2, RoundingMode.HALF_UP);
     }
 
-    private String formatPercent2(BigDecimal value) {
-        return safeBig(value).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
-    }
-
-    private BigDecimal safeBig(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
-    }
+    private String formatPercent2(BigDecimal value) { return safeBig(value).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString(); }
+    private BigDecimal safeBig(BigDecimal v) { return v == null ? BigDecimal.ZERO : v; }
 
     private String formatMoneyVnd(BigDecimal money) {
         NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
         nf.setMaximumFractionDigits(0);
-        BigDecimal v = safeBig(money);
-        return nf.format(v) + " ₫";
+        return nf.format(safeBig(money)) + " ₫";
     }
 
-    private String formatCount(long value) {
-        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
-        nf.setMaximumFractionDigits(0);
-        return nf.format(value);
-    }
+    private String formatCount(long value) { return NumberFormat.getInstance(Locale.forLanguageTag("vi-VN")).format(value); }
 
-    /**
-     * Rút gọn tiền VND theo K/M/B để hiển thị gọn (vd: 639M).
-     */
     private String formatCompactVnd(BigDecimal vnd) {
         BigDecimal v = safeBig(vnd).abs();
-        BigDecimal oneB = BigDecimal.valueOf(1_000_000_000L);
-        BigDecimal oneM = BigDecimal.valueOf(1_000_000L);
-        BigDecimal oneK = BigDecimal.valueOf(1_000L);
-
-        if (v.compareTo(oneB) >= 0) {
-            return v.divide(oneB, 0, RoundingMode.HALF_UP).toPlainString() + "B";
-        }
-        if (v.compareTo(oneM) >= 0) {
-            return v.divide(oneM, 0, RoundingMode.HALF_UP).toPlainString() + "M";
-        }
-        if (v.compareTo(oneK) >= 0) {
-            return v.divide(oneK, 0, RoundingMode.HALF_UP).toPlainString() + "K";
-        }
+        if (v.compareTo(BigDecimal.valueOf(1_000_000_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000_000_000L), 0, RoundingMode.HALF_UP).toPlainString() + "B";
+        if (v.compareTo(BigDecimal.valueOf(1_000_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000_000L), 0, RoundingMode.HALF_UP).toPlainString() + "M";
+        if (v.compareTo(BigDecimal.valueOf(1_000L)) >= 0) return v.divide(BigDecimal.valueOf(1_000L), 0, RoundingMode.HALF_UP).toPlainString() + "K";
         return v.toPlainString();
     }
 
-    private static class SvgSeriesView {
-        private final String pathNow;
-        private final String pathPrev;
-        private final String tooltipText;
-        private final String tooltipLeftCss;
-
-        private SvgSeriesView(String pathNow, String pathPrev, String tooltipText, String tooltipLeftCss) {
-            this.pathNow = pathNow;
-            this.pathPrev = pathPrev;
-            this.tooltipText = tooltipText;
-            this.tooltipLeftCss = tooltipLeftCss;
-        }
-    }
-
-    /**
-     * Dựng SVG path cho 2 series (7 điểm).
-     * ViewBox: 0..1000 (x), 0..200 (y). Ta vẽ trong vùng y [30..160] để đẹp.
-     */
     private SvgSeriesView buildSvgPaths(List<BigDecimal> seriesNow, List<BigDecimal> seriesPrev) {
-        int n = Math.min(seriesNow.size(), seriesPrev.size());
-        if (n <= 1) {
-            return new SvgSeriesView("M0 150 L1000 150", "M0 160 L1000 160", "", "left-1/2");
-        }
-
+        int n = seriesNow.size();
         BigDecimal max = BigDecimal.ZERO;
-        for (int i = 0; i < n; i++) {
-            max = max.max(seriesNow.get(i)).max(seriesPrev.get(i));
-        }
-        if (max.compareTo(BigDecimal.ZERO) == 0) {
-            return new SvgSeriesView("M0 150 L1000 150", "M0 160 L1000 160", "", "left-1/2");
-        }
+        for (int i = 0; i < n; i++) max = max.max(seriesNow.get(i)).max(seriesPrev.get(i));
+        if (max.compareTo(BigDecimal.ZERO) == 0) return new SvgSeriesView("M0 150 L1000 150", "M0 160 L1000 160", "", "left-1/2");
 
         double xStep = 1000.0 / (n - 1);
-        double yTop = 30.0;
-        double yBot = 160.0;
+        String pathNow = buildPath(seriesNow, max, xStep, 30.0, 160.0);
+        String pathPrev = buildPath(seriesPrev, max, xStep, 30.0, 160.0);
 
-        String pathNow = buildPath(seriesNow, max, xStep, yTop, yBot);
-        String pathPrev = buildPath(seriesPrev, max, xStep, yTop, yBot);
-
-        // Tooltip: lấy ngày có doanh thu cao nhất của seriesNow
         int idxMax = 0;
-        for (int i = 1; i < n; i++) {
-            if (seriesNow.get(i).compareTo(seriesNow.get(idxMax)) > 0) idxMax = i;
-        }
-        String tooltipText = "Ngày " + (idxMax + 1) + ": " + formatCompactVnd(seriesNow.get(idxMax)) + " ₫";
+        for (int i = 1; i < n; i++) if (seriesNow.get(i).compareTo(seriesNow.get(idxMax)) > 0) idxMax = i;
+        String tooltipText = "Tháng " + (idxMax + 1) + ": " + formatCompactVnd(seriesNow.get(idxMax)) + " ₫";
 
-        int leftPercent = (int) Math.round((idxMax * 100.0) / (n - 1));
-        leftPercent = Math.max(10, Math.min(90, leftPercent));
-        String tooltipLeftCss = "left-[" + leftPercent + "%]";
-
-        return new SvgSeriesView(pathNow, pathPrev, tooltipText, tooltipLeftCss);
+        int leftPercent = Math.max(10, Math.min(90, (int) Math.round((idxMax * 100.0) / (n - 1))));
+        return new SvgSeriesView(pathNow, pathPrev, tooltipText, "left-[" + leftPercent + "%]");
     }
 
     private String buildPath(List<BigDecimal> series, BigDecimal max, double xStep, double yTop, double yBot) {
@@ -351,14 +169,8 @@ public class AnalyticsService {
             double x = i * xStep;
             double ratio = series.get(i).divide(max, 6, RoundingMode.HALF_UP).doubleValue();
             double y = yBot - (yBot - yTop) * ratio;
-            if (i == 0) sb.append("M").append(fmt(x)).append(" ").append(fmt(y));
-            else sb.append(" L").append(fmt(x)).append(" ").append(fmt(y));
+            sb.append(i == 0 ? "M" : " L").append(String.format(Locale.US, "%.2f %.2f", x, y));
         }
         return sb.toString();
     }
-
-    private String fmt(double v) {
-        return String.format(Locale.US, "%.2f", v);
-    }
 }
-

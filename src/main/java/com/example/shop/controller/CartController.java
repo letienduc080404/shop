@@ -23,6 +23,7 @@ public class CartController {
     }
 
     @GetMapping("/cart")
+    @SuppressWarnings("unchecked")
     public String viewCart(HttpSession session, Model model) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) {
@@ -42,6 +43,7 @@ public class CartController {
     }
 
     @PostMapping("/cart/add")
+    @SuppressWarnings("unchecked")
     public String addToCart(@RequestParam("productId") Long productId,
                             @RequestParam(value = "variantId", required = false) Long variantId,
                             @RequestParam(value = "soLuong", defaultValue = "1") int soLuong,
@@ -92,6 +94,7 @@ public class CartController {
     }
 
     @PostMapping("/cart/remove")
+    @SuppressWarnings("unchecked")
     public String removeFromCart(@RequestParam("index") int index, HttpSession session) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart != null && index >= 0 && index < cart.size()) {
@@ -102,6 +105,7 @@ public class CartController {
     }
 
     @PostMapping("/cart/update")
+    @SuppressWarnings("unchecked")
     public String updateCart(@RequestParam("index") int index, @RequestParam("action") String action, HttpSession session) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart != null && index >= 0 && index < cart.size()) {

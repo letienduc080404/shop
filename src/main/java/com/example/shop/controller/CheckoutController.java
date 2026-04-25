@@ -30,6 +30,7 @@ public class CheckoutController {
     }
 
     @GetMapping("/checkout")
+    @SuppressWarnings("unchecked")
     public String viewCheckout(HttpSession session, Model model) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null || cart.isEmpty()) {
@@ -50,6 +51,7 @@ public class CheckoutController {
     }
 
     @PostMapping("/checkout")
+    @SuppressWarnings("unchecked")
     public String processCheckout(@RequestParam("diaChi") String diaChi,
                                   @RequestParam("soDienThoai") String soDienThoai,
                                   @RequestParam("payment") String payment,

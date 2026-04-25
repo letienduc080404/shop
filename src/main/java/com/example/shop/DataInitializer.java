@@ -9,7 +9,6 @@ import com.example.shop.repository.CategoryRepository;
 import com.example.shop.repository.CustomerRepository;
 import com.example.shop.repository.ProductRepository;
 import com.example.shop.repository.ProductVariantRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,20 +19,23 @@ import java.util.List;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductVariantRepository productVariantRepository;
+    private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private ProductVariantRepository productVariantRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public DataInitializer(ProductRepository productRepository, 
+                           CategoryRepository categoryRepository, 
+                           ProductVariantRepository productVariantRepository, 
+                           CustomerRepository customerRepository, 
+                           PasswordEncoder passwordEncoder) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+        this.productVariantRepository = productVariantRepository;
+        this.customerRepository = customerRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -59,7 +61,6 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- DA THEM TAI KHOAN TEST: user@gmail.com / 123 ---");
         }
 
-        // 1. Cập nhật danh mục
         List<String> tenDanhMucs = List.of("ÁO", "QUẦN", "PHỤ KIỆN", "ÁO KHOÁC", "VÁY");
         for (String ten : tenDanhMucs) {
             if (!categoryRepository.existsByTenDanhMuc(ten)) {
@@ -67,7 +68,6 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
 
-        // 2. Thêm sản phẩm mẫu
         if (productRepository.count() < 2) {
             Category aoKhoac = categoryRepository.findAll().stream()
                     .filter(c -> c.getTenDanhMuc().equals("ÁO KHOÁC")).findFirst().orElse(null);

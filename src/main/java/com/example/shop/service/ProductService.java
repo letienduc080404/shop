@@ -226,13 +226,13 @@ public class ProductService {
                                                           List<String> variantColors,
                                                           List<Integer> variantStocks,
                                                           List<BigDecimal> variantCosts) {
-        int count = Math.min(
-                variantSizes == null ? 0 : variantSizes.size(),
-                Math.min(
-                        variantColors == null ? 0 : variantColors.size(),
-                        Math.min(variantStocks == null ? 0 : variantStocks.size(), variantCosts == null ? 0 : variantCosts.size())
-                )
-        );
+        if (variantSizes == null || variantColors == null || variantStocks == null || variantCosts == null) {
+            return new ArrayList<>();
+        }
+
+        int count = Math.min(variantSizes.size(),
+                    Math.min(variantColors.size(),
+                    Math.min(variantStocks.size(), variantCosts.size())));
 
         List<ProductVariant> variants = new ArrayList<>();
         for (int i = 0; i < count; i++) {

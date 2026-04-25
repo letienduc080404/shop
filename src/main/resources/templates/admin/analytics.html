@@ -2,227 +2,210 @@
 <html th:replace="~{admin/layout :: layout('Analytics', ~{::content}, 'analytics')}" xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="content" class="p-12 min-h-screen">
-<!-- Header Section -->
-<header class="mb-16 flex justify-between items-end">
-<div>
-<h2 class="text-4xl font-serif text-primary mb-2">BÁO CÁO HIỆU SUẤT</h2>
-<p class="text-xs font-label uppercase tracking-[0.3em] text-on-surface-variant">Phân tích chuyên sâu hệ thống Domino / 2024</p>
-</div>
-<div class="flex gap-4">
-<div class="bg-surface-container px-6 py-3 flex items-center gap-4">
-<span class="text-[10px] font-bold tracking-widest">KỲ BÁO CÁO:</span>
-<span class="text-xs uppercase font-medium" th:text="${analytics.kyBaoCaoLabel}">01/10 - 31/10/2024</span>
-<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
-</div>
-<button class="bg-primary text-white px-8 py-3 text-[10px] font-bold tracking-widest hover:bg-primary-container transition-colors">
-                    XUẤT DỮ LIỆU
+    <!-- Header Section -->
+    <header class="mb-16 flex justify-between items-end">
+        <div>
+            <h2 class="text-4xl font-serif text-primary mb-2">BÁO CÁO HIỆU SUẤT</h2>
+            <p class="text-xs font-label uppercase tracking-[0.3em] text-on-surface-variant">Phân tích chuyên sâu hệ thống Domino / 2025</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="bg-surface-container px-6 py-3 flex items-center gap-4">
+                <span class="text-[10px] font-bold tracking-widest">KỲ BÁO CÁO:</span>
+                <span class="text-xs uppercase font-medium" th:text="${analytics.kyBaoCaoLabel}">Năm 2025</span>
+                <span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+            </div>
+            <button class="bg-primary text-white px-8 py-3 text-[10px] font-bold tracking-widest hover:bg-primary-container transition-colors">
+                XUẤT DỮ LIỆU
+            </button>
+        </div>
+    </header>
+
+    <!-- Metrics Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <!-- Revenue Card -->
+        <div class="bg-surface-container-lowest p-8 flex flex-col justify-between group hover:bg-primary hover:text-white transition-all duration-500">
+            <div class="flex justify-between items-start mb-12">
+                <span class="text-[10px] font-bold tracking-widest uppercase">Tổng doanh thu 2025</span>
+                <span class="font-bold text-xs" th:classappend="${analytics.tongDoanhThuTrendCss}" th:text="${analytics.tongDoanhThuTrendText}">+0.0%</span>
+            </div>
+            <div>
+                <p class="text-3xl font-serif mb-2" th:text="${analytics.tongDoanhThu}">0 ₫</p>
+                <p class="text-[10px] tracking-widest opacity-60">DOANH THU TOÀN NIÊN ĐỘ</p>
+            </div>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
+            <div class="flex justify-between items-start mb-12">
+                <span class="text-[10px] font-bold tracking-widest uppercase">Tỷ lệ chuyển đổi</span>
+                <span class="text-secondary font-bold text-xs" th:text="${analytics.tiLeChuyenDoiTrendText}">+0.0%</span>
+            </div>
+            <div>
+                <p class="text-3xl font-serif mb-2" th:text="${analytics.tiLeChuyenDoi}">0%</p>
+                <p class="text-[10px] tracking-widest text-on-surface-variant">TRUNG BÌNH NĂM 2025</p>
+            </div>
+        </div>
+
+        <!-- Active Orders -->
+        <div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
+            <div class="flex justify-between items-start mb-12">
+                <span class="text-[10px] font-bold tracking-widest uppercase">Đơn tháng 12</span>
+                <span class="text-tertiary font-bold text-xs" th:text="${analytics.donHangMoi}">0 ĐƠN</span>
+            </div>
+            <div>
+                <p class="text-3xl font-serif mb-2" th:text="${analytics.tongGiaoDich}">0</p>
+                <p class="text-[10px] tracking-widest text-on-surface-variant">TỔNG GIAO DỊCH 2025</p>
+            </div>
+        </div>
+
+        <!-- Avg Order Value -->
+        <div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
+            <div class="flex justify-between items-start mb-12">
+                <span class="text-[10px] font-bold tracking-widest uppercase">Giá trị đơn hàng</span>
+                <span class="material-symbols-outlined text-primary/20" data-icon="trending_up">trending_up</span>
+            </div>
+            <div>
+                <p class="text-3xl font-serif mb-2" th:text="${analytics.aov}">0 ₫</p>
+                <p class="text-[10px] tracking-widest text-on-surface-variant">GIÁ TRỊ TRUNG BÌNH (AOV)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytical Visualizations -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div class="lg:col-span-2 bg-surface-container-lowest p-10 relative overflow-hidden">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h3 class="text-xl font-serif mb-1">Xu Hướng Doanh Thu</h3>
+                    <p class="text-[10px] tracking-widest text-on-surface-variant uppercase italic">So sánh doanh thu 12 tháng năm 2025 vs 2024</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-primary"></div>
+                        <span class="text-[9px] font-bold tracking-widest uppercase">Năm 2025</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-outline-variant"></div>
+                        <span class="text-[9px] font-bold tracking-widest uppercase">Năm 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-64 w-full relative">
+                <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 200">
+                    <line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="50" y2="50"></line>
+                    <line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="100" y2="100"></line>
+                    <line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="150" y2="150"></line>
+                    <path fill="none" stroke="#c4c7c7" stroke-dasharray="4" stroke-width="2" th:attr="d=${analytics.svgPathThangTruoc}"></path>
+                    <path fill="none" stroke="#1c1c1c" stroke-width="3" th:attr="d=${analytics.svgPathThangNay}"></path>
+                </svg>
+                <!-- 12 Month Labels -->
+                <div class="flex justify-between mt-4">
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T1</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T2</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T3</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T4</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T5</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T6</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T7</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T8</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T9</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T10</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T11</span>
+                    <span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T12</span>
+                </div>
+            </div>
+
+            <div class="absolute top-32 -translate-x-1/2 bg-primary text-white p-3 text-[10px] tracking-widest font-bold"
+                 th:classappend="${analytics.tooltipLeftCss}" th:text="${analytics.tooltipText}">
+                Tháng 12: 0 ₫
+            </div>
+        </div>
+
+        <div class="bg-surface-container-lowest p-10 flex flex-col">
+            <h3 class="text-xl font-serif mb-1">Nguồn Truy Cập</h3>
+            <p class="text-[10px] tracking-widest text-on-surface-variant uppercase mb-12 italic">Tỷ lệ chuyển đổi năm 2025</p>
+            <div class="space-y-8 flex-1">
+                <div class="group">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[11px] font-bold tracking-widest">SOCIAL MEDIA</span>
+                        <span class="text-xs font-serif italic">42%</span>
+                    </div>
+                    <div class="w-full h-[2px] bg-surface-container relative">
+                        <div class="absolute left-0 top-0 h-full bg-secondary w-[42%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
+                    </div>
+                </div>
+                <div class="group">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[11px] font-bold tracking-widest">DIRECT TRAFFIC</span>
+                        <span class="text-xs font-serif italic">31%</span>
+                    </div>
+                    <div class="w-full h-[2px] bg-surface-container relative">
+                        <div class="absolute left-0 top-0 h-full bg-primary w-[31%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
+                    </div>
+                </div>
+                <!-- ... other channels ... -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Layout -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div class="xl:col-span-2 bg-surface-container-lowest p-10">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-serif">Sản phẩm tiêu biểu 2025</h3>
+                <a class="text-[10px] font-bold tracking-widest text-secondary hover:underline underline-offset-8" th:href="@{/admin/products}">XEM TẤT CẢ</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-primary/5">
+                            <th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Sản phẩm</th>
+                            <th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Giá niêm yết</th>
+                            <th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Đã bán</th>
+                            <th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Doanh thu</th>
+                            <th class="pb-4 text-[10px] font-bold tracking-widest uppercase text-right">Hiệu suất</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-primary/5">
+                        <tr th:each="p : ${analytics.topProducts}">
+                            <td class="py-6 flex items-center gap-4">
+                                <div class="w-12 h-16 bg-surface-container-high shrink-0 overflow-hidden">
+                                    <img class="w-full h-full object-cover" th:src="${p.imageUrl}" alt="product"/>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-bold tracking-widest" th:text="${p.tenSanPham}">SẢN PHẨM</p>
+                                    <p class="text-[9px] text-on-surface-variant uppercase mt-1" th:text="${p.danhMuc}">Collections</p>
+                                </div>
+                            </td>
+                            <td class="py-6 text-xs font-medium" th:text="${p.giaNiemYet}">0 ₫</td>
+                            <td class="py-6 text-xs" th:text="${p.daBan}">0</td>
+                            <td class="py-6 text-xs font-serif" th:text="${p.doanhThu}">0 ₫</td>
+                            <td class="py-6 text-right">
+                                <span class="inline-block px-2 py-1 text-[9px] font-black tracking-widest" th:classappend="${p.hieuSuatCss}" th:text="${p.hieuSuatLabel}">HIỆU SUẤT</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-primary text-white p-10 flex flex-col justify-between">
+            <div>
+                <span class="inline-block bg-secondary px-3 py-1 text-[9px] font-bold tracking-[0.3em] mb-8">INSIGHT NĂM 2025</span>
+                <h3 class="text-3xl font-serif leading-tight mb-6">Sản phẩm cao cấp đang dẫn đầu doanh thu năm 2025.</h3>
+                <p class="text-xs font-light leading-relaxed opacity-70 mb-8">
+                    Dữ liệu cả năm cho thấy khách hàng đang có xu hướng quay lại với các thiết kế tối giản, chất lượng cao nhất trong các quý 2 và quý 4 năm 2025.
+                </p>
+            </div>
+            <div class="border-t border-white/20 pt-8 mt-auto">
+                <p class="text-[10px] tracking-widest font-bold mb-4 uppercase">Chiến lược đề xuất:</p>
+                <button class="w-full py-4 border border-white text-[10px] font-bold tracking-widest hover:bg-white hover:text-primary transition-all">
+                    TỐI ƯU HÓA CHIẾN DỊCH 2026
                 </button>
-</div>
-</header>
-<!-- Metrics Bento Grid -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-<!-- Revenue Card -->
-<div class="bg-surface-container-lowest p-8 flex flex-col justify-between group hover:bg-primary hover:text-white transition-all duration-500">
-<div class="flex justify-between items-start mb-12">
-<span class="text-[10px] font-bold tracking-widest uppercase">Tổng doanh thu</span>
-<span class="font-bold text-xs" th:classappend="${analytics.tongDoanhThuTrendCss}" th:text="${analytics.tongDoanhThuTrendText}">+0.0%</span>
-</div>
-<div>
-<p class="text-3xl font-serif mb-2" th:text="${analytics.tongDoanhThu}">0 ₫</p>
-<p class="text-[10px] tracking-widest opacity-60">DOANH THU THÁNG HIỆN TẠI</p>
-</div>
-</div>
-<!-- Conversion Rate -->
-<div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
-<div class="flex justify-between items-start mb-12">
-<span class="text-[10px] font-bold tracking-widest uppercase">Tỷ lệ chuyển đổi</span>
-<span class="text-secondary font-bold text-xs" th:text="${analytics.tiLeChuyenDoiTrendText}">+0.0%</span>
-</div>
-<div>
-<p class="text-3xl font-serif mb-2" th:text="${analytics.tiLeChuyenDoi}">0%</p>
-<p class="text-[10px] tracking-widest text-on-surface-variant">TRUNG BÌNH HỆ THỐNG</p>
-</div>
-</div>
-<!-- Active Orders -->
-<div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
-<div class="flex justify-between items-start mb-12">
-<span class="text-[10px] font-bold tracking-widest uppercase">Đơn hàng mới</span>
-<span class="text-tertiary font-bold text-xs" th:text="${analytics.donHangMoi}">0 ĐƠN</span>
-</div>
-<div>
-<p class="text-3xl font-serif mb-2" th:text="${analytics.tongGiaoDich}">0</p>
-<p class="text-[10px] tracking-widest text-on-surface-variant">TỔNG GIAO DỊCH THÁNG</p>
-</div>
-</div>
-<!-- Avg Order Value -->
-<div class="bg-surface-container-lowest p-8 flex flex-col justify-between border-l border-primary/5">
-<div class="flex justify-between items-start mb-12">
-<span class="text-[10px] font-bold tracking-widest uppercase">Giá trị đơn hàng</span>
-<span class="material-symbols-outlined text-primary/20" data-icon="trending_up">trending_up</span>
-</div>
-<div>
-<p class="text-3xl font-serif mb-2" th:text="${analytics.aov}">0 ₫</p>
-<p class="text-[10px] tracking-widest text-on-surface-variant">GIÁ TRỊ TRUNG BÌNH (AOV)</p>
-</div>
-</div>
-</div>
-<!-- Analytical Visualizations -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-<!-- Revenue Main Chart Area -->
-<div class="lg:col-span-2 bg-surface-container-lowest p-10 relative overflow-hidden">
-<div class="flex justify-between items-end mb-12">
-<div>
-<h3 class="text-xl font-serif mb-1">Xu Hướng Doanh Thu</h3>
-<p class="text-[10px] tracking-widest text-on-surface-variant uppercase italic">So sánh dữ liệu đa chiều tuần qua</p>
-</div>
-<div class="flex gap-4">
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 bg-primary"></div>
-<span class="text-[9px] font-bold tracking-widest uppercase">Tháng này</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 bg-outline-variant"></div>
-<span class="text-[9px] font-bold tracking-widest uppercase">Tháng trước</span>
-</div>
-</div>
-</div>
-<!-- Simulated Line Chart with SVG -->
-<div class="h-64 w-full relative">
-<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 200">
-<!-- Grid Lines -->
-<line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="50" y2="50"></line>
-<line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="100" y2="100"></line>
-<line stroke="#f0eded" stroke-width="1" x1="0" x2="1000" y1="150" y2="150"></line>
-<!-- Previous Month Curve (Grey) -->
-<path fill="none" stroke="#c4c7c7" stroke-dasharray="4" stroke-width="2" th:attr="d=${analytics.svgPathThangTruoc}"></path>
-<!-- Current Month Curve (Black) -->
-<path fill="none" stroke="#1c1c1c" stroke-width="3" th:attr="d=${analytics.svgPathThangNay}"></path>
-</svg>
-<!-- Chart Labels -->
-<div class="flex justify-between mt-4">
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T2</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T3</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T4</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T5</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T6</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">T7</span>
-<span class="text-[9px] font-bold tracking-tighter text-on-surface-variant">CN</span>
-</div>
-</div>
-<!-- Hover Data Tooltip (Mockup) -->
-<div class="absolute top-32 -translate-x-1/2 bg-primary text-white p-3 text-[10px] tracking-widest font-bold"
-     th:classappend="${analytics.tooltipLeftCss}"
-     th:text="${analytics.tooltipText}">
-T6: 0 ₫
-</div>
-</div>
-<!-- Conversion Distribution -->
-<div class="bg-surface-container-lowest p-10 flex flex-col">
-<h3 class="text-xl font-serif mb-1">Nguồn Truy Cập</h3>
-<p class="text-[10px] tracking-widest text-on-surface-variant uppercase mb-12 italic">Tỷ lệ chuyển đổi theo kênh</p>
-<div class="space-y-8 flex-1">
-<div class="group">
-<div class="flex justify-between items-end mb-2">
-<span class="text-[11px] font-bold tracking-widest">SOCIAL MEDIA</span>
-<span class="text-xs font-serif italic">42%</span>
-</div>
-<div class="w-full h-[2px] bg-surface-container relative">
-<div class="absolute left-0 top-0 h-full bg-secondary w-[42%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
-</div>
-</div>
-<div class="group">
-<div class="flex justify-between items-end mb-2">
-<span class="text-[11px] font-bold tracking-widest">DIRECT TRAFFIC</span>
-<span class="text-xs font-serif italic">31%</span>
-</div>
-<div class="w-full h-[2px] bg-surface-container relative">
-<div class="absolute left-0 top-0 h-full bg-primary w-[31%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
-</div>
-</div>
-<div class="group">
-<div class="flex justify-between items-end mb-2">
-<span class="text-[11px] font-bold tracking-widest">SEARCH ENGINE</span>
-<span class="text-xs font-serif italic">18%</span>
-</div>
-<div class="w-full h-[2px] bg-surface-container relative">
-<div class="absolute left-0 top-0 h-full bg-tertiary w-[18%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
-</div>
-</div>
-<div class="group">
-<div class="flex justify-between items-end mb-2">
-<span class="text-[11px] font-bold tracking-widest">EMAIL MARKETING</span>
-<span class="text-xs font-serif italic">9%</span>
-</div>
-<div class="w-full h-[2px] bg-surface-container relative">
-<div class="absolute left-0 top-0 h-full bg-outline w-[9%] group-hover:h-2 transition-all duration-300 -top-[0.5px] group-hover:-top-1"></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Bottom Layout: Performance Table & Featured Product -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-<!-- Top Products Table -->
-<div class="xl:col-span-2 bg-surface-container-lowest p-10">
-<div class="flex justify-between items-center mb-8">
-<h3 class="text-xl font-serif">Sản phẩm tiêu biểu</h3>
-<a class="text-[10px] font-bold tracking-widest text-secondary hover:underline underline-offset-8" th:href="@{/admin/products}">XEM TẤT CẢ</a>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead>
-<tr class="border-b border-primary/5">
-<th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Sản phẩm</th>
-<th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Giá niêm yết</th>
-<th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Đã bán</th>
-<th class="pb-4 text-[10px] font-bold tracking-widest uppercase">Doanh thu</th>
-<th class="pb-4 text-[10px] font-bold tracking-widest uppercase text-right">Hiệu suất</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-primary/5">
-<tr th:if="${#lists.isEmpty(analytics.topProducts)}">
-<td class="py-10 text-sm text-on-surface-variant" colspan="5">
-Chưa có dữ liệu bán hàng trong kỳ báo cáo này.
-</td>
-</tr>
-<tr th:each="p : ${analytics.topProducts}">
-<td class="py-6 flex items-center gap-4">
-<div class="w-12 h-16 bg-surface-container-high shrink-0 overflow-hidden">
-<img class="w-full h-full object-cover" th:src="${p.imageUrl}" alt="product"/>
-</div>
-<div>
-<p class="text-[11px] font-bold tracking-widest" th:text="${p.tenSanPham}">SẢN PHẨM</p>
-<p class="text-[9px] text-on-surface-variant uppercase mt-1" th:text="${p.danhMuc}">Collections</p>
-</div>
-</td>
-<td class="py-6 text-xs font-medium" th:text="${p.giaNiemYet}">0 ₫</td>
-<td class="py-6 text-xs" th:text="${p.daBan}">0</td>
-<td class="py-6 text-xs font-serif" th:text="${p.doanhThu}">0 ₫</td>
-<td class="py-6 text-right">
-<span class="inline-block px-2 py-1 text-[9px] font-black tracking-widest" th:classappend="${p.hieuSuatCss}" th:text="${p.hieuSuatLabel}">HIỆU SUẤT</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<!-- Side Card: Product Insight -->
-<div class="bg-primary text-white p-10 flex flex-col justify-between">
-<div>
-<span class="inline-block bg-secondary px-3 py-1 text-[9px] font-bold tracking-[0.3em] mb-8">INSIGHT THÁNG</span>
-<h3 class="text-3xl font-serif leading-tight mb-6">Sản phẩm cao cấp đang dẫn đầu doanh thu tuần qua.</h3>
-<p class="text-xs font-light leading-relaxed opacity-70 mb-8">
-                        Dữ liệu cho thấy khách hàng đang có xu hướng quay lại với các thiết kế tối giản, chất lượng cao hơn là các sản phẩm theo trend ngắn hạn.
-                    </p>
-</div>
-<div class="border-t border-white/20 pt-8 mt-auto">
-<p class="text-[10px] tracking-widest font-bold mb-4 uppercase">Đề xuất hành động:</p>
-<button class="w-full py-4 border border-white text-[10px] font-bold tracking-widest hover:bg-white hover:text-primary transition-all">
-                        TĂNG NGÂN SÁCH QUẢNG CÁO
-                    </button>
-</div>
-</div>
-</div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

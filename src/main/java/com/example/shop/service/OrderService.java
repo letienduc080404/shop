@@ -59,7 +59,7 @@ public class OrderService {
     public BigDecimal getRevenueForMonth(YearMonth month) {
         LocalDateTime from = month.atDay(1).atStartOfDay();
         LocalDateTime to = month.plusMonths(1).atDay(1).atStartOfDay();
-        return orderRepository.sumTongTienByNgayDatBetweenAndTrangThai(from, to, TrangThaiDonHang.HoanThanh);
+        return orderRepository.sumTongTienByNgayDatBetweenAndTrangThaiDonHangNot(from, to, TrangThaiDonHang.DaHuy);
     }
 
     @Transactional

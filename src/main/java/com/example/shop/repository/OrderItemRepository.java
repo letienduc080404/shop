@@ -44,6 +44,27 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     );
 
     @Query("""
+        select
+            p.idSanPham as productId,
+            coalesce(sum(oi.soLuong), 0) as daBan,
+            coalesce(sum(oi.giaBan * oi.soLuong), 0) as doanhThu
+        from OrderItem oi
+        join oi.order o
+        join oi.productVariant pv
+        join pv.product p
+        where o.ngayDat >= :from and o.ngayDat < :to
+          and o.trangThaiDonHang <> :excludedStatus
+        group by p.idSanPham
+        order by doanhThu desc
+    """)
+    List<ProductSalesAggView> topProductsByRevenueDonHangNot(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("excludedStatus") TrangThaiDonHang excludedStatus,
+            Pageable pageable
+    );
+
+    @Query("""
         select coalesce(sum((oi.giaBan - coalesce(pv.giaVon, 0)) * oi.soLuong), 0)
         from OrderItem oi
         join oi.order o
@@ -55,5 +76,19 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to,
             @Param("status") TrangThaiDonHang status
+    );
+
+    @Query("""
+        select coalesce(sum((oi.giaBan - coalesce(pv.giaVon, 0)) * oi.soLuong), 0)
+        from OrderItem oi
+        join oi.order o
+        join oi.productVariant pv
+        where o.ngayDat >= :from and o.ngayDat < :to
+          and o.trangThaiDonHang <> :excludedStatus
+    """)
+    BigDecimal sumLoiNhuanByNgayDatBetweenAndTrangThaiDonHangNot(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("excludedStatus") TrangThaiDonHang excludedStatus
     );
 }
