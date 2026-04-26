@@ -102,7 +102,7 @@ git push origin main
   - **Lịch sử đơn hàng**
 - Có thể:
   - ❌ Hủy đơn nếu trạng thái: `Chờ xử lý`
-  - ✅ Xác nhận đã nhận hàng nếu trạng thái: `Đang giao` → chuyển sang `Hoàn thành`
+  - ✅ Xác nhận đã nhận hàng nếu trạng thái: `Đang giao` → sau đó đơn hàng sẽ chuyển sang trạng thái: `Hoàn thành`
 
 ### 2. Thông tin cá nhân
 - Người dùng có thể chỉnh sửa thông tin:
@@ -129,8 +129,7 @@ git push origin main
 ### 🆕 NEW ARRIVE
 - Hiển thị sản phẩm mới:
   - Có tag **"New"** trên ảnh.
-  - Giới hạn: **8 sản phẩm mới nhất**
-- ⚠️ Không thay đổi database để tránh lỗi đồng bộ.
+  - Giới hạn: 8 sản phẩm mới nhất sẽ được thêm vào NEW ARRIVE và có tag NEW do không muốn thay đổi database để tránh lỗi đồng bộ.
 
 ### 🗂️ COLLECTION
 - Hiển thị bộ sưu tập.
