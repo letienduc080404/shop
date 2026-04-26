@@ -1,221 +1,281 @@
 <!DOCTYPE html>
-<html th:replace="~{admin/layout :: layout('Thêm Sản Phẩm Mới', ~{::content}, 'inventory')}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{admin/layout :: layout('Thêm Sản Phẩm Mới', ~{::content}, 'inventory')}"
+    xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<div th:fragment="content">
-    <style>
-        /* Ẩn mũi tên input number */
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
-        
-        .editorial-table select, .editorial-table input {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding: 8px 4px;
-            transition: all 0.3s;
-        }
-        .editorial-table select:focus, .editorial-table input:focus {
-            border-bottom: 1px solid #1c1c1c;
-            outline: none;
-        }
-        .variant-row:hover { background-color: rgba(0,0,0,0.02); }
-    </style>
-
-    <header class="flex justify-between items-center px-12 py-10 bg-surface border-b border-outline-variant/10">
-        <div>
-            <h2 class="text-5xl font-black tracking-tighter uppercase font-serif text-primary italic">THÊM SẢN PHẨM</h2>
-            <p class="text-[10px] font-bold tracking-[0.4em] text-on-surface-variant uppercase mt-3 opacity-60">Aura Shop Digital Inventory System • v1.0</p>
-        </div>
-        <a href="/admin/products" class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant hover:text-primary transition-all flex items-center gap-3 group">
-            <span class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span> QUAY LẠI DANH SÁCH
-        </a>
-    </header>
-
-    <main class="px-12 py-16">
-        <form id="addProductForm" th:action="@{/admin/product/add}" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-20">
-            
-            <!-- LEFT: CORE DETAILS -->
-            <div class="lg:col-span-6 space-y-16">
-                <section>
-                    <div class="flex items-center gap-4 mb-10">
-                        <span class="text-2xl font-serif italic text-primary">01</span>
-                        <h3 class="text-[11px] font-bold tracking-[0.4em] text-primary uppercase">Thông tin cơ bản</h3>
-                        <div class="flex-1 h-[1px] bg-outline-variant/20"></div>
-                    </div>
-
-                    <div class="space-y-10">
-                        <div class="group">
-                            <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Tên sản phẩm thiết kế</label>
-                            <input type="text" name="tenSanPham" required class="w-full text-xl font-serif border-b border-outline-variant/30 py-4 focus:border-primary outline-none transition-all placeholder:opacity-30" placeholder="VÍ DỤ: ÁO BLAZER LINEN">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-12">
-                            <div>
-                                <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Phân nhóm</label>
-                                <select name="idDanhMuc" required class="w-full text-xs font-bold border-b border-outline-variant/30 py-4 outline-none appearance-none cursor-pointer">
-                                    <option th:each="cat : ${categories}" th:value="${cat.idDanhMuc}" th:text="${cat.tenDanhMuc}">CATEGORY</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Giá bán niêm yết (VND)</label>
-                                <input type="number" name="giaNiemYet" required class="w-full text-xs font-bold border-b border-outline-variant/30 py-4 outline-none font-serif" placeholder="0">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-5">Media & Editorial Photos</label>
-                            <div class="relative border border-dashed border-outline-variant/50 hover:border-primary transition-all p-16 text-center bg-surface-container-lowest cursor-pointer group" onclick="document.getElementById('fileInput').click()">
-                                <input type="file" id="fileInput" name="files" multiple required class="hidden" onchange="previewImages(this)">
-                                <span class="material-symbols-outlined text-4xl text-outline-variant group-hover:scale-110 transition-transform">photo_library</span>
-                                <p class="text-[9px] font-bold tracking-[0.3em] uppercase mt-5">Tải lên hình ảnh sản phẩm</p>
-                            </div>
-                            <div id="imagePreview" class="mt-8 grid grid-cols-3 gap-6"></div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Mô tả sản phẩm</label>
-                            <textarea name="moTa" rows="6" required class="w-full bg-surface-container-low border-none p-6 text-xs leading-relaxed outline-none focus:ring-1 ring-primary/10 transition-all"></textarea>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- RIGHT: EDITORIAL VARIANTS -->
-            <div class="lg:col-span-6">
-                <section class="sticky top-12">
-                    <div class="flex items-center gap-4 mb-10">
-                        <span class="text-2xl font-serif italic text-primary">02</span>
-                        <h3 class="text-[11px] font-bold tracking-[0.4em] text-primary uppercase">Biến thể & Editorial</h3>
-                        <div class="flex-1 h-[1px] bg-outline-variant/20"></div>
-                    </div>
-
-                    <div class="space-y-12">
-                        <!-- SIZE SELECTOR -->
-                        <div>
-                            <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-6">Chọn các kích cỡ hỗ trợ</label>
-                            <div class="flex flex-wrap gap-3">
-                                <label th:each="size : ${kichThuocs}" class="relative cursor-pointer group">
-                                    <input type="checkbox" name="sizeCheck" th:value="${size}" class="peer sr-only" onchange="refreshVariantTable()">
-                                    <div class="px-6 py-3 border border-outline-variant/30 text-[10px] font-black tracking-widest uppercase transition-all duration-300 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary group-hover:border-primary">
-                                        [[${size}]]
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- COLOR INPUT -->
-                        <div>
-                            <label class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Bảng màu sắc (Cách nhau bằng dấu phẩy)</label>
-                            <input type="text" id="colorInput" oninput="refreshVariantTable()" class="w-full text-xs font-bold border-b-2 border-outline-variant py-4 outline-none placeholder:opacity-20" placeholder="VD: TRẮNG, ĐEN, RÊU">
-                        </div>
-
-                        <!-- VARIANTS TABLE -->
-                        <div class="editorial-table bg-white border border-outline-variant/10 shadow-2xl overflow-hidden mt-10">
-                            <div class="grid grid-cols-12 gap-4 px-6 py-4 bg-primary text-white text-[8px] font-black tracking-[0.3em] uppercase">
-                                <div class="col-span-2">SIZE</div>
-                                <div class="col-span-3">MÀU SẮC</div>
-                                <div class="col-span-3">KHO HÀNG</div>
-                                <div class="col-span-4">GIÁ VỐN (VND)</div>
-                            </div>
-                            
-                            <div id="tableContent" class="divide-y divide-outline-variant/5 min-h-[100px]">
-                                <!-- Rows will be injected here -->
-                            </div>
-
-                            <button type="button" onclick="addNewManualRow()" class="w-full py-5 text-[9px] font-black tracking-[0.4em] text-on-surface-variant hover:text-primary uppercase border-t border-outline-variant/10 transition-all bg-surface-container-low hover:bg-white">
-                                + THÊM BIẾN THỂ THỦ CÔNG
-                             </button>
-                        </div>
-                    </div>
-
-                    <div class="mt-20">
-                        <button type="submit" class="w-full bg-primary text-white py-8 text-xs font-black tracking-[0.5em] uppercase hover:bg-secondary transition-all shadow-2xl hover:-translate-y-1 duration-500">
-                            XÁC NHẬN KHỞI TẠO SẢN PHẨM
-                        </button>
-                        <p class="text-[8px] text-center text-on-surface-variant tracking-[0.3em] mt-8 uppercase opacity-40">Dữ liệu sẽ được đồng bộ trực tiếp với hệ thống quản lý Aura Shop</p>
-                    </div>
-                </section>
-            </div>
-        </form>
-    </main>
-
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var availableSizes = /*[[${kichThuocs}]]*/ [];
-
-        function getRowHtml(size, color, stock, cost) {
-            var options = "";
-            for (var i = 0; i < availableSizes.length; i++) {
-                var s = availableSizes[i];
-                options += '<option value="' + s + '" ' + (s === size ? 'selected' : '') + '>' + s + '</option>';
+    <div th:fragment="content">
+        <style>
+            /* Ẩn mũi tên input number */
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
             }
 
-            return '<div class="variant-row grid grid-cols-12 gap-4 px-6 py-6 items-center transition-all">' +
-                '<div class="col-span-2"><select name="variantSizes" class="w-full text-[11px] font-black">' + options + '</select></div>' +
-                '<div class="col-span-3"><input type="text" name="variantColors" value="' + color + '" class="w-full text-[11px] font-bold uppercase" placeholder="TÊN MÀU"></div>' +
-                '<div class="col-span-3"><input type="number" name="variantStocks" value="' + stock + '" class="w-full text-[11px] font-black text-secondary" placeholder="0"></div>' +
-                '<div class="col-span-3"><input type="number" name="variantCosts" value="' + cost + '" class="w-full text-[11px] font-black font-serif" placeholder="0"></div>' +
-                '<div class="col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-outline-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined text-sm">close</span></button></div>' +
-                '</div>';
-        }
+            input[type=number] {
+                -moz-appearance: textfield;
+                appearance: textfield;
+            }
 
-        function refreshVariantTable() {
-            var checkboxes = document.getElementsByName('sizeCheck');
-            var selected = [];
-            for (var i = 0; i < checkboxes.length; i++) if (checkboxes[i].checked) selected.push(checkboxes[i].value);
+            .editorial-table select,
+            .editorial-table input {
+                background: transparent;
+                border: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                padding: 8px 4px;
+                transition: all 0.3s;
+            }
 
-            var colors = document.getElementById('colorInput').value.split(',').map(function(c){ return c.trim(); }).filter(function(c){ return c !== ""; });
+            .editorial-table select:focus,
+            .editorial-table input:focus {
+                border-bottom: 1px solid #1c1c1c;
+                outline: none;
+            }
 
-            if (selected.length > 0 && colors.length > 0) {
-                var container = document.getElementById('tableContent');
-                var oldData = {};
-                var rows = container.querySelectorAll('.variant-row');
-                for (var j = 0; j < rows.length; j++) {
-                    var s = rows[j].querySelector('[name="variantSizes"]').value;
-                    var c = rows[j].querySelector('[name="variantColors"]').value;
-                    var st = rows[j].querySelector('[name="variantStocks"]').value;
-                    var co = rows[j].querySelector('[name="variantCosts"]').value;
-                    oldData[s + "-" + c] = { stock: st, cost: co };
+            .variant-row:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+        </style>
+
+        <header class="flex justify-between items-center px-12 py-10 bg-surface border-b border-outline-variant/10">
+            <div>
+                <h2 class="text-5xl font-black tracking-tighter uppercase font-serif text-primary italic">THÊM SẢN PHẨM
+                </h2>
+                <p class="text-[10px] font-bold tracking-[0.4em] text-on-surface-variant uppercase mt-3 opacity-60">Aura
+                    Shop Digital Inventory System • v1.0</p>
+            </div>
+            <a href="/admin/products"
+                class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant hover:text-primary transition-all flex items-center gap-3 group">
+                <span
+                    class="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                QUAY LẠI DANH SÁCH
+            </a>
+        </header>
+
+        <main class="px-12 py-16">
+            <form id="addProductForm" th:action="@{/admin/product/add}" method="post" enctype="multipart/form-data"
+                class="grid grid-cols-1 lg:grid-cols-12 gap-20">
+
+                <!-- LEFT: CORE DETAILS -->
+                <div class="lg:col-span-6 space-y-16">
+                    <section>
+                        <div class="flex items-center gap-4 mb-10">
+                            <span class="text-2xl font-serif italic text-primary">01</span>
+                            <h3 class="text-[11px] font-bold tracking-[0.4em] text-primary uppercase">Thông tin cơ bản
+                            </h3>
+                            <div class="flex-1 h-[1px] bg-outline-variant/20"></div>
+                        </div>
+
+                        <div class="space-y-10">
+                            <div class="group">
+                                <label
+                                    class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Tên
+                                    sản phẩm thiết kế</label>
+                                <input type="text" name="tenSanPham" required
+                                    class="w-full text-xl font-serif border-b border-outline-variant/30 py-4 focus:border-primary outline-none transition-all placeholder:opacity-30"
+                                    placeholder="VÍ DỤ: ÁO BLAZER LINEN">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-12">
+                                <div>
+                                    <label
+                                        class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Phân
+                                        nhóm</label>
+                                    <select name="idDanhMuc" required
+                                        class="w-full text-xs font-bold border-b border-outline-variant/30 py-4 outline-none appearance-none cursor-pointer">
+                                        <option th:each="cat : ${categories}" th:value="${cat.idDanhMuc}"
+                                            th:text="${cat.tenDanhMuc}">CATEGORY</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Giá
+                                        bán niêm yết (VND)</label>
+                                    <input type="number" name="giaNiemYet" required
+                                        class="w-full text-xs font-bold border-b border-outline-variant/30 py-4 outline-none font-serif"
+                                        placeholder="0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-5">Media
+                                    & Editorial Photos</label>
+                                <div class="relative border border-dashed border-outline-variant/50 hover:border-primary transition-all p-16 text-center bg-surface-container-lowest cursor-pointer group"
+                                    onclick="document.getElementById('fileInput').click()">
+                                    <input type="file" id="fileInput" name="files" multiple required class="hidden"
+                                        onchange="previewImages(this)">
+                                    <span
+                                        class="material-symbols-outlined text-4xl text-outline-variant group-hover:scale-110 transition-transform">photo_library</span>
+                                    <p class="text-[9px] font-bold tracking-[0.3em] uppercase mt-5">Tải lên hình ảnh sản
+                                        phẩm</p>
+                                </div>
+                                <div id="imagePreview" class="mt-8 grid grid-cols-3 gap-6"></div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Mô
+                                    tả sản phẩm</label>
+                                <textarea name="moTa" rows="6" required
+                                    class="w-full bg-surface-container-low border-none p-6 text-xs leading-relaxed outline-none focus:ring-1 ring-primary/10 transition-all"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- RIGHT: EDITORIAL VARIANTS -->
+                <div class="lg:col-span-6">
+                    <section class="sticky top-12">
+                        <div class="flex items-center gap-4 mb-10">
+                            <span class="text-2xl font-serif italic text-primary">02</span>
+                            <h3 class="text-[11px] font-bold tracking-[0.4em] text-primary uppercase">Biến thể &
+                                Editorial</h3>
+                            <div class="flex-1 h-[1px] bg-outline-variant/20"></div>
+                        </div>
+
+                        <div class="space-y-12">
+                            <!-- SIZE SELECTOR -->
+                            <div>
+                                <label
+                                    class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-6">Chọn
+                                    các kích cỡ hỗ trợ</label>
+                                <div class="flex flex-wrap gap-3">
+                                    <label th:each="size : ${kichThuocs}" class="relative cursor-pointer group">
+                                        <input type="checkbox" name="sizeCheck" th:value="${size}" class="peer sr-only"
+                                            onchange="refreshVariantTable()">
+                                        <div
+                                            class="px-6 py-3 border border-outline-variant/30 text-[10px] font-black tracking-widest uppercase transition-all duration-300 peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary group-hover:border-primary">
+                                            [[${size}]]
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- COLOR INPUT -->
+                            <div>
+                                <label
+                                    class="block text-[9px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-3">Bảng
+                                    màu sắc (Cách nhau bằng dấu phẩy)</label>
+                                <input type="text" id="colorInput" oninput="refreshVariantTable()"
+                                    class="w-full text-xs font-bold border-b-2 border-outline-variant py-4 outline-none placeholder:opacity-20"
+                                    placeholder="VD: TRẮNG, ĐEN, RÊU">
+                            </div>
+
+                            <!-- VARIANTS TABLE -->
+                            <div
+                                class="editorial-table bg-white border border-outline-variant/10 shadow-2xl overflow-hidden mt-10">
+                                <div
+                                    class="grid grid-cols-12 gap-4 px-6 py-4 bg-primary text-white text-[8px] font-black tracking-[0.3em] uppercase">
+                                    <div class="col-span-2">SIZE</div>
+                                    <div class="col-span-3">MÀU SẮC</div>
+                                    <div class="col-span-3">KHO HÀNG</div>
+                                    <div class="col-span-4">GIÁ VỐN (VND)</div>
+                                </div>
+
+                                <div id="tableContent" class="divide-y divide-outline-variant/5 min-h-[100px]">
+                                    <!-- Rows will be injected here -->
+                                </div>
+
+                                <button type="button" onclick="addNewManualRow()"
+                                    class="w-full py-5 text-[9px] font-black tracking-[0.4em] text-on-surface-variant hover:text-primary uppercase border-t border-outline-variant/10 transition-all bg-surface-container-low hover:bg-white">
+                                    + THÊM BIẾN THỂ THỦ CÔNG
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-20">
+                            <button type="submit"
+                                class="w-full bg-primary text-white py-8 text-xs font-black tracking-[0.5em] uppercase hover:bg-secondary transition-all shadow-2xl hover:-translate-y-1 duration-500">
+                                XÁC NHẬN KHỞI TẠO SẢN PHẨM
+                            </button>
+                            <p
+                                class="text-[8px] text-center text-on-surface-variant tracking-[0.3em] mt-8 uppercase opacity-40">
+                                Dữ liệu sẽ được đồng bộ trực tiếp với hệ thống quản lý Aura Shop</p>
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </main>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var availableSizes = /*[[${kichThuocs}]]*/[];
+
+            function getRowHtml(size, color, stock, cost) {
+                var options = "";
+                for (var i = 0; i < availableSizes.length; i++) {
+                    var s = availableSizes[i];
+                    options += '<option value="' + s + '" ' + (s === size ? 'selected' : '') + '>' + s + '</option>';
                 }
 
-                container.innerHTML = "";
-                for (var k = 0; k < colors.length; k++) {
-                    for (var l = 0; l < selected.length; l++) {
-                        var key = selected[l] + "-" + colors[k];
-                        var data = oldData[key] || { stock: 0, cost: 100000 };
-                        container.insertAdjacentHTML('beforeend', getRowHtml(selected[l], colors[k], data.stock, data.cost));
+                return '<div class="variant-row grid grid-cols-12 gap-4 px-6 py-6 items-center transition-all">' +
+                    '<div class="col-span-2"><select name="variantSizes" class="w-full text-[11px] font-black">' + options + '</select></div>' +
+                    '<div class="col-span-3"><input type="text" name="variantColors" value="' + color + '" class="w-full text-[11px] font-bold uppercase" placeholder="TÊN MÀU"></div>' +
+                    '<div class="col-span-3"><input type="number" name="variantStocks" value="' + stock + '" class="w-full text-[11px] font-black text-secondary" placeholder="0"></div>' +
+                    '<div class="col-span-3"><input type="number" name="variantCosts" value="' + cost + '" class="w-full text-[11px] font-black font-serif" placeholder="0"></div>' +
+                    '<div class="col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-outline-variant hover:text-secondary transition-colors"><span class="material-symbols-outlined text-sm">close</span></button></div>' +
+                    '</div>';
+            }
+
+            function refreshVariantTable() {
+                var checkboxes = document.getElementsByName('sizeCheck');
+                var selected = [];
+                for (var i = 0; i < checkboxes.length; i++) if (checkboxes[i].checked) selected.push(checkboxes[i].value);
+
+                var colors = document.getElementById('colorInput').value.split(',').map(function (c) { return c.trim(); }).filter(function (c) { return c !== ""; });
+
+                if (selected.length > 0 && colors.length > 0) {
+                    var container = document.getElementById('tableContent');
+                    var oldData = {};
+                    var rows = container.querySelectorAll('.variant-row');
+                    for (var j = 0; j < rows.length; j++) {
+                        var s = rows[j].querySelector('[name="variantSizes"]').value;
+                        var c = rows[j].querySelector('[name="variantColors"]').value;
+                        var st = rows[j].querySelector('[name="variantStocks"]').value;
+                        var co = rows[j].querySelector('[name="variantCosts"]').value;
+                        oldData[s + "-" + c] = { stock: st, cost: co };
+                    }
+
+                    container.innerHTML = "";
+                    for (var k = 0; k < colors.length; k++) {
+                        for (var l = 0; l < selected.length; l++) {
+                            var key = selected[l] + "-" + colors[k];
+                            var data = oldData[key] || { stock: 0, cost: 100000 };
+                            container.insertAdjacentHTML('beforeend', getRowHtml(selected[l], colors[k], data.stock, data.cost));
+                        }
                     }
                 }
             }
-        }
 
-        function addNewManualRow() {
-            var container = document.getElementById('tableContent');
-            container.insertAdjacentHTML('beforeend', getRowHtml(availableSizes[0] || 'M', '', 0, 100000));
-        }
+            function addNewManualRow() {
+                var container = document.getElementById('tableContent');
+                container.insertAdjacentHTML('beforeend', getRowHtml(availableSizes[0] || 'M', '', 0, 100000));
+            }
 
-        window.onload = function() { addNewManualRow(); };
+            window.onload = function () { addNewManualRow(); };
 
-        function previewImages(input) {
-            var container = document.getElementById('imagePreview');
-            container.innerHTML = '';
-            if (input.files) {
-                for (var i = 0; i < input.files.length; i++) {
-                    var reader = new FileReader();
-                    reader.onload = (function(f) {
-                        return function(e) {
-                            var img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.className = 'w-full aspect-[3/4] object-cover shadow-2xl';
-                            container.appendChild(img);
-                        };
-                    })(input.files[i]);
-                    reader.readAsDataURL(input.files[i]);
+            function previewImages(input) {
+                var container = document.getElementById('imagePreview');
+                container.innerHTML = '';
+                if (input.files) {
+                    for (var i = 0; i < input.files.length; i++) {
+                        var reader = new FileReader();
+                        reader.onload = (function (f) {
+                            return function (e) {
+                                var img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.className = 'w-full aspect-[3/4] object-cover shadow-2xl';
+                                container.appendChild(img);
+                            };
+                        })(input.files[i]);
+                        reader.readAsDataURL(input.files[i]);
+                    }
                 }
             }
-        }
-        /*]]*/
-    </script>
-</div>
+            /*]]*/
+        </script>
+    </div>
 </body>
+
 </html>

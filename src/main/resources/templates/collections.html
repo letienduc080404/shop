@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('BỘ SƯU TẬP')}"></head>
+
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+        <header class="mb-16 md:mb-24">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none mb-8 uppercase">KHÁM PHÁ<br />BỘ SƯU TẬP
+            </h1>
+            <p class="text-xs tracking-[0.3em] text-outline uppercase max-w-md leading-relaxed">
+                Những thiết kế được tuyển chọn kỹ lưỡng, mang đậm phong cách và tinh thần của DOMINO.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div th:each="col : ${collections}"
+                class="group relative overflow-hidden bg-surface-container-low aspect-[4/5] md:aspect-[16/9]">
+                <img th:src="${col.imageUrl != null && !col.imageUrl.isEmpty() ? 'https://lh3.googleusercontent.com/d/' + col.imageUrl : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200'}"
+                    class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                    th:alt="${col.name}">
+                <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-500"></div>
+                <div class="absolute bottom-12 left-12 right-12 text-white">
+                    <h2 class="text-3xl md:text-4xl font-black uppercase tracking-tight mb-4" th:text="${col.name}">
+                        BỘ SƯU TẬP</h2>
+                    <p class="text-xs tracking-widest uppercase opacity-80 mb-8" th:text="${col.description}">Khám phá các thiết kế mới nhất trong
+                        bộ sưu tập này.</p>
+                    <a th:href="@{/collections/{id}(id=${col.id})}"
+                        class="inline-block bg-white text-black px-10 py-4 font-label text-[10px] tracking-[0.2em] uppercase hover:bg-secondary hover:text-white transition-colors">XEM
+                        CHI TIẾT</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+
+</html>

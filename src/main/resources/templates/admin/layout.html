@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html th:fragment="layout(title, content, currentTab)" class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title th:text="${title} + ' - DOMINO ADMIN'">DOMINO ADMIN</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -80,73 +85,94 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .font-serif { font-family: 'Noto Serif', serif; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-serif {
+            font-family: 'Noto Serif', serif;
+        }
     </style>
 </head>
+
 <body class="bg-surface text-on-surface">
     <!-- SideNavBar -->
-    <aside class="fixed left-0 top-0 h-full w-64 bg-[#313131] dark:bg-[#001949] flex flex-col py-8 z-50 shadow-2xl dark:shadow-none">
+    <aside
+        class="fixed left-0 top-0 h-full w-64 bg-[#313131] dark:bg-[#001949] flex flex-col py-8 z-50 shadow-2xl dark:shadow-none">
         <div class="px-6 mb-8">
             <h1 class="text-lg font-serif tracking-widest text-[#fbf9f8]">DOMINO ADMIN</h1>
             <p class="text-[10px] tracking-[0.2em] text-[#fbf9f8]/50 uppercase mt-1">System Controller</p>
         </div>
         <nav class="flex-1">
-            <a th:href="@{/}" 
-               class="flex items-center gap-4 px-6 py-4 text-[#fbf9f8]/60 hover:bg-[#1c1c1c] hover:text-secondary transition-all duration-300 mb-2 border-b border-white/5">
+            <a th:href="@{/}"
+                class="flex items-center gap-4 px-6 py-4 text-[#fbf9f8]/60 hover:bg-[#1c1c1c] hover:text-secondary transition-all duration-300 mb-2 border-b border-white/5">
                 <span class="material-symbols-outlined">storefront</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">XEM CỬA HÀNG</span>
             </a>
-            <a th:href="@{/admin/dashboard}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'dashboard' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/dashboard}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'dashboard' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">DASHBOARD</span>
             </a>
-            <a th:href="@{/admin/products}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'inventory' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/products}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'inventory' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">inventory_2</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">INVENTORY</span>
             </a>
-            <a th:href="@{/admin/categories}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'categories' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/categories}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'categories' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">category</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">CATEGORIES</span>
             </a>
-            <a th:href="@{/admin/orders}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'orders' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/collections}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'collections' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+                <span class="material-symbols-outlined">auto_awesome_motion</span>
+                <span class="text-[11px] font-semibold tracking-wider uppercase">COLLECTIONS</span>
+            </a>
+            <a th:href="@{/admin/orders}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'orders' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">ORDERS</span>
             </a>
-            <a th:href="@{/admin/customers}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'customers' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/customers}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'customers' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">person</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">CUSTOMERS</span>
             </a>
-            <a th:href="@{/admin/analytics}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'analytics' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/analytics}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'analytics' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">ANALYTICS</span>
             </a>
-            <a th:href="@{/admin/settings}" 
-               class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
-               th:classappend="${currentTab == 'settings' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+            <a th:href="@{/admin/settings}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'settings' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">SETTINGS</span>
             </a>
+            <a th:href="@{/admin/chat}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'chat' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+                <span class="material-symbols-outlined">support_agent</span>
+                <span class="text-[11px] font-semibold tracking-wider uppercase">HỖ TRỢ KHÁCH HÀNG</span>
+            </a>
         </nav>
         <div class="px-6 mt-auto">
-            <button class="w-full py-4 bg-[#fbf9f8] text-[#1c1c1c] text-[11px] font-bold tracking-widest uppercase hover:bg-secondary hover:text-white transition-colors duration-300">
-                NEW CAMPAIGN
-            </button>
             <div class="mt-8 border-t border-white/10 pt-6">
                 <form th:action="@{/logout}" method="post" id="logoutForm" class="hidden"></form>
-                <a href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit()" class="text-[#fbf9f8]/60 flex items-center gap-4 hover:text-white transition-colors">
+                <a href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit()"
+                    class="text-[#fbf9f8]/60 flex items-center gap-4 hover:text-white transition-colors">
                     <span class="material-symbols-outlined">logout</span>
                     <span class="text-[11px] font-semibold tracking-wider uppercase">LOGOUT</span>
                 </a>
@@ -162,31 +188,39 @@
         <footer class="border-t border-outline-variant/10 bg-surface px-12 py-20">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-full">
                 <div>
-                    <h5 class="text-xl font-serif font-black text-[#1c1c1c] dark:text-[#fbf9f8] mb-6 uppercase">DOMINO</h5>
+                    <h5 class="text-xl font-serif font-black text-[#1c1c1c] dark:text-[#fbf9f8] mb-6 uppercase">DOMINO
+                    </h5>
                     <p class="text-xs uppercase tracking-widest text-on-surface-variant leading-relaxed">
-                        Hệ thống quản lý nội bộ dành riêng cho thương hiệu cao cấp.<br/>
-                        Sản phẩm thuộc quyền sở hữu của<br/>
+                        Hệ thống quản lý nội bộ dành riêng cho thương hiệu cao cấp.<br />
+                        Sản phẩm thuộc quyền sở hữu của<br />
                         <span class="font-bold text-primary">Công ty cổ phần sáu anh trai</span>.
                     </p>
                 </div>
                 <div>
-                    <h6 class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-6">Trụ Sở Chính</h6>
+                    <h6 class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-6">Trụ Sở
+                        Chính</h6>
                     <p class="text-xs uppercase tracking-widest text-primary leading-relaxed">
-                        97 Man Thiện, Phường Tăng Nhơn Phú,<br/>
+                        97 Man Thiện, Phường Tăng Nhơn Phú,<br />
                         TP. Hồ Chí Minh, Việt Nam.
                     </p>
                 </div>
                 <div class="flex flex-col gap-4">
-                    <h6 class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-2">Liên Kết Nhanh</h6>
-                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline" href="#">Privacy Policy</a>
-                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline" href="#">Terms of Service</a>
-                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline" href="#">Contact Admin Support</a>
+                    <h6 class="text-[10px] font-bold tracking-[0.3em] text-on-surface-variant uppercase mb-2">Liên Kết
+                        Nhanh</h6>
+                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline"
+                        href="#">Privacy Policy</a>
+                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline"
+                        href="#">Terms of Service</a>
+                    <a class="text-xs uppercase tracking-widest text-on-surface-variant/50 hover:text-[#b71507] transition-colors underline-offset-4 underline"
+                        href="#">Contact Admin Support</a>
                 </div>
             </div>
-            <div class="mt-20 pt-8 border-t border-outline-variant/5 text-[10px] tracking-[0.2em] text-on-surface-variant/40 uppercase text-center">
+            <div
+                class="mt-20 pt-8 border-t border-outline-variant/5 text-[10px] tracking-[0.2em] text-on-surface-variant/40 uppercase text-center">
                 © 2024 Công ty cổ phần sáu anh trai. All rights reserved.
             </div>
         </footer>
     </main>
 </body>
+
 </html>

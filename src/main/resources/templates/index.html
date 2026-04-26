@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{fragments/layout :: head('SỰ TĨNH LẶNG Tuyệt Đối')}"></head>
 
@@ -16,7 +17,7 @@
         </div>
         <div class="relative z-10 px-12 md:px-24 w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="space-y-8 max-w-xl">
-                <p class="font-label uppercase tracking-[0.4em] text-xs text-primary/80">Chiến dịch Xuân Hè 2024</p>
+                <p class="font-label uppercase tracking-[0.4em] text-xs text-primary/80">Chiến dịch Xuân Hè 2026</p>
                 <h1 class="text-6xl md:text-8xl lg:text-9xl font-headline tracking-tighter text-primary leading-none">
                     SỰ TĨNH LẶNG <br />
                     <span class="italic text-secondary">Tuyệt Đối</span>
@@ -58,7 +59,8 @@
     <section class="py-24 px-12 bg-surface-container-low">
         <div class="flex justify-between items-end mb-16 px-4">
             <div>
-                <span class="font-label text-[10px] tracking-[0.5em] text-secondary uppercase mb-2 block">Danh mục đặc tuyển</span>
+                <span class="font-label text-[10px] tracking-[0.5em] text-secondary uppercase mb-2 block">Danh mục đặc
+                    tuyển</span>
                 <h3 class="text-4xl font-headline">Bộ Sưu Tập Nổi Bật</h3>
             </div>
             <a class="font-label text-xs border-b border-primary/20 pb-1 hover:border-primary transition-colors"
@@ -91,14 +93,16 @@
                 </div>
                 <a href="/shop" class="absolute inset-0 z-10"></a>
             </div>
-            <div class="md:col-span-1 md:row-span-1 relative group overflow-hidden bg-primary p-10 flex flex-col justify-end">
+            <div
+                class="md:col-span-1 md:row-span-1 relative group overflow-hidden bg-primary p-10 flex flex-col justify-end">
                 <div class="text-white space-y-4">
                     <h4 class="text-2xl font-headline italic">Đăng ký bản tin</h4>
                     <p class="text-white/60 text-xs font-body">Nhận thông tin về các bộ sưu tập giới hạn sớm nhất.</p>
                     <div sec:authorize="isAnonymous()">
                         <a href="/login"
                             class="w-full bg-white/5 border border-white/10 py-3 text-[10px] tracking-widest text-white/50 hover:bg-white/10 transition-colors flex justify-between items-center px-4 group">
-                            ĐĂNG NHẬP ĐỂ ĐĂNG KÝ <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform"
+                            ĐĂNG NHẬP ĐỂ ĐĂNG KÝ <span
+                                class="material-symbols-outlined group-hover:translate-x-1 transition-transform"
                                 style="font-size: 14px;">arrow_forward</span>
                         </a>
                     </div>
@@ -132,11 +136,12 @@
 </body>
 
 </html>ode.childNodes[i]);
-                    }
-                }
-            }
-            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
-        })();
-    </script>
+}
+}
+}
+document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
+})();
+</script>
 </body>
+
 </html>

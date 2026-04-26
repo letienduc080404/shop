@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('LỊCH SỬ ĐƠN HÀNG')}"></head>
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto min-h-[60vh]">
+        <header class="mb-16">
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none mb-4 uppercase">LỊCH SỬ ĐƠN HÀNG</h1>
+            <p class="text-xs tracking-widest text-outline uppercase">Xem và theo dõi các đơn hàng đã đặt của bạn.</p>
+        </header>
+
+        <div th:if="${orders == null || orders.isEmpty()}" class="text-center py-20 bg-surface-container-low">
+            <p class="text-sm font-label uppercase tracking-widest text-primary/60 mb-6">Bạn chưa có đơn hàng nào.</p>
+            <a href="/shop" class="bg-primary text-white px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary-container transition-colors">BẮT ĐẦU MUA SẮM</a>
+        </div>
+
+        <div th:if="${orders != null && !orders.isEmpty()}" class="space-y-6">
+            <div th:each="order : ${orders}" class="bg-surface-container-lowest p-6 border border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-6 hover:border-primary/50 transition-colors">
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="font-label text-xs uppercase tracking-[0.2em] font-bold" th:text="'#' + ${order.maDonHang}">#CODE</p>
+                        <span class="text-[10px] font-label px-3 py-1 uppercase tracking-widest font-bold"
+                              th:classappend="${order.trangThaiDonHang.name() == 'ChoXuLy' ? 'bg-primary/10 text-primary' : 
+                                               order.trangThaiDonHang.name() == 'DangGiao' ? 'bg-secondary/10 text-secondary' : 
+                                               order.trangThaiDonHang.name() == 'HoanThanh' ? 'bg-green-500/10 text-green-700' : 'bg-red-500 text-white animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.7)]'}"
+                              th:text="${order.trangThaiDonHang.name() == 'ChoXuLy' ? 'Chờ xử lý' : 
+                                       order.trangThaiDonHang.name() == 'DangGiao' ? 'Đang giao' : 
+                                       order.trangThaiDonHang.name() == 'HoanThanh' ? 'Hoàn thành' : 'Đã hủy'}">
+                            STATUS
+                        </span>
+                    </div>
+                    <p class="text-xs text-outline mb-2 uppercase tracking-wider" th:text="'Ngày đặt: ' + ${#temporals.format(order.ngayDat, 'dd.MM.yyyy HH:mm')}">Date</p>
+                    <p class="text-sm font-bold" th:text="'Tổng tiền: ' + ${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + '₫'">0₫</p>
+                    <div th:if="${order.trangThaiDonHang.name() == 'DaHuy' && order.ghiChu != null}" class="mt-4 p-3 bg-red-50 border-l-2 border-red-500 text-xs text-red-700 italic">
+                        <span class="font-bold uppercase tracking-widest text-[10px]">Lý do hủy:</span> <span th:text="${order.ghiChu}"></span>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 w-full md:w-auto text-right flex flex-col md:flex-row gap-2">
+                    <form th:if="${order.trangThaiDonHang.name() == 'DangGiao'}" th:action="@{/order/complete}" method="post" onsubmit="return confirm('Xác nhận bạn đã nhận được kiện hàng này?');">
+                        <input type="hidden" name="maDonHang" th:value="${order.maDonHang}" />
+                        <button type="submit" class="w-full md:w-auto bg-secondary text-white text-center px-8 py-3 font-label text-[10px] tracking-[0.2em] uppercase hover:bg-secondary/90 transition-colors">ĐÃ NHẬN HÀNG</button>
+                    </form>
+                    <a th:href="@{/order/track/{code}(code=${order.maDonHang})}" class="inline-block w-full md:w-auto bg-primary text-white text-center px-8 py-3 font-label text-[10px] tracking-[0.2em] uppercase hover:bg-primary-container transition-colors">
+                        XEM CHI TIẾT
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

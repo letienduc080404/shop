@@ -62,8 +62,15 @@
                         </div>
                     </div>
                     <div class="mt-8 flex gap-4">
-                        <button class="bg-primary text-white px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary-container transition-colors">YÊU CẦU HỖ TRỢ</button>
-                        <button class="bg-transparent border border-primary/20 text-primary px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary/5 transition-colors">HỦY ĐƠN</button>
+                        <button onclick="toggleSupportChat()" class="bg-primary text-white px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary-container transition-colors">YÊU CẦU HỖ TRỢ</button>
+                        <form th:if="${order.trangThaiDonHang?.name() == 'ChoXuLy'}" th:action="@{/order/cancel}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                            <input type="hidden" name="maDonHang" th:value="${order.maDonHang}" />
+                            <button type="submit" class="bg-transparent border border-primary/20 text-primary px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary/5 transition-colors">HỦY ĐƠN</button>
+                        </form>
+                        <form th:if="${order.trangThaiDonHang?.name() == 'DangGiao'}" th:action="@{/order/complete}" method="post" onsubmit="return confirm('Xác nhận bạn đã nhận được kiện hàng này?');">
+                            <input type="hidden" name="maDonHang" th:value="${order.maDonHang}" />
+                            <button type="submit" class="bg-secondary text-white px-10 py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-secondary/90 transition-colors">ĐÃ NHẬN HÀNG</button>
+                        </form>
                     </div>
                 </div>
                 <!-- Abstract Texture BG -->
@@ -154,5 +161,159 @@
 
     <!-- Standardized Footer -->
     <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Chat Support Widget -->
+    <div id="chatWidget" class="fixed bottom-10 right-10 w-80 bg-white border border-outline-variant shadow-2xl hidden flex-col z-50 transition-all">
+        <div class="bg-primary text-white p-4 flex justify-between items-center cursor-pointer" onclick="toggleSupportChat()">
+            <h5 class="font-label text-xs uppercase tracking-widest font-bold">Hỗ Trợ Đơn Hàng</h5>
+            <span class="material-symbols-outlined text-sm">close</span>
+        </div>
+        <div id="chatMessages" class="h-64 overflow-y-auto p-4 space-y-4 bg-surface-container-low text-xs">
+            <!-- Messages will be loaded here -->
+        </div>
+        <div class="p-4 border-t border-outline-variant bg-white flex gap-2">
+            <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." class="flex-1 border-b border-outline-variant focus:border-primary outline-none px-2 py-1 text-xs" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()" class="material-symbols-outlined text-primary hover:text-secondary">send</button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const orderCode = /*[[${order.maDonHang}]]*/ '';
+        const chatWidget = document.getElementById('chatWidget');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+
+        // Dùng object để quản lý state — tránh biến global lẻ tẻ
+        const chatState = {
+            pollingId: null,
+            isSending: false,
+            consecutiveErrors: 0,
+        };
+        const CHAT_POLL_MS = 4000; // 4s thay vì 3s để giảm tải
+        const MAX_ERRORS = 4;
+
+        function toggleSupportChat() {
+            const isHidden = chatWidget.classList.contains('hidden');
+            if (isHidden) {
+                chatWidget.classList.remove('hidden');
+                chatWidget.classList.add('flex');
+                loadMessages();
+                // Đảm bảo clear interval cũ trước khi tạo mới
+                if (chatState.pollingId !== null) {
+                    clearInterval(chatState.pollingId);
+                }
+                chatState.pollingId = setInterval(loadMessages, CHAT_POLL_MS);
+            } else {
+                chatWidget.classList.add('hidden');
+                chatWidget.classList.remove('flex');
+                if (chatState.pollingId !== null) {
+                    clearInterval(chatState.pollingId);
+                    chatState.pollingId = null;
+                }
+            }
+        }
+
+        async function loadMessages() {
+            try {
+                const res = await fetch(`/api/chat/${orderCode}`, { credentials: 'same-origin' });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        // Session hết hạn — dừng polling, hiện thông báo
+                        if (chatState.pollingId !== null) {
+                            clearInterval(chatState.pollingId);
+                            chatState.pollingId = null;
+                        }
+                        chatMessages.innerHTML = '<p class="text-center text-red-500 text-xs mt-4">Phiên đăng nhập hết hạn. <a href="/login" class="underline">Đăng nhập lại</a></p>';
+                    }
+                    return;
+                }
+
+                chatState.consecutiveErrors = 0;
+                const messages = await res.json();
+                renderMessages(messages);
+
+            } catch (e) {
+                chatState.consecutiveErrors++;
+                console.error('Lỗi tải chat:', e);
+                if (chatState.consecutiveErrors >= MAX_ERRORS) {
+                    chatMessages.innerHTML = '<p class="text-center text-primary/40 text-xs mt-4">Mất kết nối. Vui lòng thử lại sau.</p>';
+                    if (chatState.pollingId !== null) {
+                        clearInterval(chatState.pollingId);
+                        chatState.pollingId = null;
+                    }
+                }
+            }
+        }
+
+        function renderMessages(messages) {
+            chatMessages.innerHTML = '';
+            if (messages.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'text-center text-primary/40 italic mt-4 text-xs';
+                empty.textContent = 'Bắt đầu trò chuyện với hỗ trợ viên...';
+                chatMessages.appendChild(empty);
+                return;
+            }
+            messages.forEach(m => {
+                const isUser = m.senderRole === 'USER';
+                const wrapper = document.createElement('div');
+                wrapper.className = (isUser ? 'text-right' : 'text-left') + ' mb-2';
+
+                const bubble = document.createElement('div');
+                bubble.className = 'inline-block px-3 py-2 text-left max-w-[80%] break-words ' +
+                    (isUser ? 'bg-primary text-white' : 'bg-white border border-outline-variant');
+
+                // textContent thay vì innerHTML để chống XSS
+                const msgEl = document.createElement('p');
+                msgEl.className = 'text-xs';
+                msgEl.textContent = m.message;
+                bubble.appendChild(msgEl);
+                wrapper.appendChild(bubble);
+                chatMessages.appendChild(wrapper);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (!text || chatState.isSending) return;
+
+            chatState.isSending = true;
+            try {
+                const formData = new FormData();
+                formData.append('role', 'USER');
+                formData.append('message', text);
+
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+                const res = await fetch(`/api/chat/${orderCode}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { [csrfHeader]: csrfToken },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    chatInput.value = '';
+                    loadMessages();
+                } else if (res.status === 401 || res.status === 403) {
+                    chatMessages.innerHTML = '<p class="text-center text-red-500 text-xs mt-4">Phiên đăng nhập hết hạn. <a href="/login" class="underline">Đăng nhập lại</a></p>';
+                }
+            } catch (e) {
+                console.error('Lỗi gửi tin nhắn:', e);
+            } finally {
+                chatState.isSending = false;
+            }
+        }
+
+        // Dừng polling khi rời trang
+        window.addEventListener('beforeunload', () => {
+            if (chatState.pollingId !== null) {
+                clearInterval(chatState.pollingId);
+            }
+        });
+    </script>
 </body>
 </html>

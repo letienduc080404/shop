@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Quản lý Bộ sưu tập', ~{::content}, 'collections')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <header class="flex justify-between items-center px-12 py-8 bg-surface">
+        <div>
+            <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">BỘ SƯU TẬP</h2>
+            <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Quản lý các nhóm sản phẩm theo chủ đề (Lưu trữ độc lập)</p>
+        </div>
+        <a href="/admin/collections/add" class="bg-primary text-white px-10 py-4 text-xs font-bold tracking-widest hover:bg-secondary transition-all duration-300 transform hover:scale-105 inline-block">
+            THÊM BỘ SƯU TẬP MỚI
+        </a>
+    </header>
+
+    <section class="px-12 pb-20">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-[10px] tracking-[0.25em] text-on-surface-variant uppercase border-b border-outline-variant/20">
+                        <th class="py-6 font-semibold">Hình ảnh</th>
+                        <th class="py-6 font-semibold">Bộ sưu tập</th>
+                        <th class="py-6 font-semibold text-center">Số sản phẩm</th>
+                        <th class="py-6 font-semibold text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    <tr th:each="col : ${collections}" class="group hover:bg-surface-container-low transition-colors duration-200">
+                        <td class="py-8">
+                            <div class="w-20 h-24 bg-surface-container overflow-hidden">
+                                <img class="w-full h-full object-cover" th:src="${col.imageUrl != null && !col.imageUrl.isEmpty() ? 'https://lh3.googleusercontent.com/d/' + col.imageUrl : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200'}" th:alt="${col.name}"/>
+                            </div>
+                        </td>
+                        <td class="py-8">
+                            <h4 class="text-sm font-bold tracking-wider uppercase text-primary" th:text="${col.name}">Tên</h4>
+                            <p class="text-[10px] text-on-surface-variant tracking-widest uppercase mt-1 truncate max-w-xs" th:text="${col.description}">Mô tả</p>
+                        </td>
+                        <td class="py-8 text-center">
+                            <span class="text-sm font-serif" th:text="${col.productIds != null ? col.productIds.size() : 0}">0</span>
+                        </td>
+                        <td class="py-8 text-right">
+                            <div class="flex justify-end gap-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <a th:href="@{/admin/collections/edit/{id}(id=${col.id})}" class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                </a>
+                                <form th:action="@{/admin/collections/delete/{id}(id=${col.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bộ sưu tập này?');" class="inline">
+                                    <button type="submit" class="hover:text-secondary transition-colors">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${collections == null || collections.isEmpty()}">
+                        <td colspan="4" class="py-20 text-center text-on-surface-variant text-[10px] font-bold tracking-[0.3em] uppercase opacity-40">
+                            Chưa có bộ sưu tập nào được tạo.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

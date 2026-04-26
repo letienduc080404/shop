@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('TÀI KHOẢN CỦA TÔI')}"></head>
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-xl mx-auto min-h-[60vh]">
+        <header class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none mb-4 uppercase">Tài Khoản</h1>
+            <p class="text-xs tracking-widest text-outline uppercase">Cập nhật thông tin cá nhân của bạn</p>
+        </header>
+
+        <!-- Success message -->
+        <div th:if="${success}" class="bg-green-50 border-l-4 border-green-500 text-green-700 px-6 py-4 mb-8 text-xs font-label uppercase tracking-widest">
+            <span class="material-symbols-outlined text-base align-middle mr-2">check_circle</span>
+            <span th:text="${success}"></span>
+        </div>
+
+        <div class="bg-surface-container-lowest border border-outline-variant/30 p-8">
+            <!-- Profile Header -->
+            <div class="flex items-center gap-6 mb-10 pb-8 border-b border-outline-variant/20">
+                <div class="w-14 h-14 bg-primary text-white flex items-center justify-center text-2xl font-bold font-serif">
+                    <span th:text="${#strings.substring(customer.hoTen, 0, 1)}">A</span>
+                </div>
+                <div>
+                    <p class="font-bold text-lg tracking-tight" th:text="${customer.hoTen}">Tên</p>
+                    <p class="text-xs text-outline mt-1" th:text="${customer.email}">email</p>
+                </div>
+            </div>
+
+            <!-- Update Form -->
+            <form th:action="@{/account/update}" method="post" class="space-y-6">
+                <div>
+                    <label for="hoTen" class="block text-[10px] font-bold uppercase tracking-widest mb-2 text-outline">Họ và Tên</label>
+                    <input type="text" id="hoTen" name="hoTen" th:value="${customer.hoTen}" required
+                           class="w-full px-4 py-3 bg-transparent border border-outline-variant/50 focus:border-primary focus:outline-none transition-colors text-sm">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-[10px] font-bold uppercase tracking-widest mb-2 text-outline">Email <span class="text-outline/50 normal-case tracking-normal font-normal">(không thể thay đổi)</span></label>
+                    <input type="email" id="email" th:value="${customer.email}" disabled
+                           class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/30 text-outline/60 text-sm cursor-not-allowed">
+                </div>
+
+                <div>
+                    <label for="soDienThoai" class="block text-[10px] font-bold uppercase tracking-widest mb-2 text-outline">Số Điện Thoại</label>
+                    <input type="text" id="soDienThoai" name="soDienThoai" th:value="${customer.soDienThoai}"
+                           class="w-full px-4 py-3 bg-transparent border border-outline-variant/50 focus:border-primary focus:outline-none transition-colors text-sm">
+                </div>
+
+                <div>
+                    <label for="diaChi" class="block text-[10px] font-bold uppercase tracking-widest mb-2 text-outline">Địa Chỉ Giao Hàng</label>
+                    <textarea id="diaChi" name="diaChi" rows="3"
+                              class="w-full px-4 py-3 bg-transparent border border-outline-variant/50 focus:border-primary focus:outline-none transition-colors text-sm resize-none"
+                              th:text="${customer.diaChi}"></textarea>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <a href="/orders" class="flex-1 text-center border border-outline-variant/50 text-primary py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-surface-container-low transition-colors">
+                        LỊCH SỬ ĐƠN HÀNG
+                    </a>
+                    <button type="submit" class="flex-1 bg-primary text-white py-4 font-label text-[11px] tracking-[0.2em] uppercase hover:bg-primary-container transition-colors font-bold">
+                        LƯU THAY ĐỔI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -30,13 +31,11 @@ public class AdminOrderController {
             @RequestParam(value = "status", required = false) TrangThaiDonHang status,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
-            Model model
-    ) {
+            Model model) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
                 Math.min(Math.max(size, 1), 100),
-                Sort.by(Sort.Direction.DESC, "ngayDat")
-        );
+                Sort.by(Sort.Direction.DESC, "ngayDat"));
 
         Page<Order> ordersPage = orderService.getOrdersForAdmin(status, pageable);
 
@@ -57,5 +56,30 @@ public class AdminOrderController {
 
         return "admin/order";
     }
-}
 
+    @PostMapping("/order/prepare")
+    public String prepareOrder(@RequestParam("id") Long id,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        try {
+            Order order = orderService.getOrderById(id);
+            if (order != null && order.getTrangThaiDonHang() == TrangThaiDonHang.ChoXuLy) {
+                order.setTrangThaiDonHang(TrangThaiDonHang.DangGiao);
+                orderService.saveOrder(order);
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage() + " | " + e.getClass().getName());
+        }
+        return "redirect:/admin/orders";
+    }
+
+    @PostMapping("/order/cancel")
+    public String cancelOrder(@RequestParam("id") Long id, @RequestParam("reason") String reason) {
+        Order order = orderService.getOrderById(id);
+        if (order != null && order.getTrangThaiDonHang() == TrangThaiDonHang.ChoXuLy) {
+            order.setTrangThaiDonHang(TrangThaiDonHang.DaHuy);
+            order.setGhiChu("Admin hủy: " + reason);
+            orderService.saveOrder(order);
+        }
+        return "redirect:/admin/orders";
+    }
+}

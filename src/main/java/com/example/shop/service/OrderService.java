@@ -29,9 +29,9 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final ProductVariantRepository productVariantRepository;
 
-    public OrderService(OrderRepository orderRepository, 
-                        OrderItemRepository orderItemRepository, 
-                        ProductVariantRepository productVariantRepository) {
+    public OrderService(OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
+            ProductVariantRepository productVariantRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productVariantRepository = productVariantRepository;
@@ -63,10 +63,10 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(Customer customer, List<CartItem> cartItems, 
-                             String diaChi, String soDienThoai, 
-                             PhuongThucThanhToan phuongThuc) {
-        
+    public Order createOrder(Customer customer, List<CartItem> cartItems,
+            String diaChi, String soDienThoai,
+            PhuongThucThanhToan phuongThuc) {
+
         Order order = new Order();
         order.setCustomer(customer);
         order.setMaDonHang("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -75,34 +75,43 @@ public class OrderService {
         order.setTrangThaiDonHang(TrangThaiDonHang.ChoXuLy);
         order.setDiaChiNH(diaChi);
         order.setSoDienThoaiNH(soDienThoai);
-        
+
         double total = cartItems.stream().mapToDouble(item -> item.getGia() * item.getSoLuong()).sum();
         order.setTongTien(BigDecimal.valueOf(total));
-        
+
         Order savedOrder = orderRepository.save(order);
-        
+
         for (CartItem cartItem : cartItems) {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
-            
+
             // Thử tìm biến thể sản phẩm phù hợp (theo size)
             ProductVariant variant = productVariantRepository.findByProduct_IdSanPhamAndKichThuoc(
-                    cartItem.getIdSanPham(), 
-                    KichThuoc.valueOf(cartItem.getKichThuoc())
-            ).stream().findFirst().orElse(null);
-            
+                    cartItem.getIdSanPham(),
+                    KichThuoc.valueOf(cartItem.getKichThuoc())).stream().findFirst().orElse(null);
+
             if (variant != null) {
                 orderItem.setProductVariant(variant);
                 orderItem.setSoLuong(cartItem.getSoLuong());
                 orderItem.setGiaBan(BigDecimal.valueOf(cartItem.getGia()));
                 orderItemRepository.save(orderItem);
-                
+
                 // (Tuỳ chọn) cập nhật tồn kho
                 variant.setSoLuongTon(variant.getSoLuongTon() - cartItem.getSoLuong());
                 productVariantRepository.save(variant);
             }
         }
-        
+
         return savedOrder;
+    }
+
+    @Transactional(readOnly = true)
+    public Order getOrderById(Long id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+    @Transactional
+    public Order saveOrder(Order order) {
+        return orderRepository.save(order);
     }
 }

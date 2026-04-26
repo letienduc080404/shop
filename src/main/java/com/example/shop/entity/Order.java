@@ -66,4 +66,10 @@ public class Order {
     public void setSoDienThoaiNH(String soDienThoaiNH) { this.soDienThoaiNH = soDienThoaiNH; }
     public java.util.List<OrderItem> getOrderItems() { return orderItems; }
     public void setOrderItems(java.util.List<OrderItem> orderItems) { this.orderItems = orderItems; }
+
+    @Column(name = "GhiChu", length = 500)
+    private String ghiChu;
+
+    public String getGhiChu() { return ghiChu != null ? java.text.Normalizer.normalize(ghiChu, java.text.Normalizer.Form.NFC) : null; }
+    public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
 }

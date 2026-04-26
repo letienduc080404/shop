@@ -26,5 +26,10 @@ public class AdminDashboardController {
         model.addAttribute("dashboard", dashboard);
         return "admin/dashboard";
     }
+
+    @GetMapping("/settings")
+    public String settings() {
+        return "admin/settings";
+    }
 }
 

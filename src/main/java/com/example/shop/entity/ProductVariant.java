@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product_variants", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"ID_SanPham", "KichThuoc", "MauSac"})
+        @UniqueConstraint(columnNames = { "ID_SanPham", "KichThuoc", "MauSac" })
 })
 public class ProductVariant {
     @Id
@@ -36,19 +36,54 @@ public class ProductVariant {
     @Column(name = "GiaVon", precision = 12, scale = 2)
     private BigDecimal giaVon = BigDecimal.ZERO;
 
-    public ProductVariant() {}
+    public ProductVariant() {
+    }
 
-    public Long getIdBienThe() { return idBienThe; }
-    public void setIdBienThe(Long idBienThe) { this.idBienThe = idBienThe; }
-    public Product getProduct() { return product; }
-    public void setProduct(Product product) { this.product = product; }
-    public KichThuoc getKichThuoc() { return kichThuoc; }
-    public void setKichThuoc(KichThuoc kichThuoc) { this.kichThuoc = kichThuoc; }
-    public String getMauSac() { return mauSac; }
-    public void setMauSac(String mauSac) { this.mauSac = mauSac; }
-    public Integer getSoLuongTon() { return soLuongTon; }
-    public void setSoLuongTon(Integer soLuongTon) { this.soLuongTon = soLuongTon; }
+    public Long getIdBienThe() {
+        return idBienThe;
+    }
 
-    public BigDecimal getGiaVon() { return giaVon; }
-    public void setGiaVon(BigDecimal giaVon) { this.giaVon = giaVon; }
+    public void setIdBienThe(Long idBienThe) {
+        this.idBienThe = idBienThe;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public KichThuoc getKichThuoc() {
+        return kichThuoc;
+    }
+
+    public void setKichThuoc(KichThuoc kichThuoc) {
+        this.kichThuoc = kichThuoc;
+    }
+
+    public String getMauSac() {
+        return mauSac;
+    }
+
+    public void setMauSac(String mauSac) {
+        this.mauSac = mauSac;
+    }
+
+    public Integer getSoLuongTon() {
+        return soLuongTon;
+    }
+
+    public void setSoLuongTon(Integer soLuongTon) {
+        this.soLuongTon = soLuongTon;
+    }
+
+    public BigDecimal getGiaVon() {
+        return giaVon;
+    }
+
+    public void setGiaVon(BigDecimal giaVon) {
+        this.giaVon = giaVon;
+    }
 }

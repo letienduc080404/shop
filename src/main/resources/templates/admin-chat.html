@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>HỖ TRỢ KHÁCH HÀNG - DOMINO ADMIN</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1c1c1c",
+                        secondary: "#b71507",
+                        surface: "#fbf9f8",
+                        "outline-variant": "#c4c7c7"
+                    },
+                    fontFamily: {
+                        headline: ["Noto Serif"],
+                        body: ["Inter"],
+                        label: ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-surface text-primary flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-[#313131] text-white flex flex-col flex-shrink-0">
+        <div class="p-6">
+            <h1 class="font-serif text-lg tracking-widest">DOMINO ADMIN</h1>
+            <p class="text-[10px] tracking-[0.2em] text-white/50 uppercase mt-1">Live Support</p>
+        </div>
+        <div class="px-6 pb-4">
+            <a href="/admin/dashboard" class="text-xs uppercase tracking-widest hover:text-secondary flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> QUAY LẠI DASHBOARD
+            </a>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="px-6 pb-4">
+            <div class="flex items-center gap-2 text-[10px] uppercase tracking-wider">
+                <div id="statusDot" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                <span id="statusText" class="text-white/50">Đang kết nối...</span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto border-t border-white/10">
+            <h3 class="p-6 text-[10px] font-bold tracking-widest uppercase text-white/50">CÁC ĐƠN CẦN HỖ TRỢ</h3>
+            <ul id="sidebarChatList" class="space-y-1 px-4">
+                <!--
+                    NOTE: Danh sách này sẽ được JS render và cập nhật tự động.
+                    Thymeleaf chỉ render lần đầu để có dữ liệu ngay khi load trang.
+                -->
+                <li th:each="code : ${activeOrderCodes}">
+                    <button th:data-code="${code}"
+                            class="chat-btn w-full text-left px-4 py-3 bg-white/5 hover:bg-white/10 rounded-sm text-xs font-medium tracking-wider text-white">
+                        ĐƠN: #<span th:text="${code}">CODE</span>
+                    </button>
+                </li>
+                <li th:if="${activeOrderCodes == null || activeOrderCodes.isEmpty()}"
+                    id="noChatsMsg"
+                    class="px-4 text-xs text-white/30 italic">
+                    Không có yêu cầu nào.
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main class="flex-1 flex flex-col bg-white overflow-hidden">
+        <header class="p-6 border-b border-outline-variant flex justify-between items-center flex-shrink-0">
+            <h2 id="chatHeader" class="font-serif text-2xl font-bold">Chọn một đoạn chat</h2>
+            <div id="chatActions" class="items-center gap-3 hidden">
+                <span id="currentOrderBadge" class="text-xs font-label uppercase tracking-widest text-secondary font-bold"></span>
+                <button id="clearChatBtn" class="flex items-center gap-1 text-xs text-primary/40 hover:text-secondary transition-colors border border-primary/10 hover:border-secondary px-3 py-1.5">
+                    <span class="material-symbols-outlined text-sm">delete</span> Xóa chat
+                </button>
+            </div>
+        </header>
+
+        <!-- Session expired banner -->
+        <div id="sessionBanner" class="hidden bg-red-600 text-white text-xs text-center py-2 px-4 flex-shrink-0">
+            ⚠️ Phiên đăng nhập đã hết hạn.
+            <a href="/login" class="underline font-bold ml-1">Đăng nhập lại</a>
+        </div>
+
+        <div id="adminChatMessages" class="flex-1 p-6 overflow-y-auto bg-surface space-y-4 text-sm">
+            <p id="placeholderMsg" class="text-center text-primary/30 italic mt-8">← Chọn một đơn hàng để xem tin nhắn</p>
+        </div>
+
+        <div id="adminChatInputArea" class="hidden p-6 border-t border-outline-variant bg-white flex gap-4 flex-shrink-0">
+            <input type="text" id="adminChatInput"
+                   placeholder="Nhập câu trả lời..."
+                   class="flex-1 border border-outline-variant focus:border-primary outline-none px-4 py-3 text-sm" />
+            <button id="sendBtn" class="bg-primary text-white px-8 py-3 font-label text-xs tracking-widest uppercase hover:bg-secondary transition-colors">GỬI</button>
+        </div>
+    </main>
+
+    <script>
+        // ====================================================
+        // STATE
+        // ====================================================
+        var currentOrderCode = null;
+        var sidebarTimerId = null;
+        var chatTimerId = null;
+        var isSending = false;
+        var errorCount = 0;
+
+        var SIDEBAR_POLL = 5000;
+        var CHAT_POLL = 4000;
+        var MAX_ERRORS = 5;
+
+        // ====================================================
+        // INIT
+        // ====================================================
+        function init() {
+            // Gán sự kiện cho các nút Thymeleaf render lần đầu
+            attachSidebarButtons();
+
+            // Nút gửi
+            document.getElementById('sendBtn').addEventListener('click', sendAdminMessage);
+            document.getElementById('adminChatInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAdminMessage();
+                }
+            });
+            document.getElementById('clearChatBtn').addEventListener('click', clearCurrentChat);
+
+            // Bắt đầu poll sidebar
+            startSidebarPoll();
+        }
+
+        function attachSidebarButtons() {
+            var buttons = document.querySelectorAll('.chat-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                (function(btn) {
+                    btn.addEventListener('click', function() {
+                        selectChat(btn.getAttribute('data-code'));
+                    });
+                })(buttons[i]);
+            }
+        }
+
+        // ====================================================
+        // SIDEBAR POLLING
+        // ====================================================
+        function startSidebarPoll() {
+            if (sidebarTimerId !== null) {
+                clearInterval(sidebarTimerId);
+                sidebarTimerId = null;
+            }
+            fetchSidebar();
+            sidebarTimerId = setInterval(fetchSidebar, SIDEBAR_POLL);
+        }
+
+        function fetchSidebar() {
+            fetch('/api/chat/active', { credentials: 'same-origin' })
+                .then(function(res) {
+                    if (!res.ok) {
+                        if (res.status === 401 || res.status === 403) {
+                            showSessionExpired();
+                        } else {
+                            incrementError();
+                        }
+                        return null;
+                    }
+                    return res.json();
+                })
+                .then(function(codes) {
+                    if (!codes) return;
+                    errorCount = 0;
+                    setStatusOk();
+                    renderSidebar(Array.from(codes));
+                })
+                .catch(function(e) {
+                    console.error('Sidebar poll error:', e);
+                    incrementError();
+                });
+        }
+
+        function renderSidebar(codes) {
+            var list = document.getElementById('sidebarChatList');
+            if (!list) return;
+
+            if (codes.length === 0) {
+                list.innerHTML = '<li class="px-4 text-xs text-white/30 italic">Không có yêu cầu nào.</li>';
+                return;
+            }
+
+            // Xây dựng HTML bằng DOM để tránh XSS
+            list.innerHTML = '';
+            for (var i = 0; i < codes.length; i++) {
+                var code = codes[i];
+                var li = document.createElement('li');
+                var btn = document.createElement('button');
+                btn.setAttribute('data-code', code);
+                btn.className = 'chat-btn w-full text-left px-4 py-3 rounded-sm text-xs font-medium tracking-wider transition-colors '
+                    + (code === currentOrderCode
+                        ? 'bg-secondary text-white font-bold'
+                        : 'bg-white/5 hover:bg-white/10 text-white');
+                btn.textContent = 'ĐƠN: #' + code;
+                (function(c) {
+                    btn.addEventListener('click', function() { selectChat(c); });
+                })(code);
+                li.appendChild(btn);
+                list.appendChild(li);
+            }
+        }
+
+        // ====================================================
+        // CHON CHAT
+        // ====================================================
+        function selectChat(code) {
+            if (!code) return;
+            currentOrderCode = code;
+
+            document.getElementById('chatHeader').textContent = 'HỖ TRỢ ĐƠN: #' + code;
+            document.getElementById('adminChatInputArea').classList.remove('hidden');
+            document.getElementById('adminChatInputArea').classList.add('flex');
+            document.getElementById('chatActions').classList.remove('hidden');
+            document.getElementById('chatActions').classList.add('flex');
+            document.getElementById('currentOrderBadge').textContent = '#' + code;
+
+            var ph = document.getElementById('placeholderMsg');
+            if (ph) ph.remove();
+
+            document.getElementById('adminChatMessages').innerHTML = '<p class="text-center text-primary/30 text-xs italic">Đang tải...</p>';
+
+            // Dừng poll cũ, bắt đầu poll mới
+            stopChatPoll();
+            fetchMessages();
+            chatTimerId = setInterval(fetchMessages, CHAT_POLL);
+
+            // Refresh sidebar để highlight đúng đơn đang mở
+            renderSidebar(Array.from(document.querySelectorAll('#sidebarChatList .chat-btn')).map(function(b) { return b.getAttribute('data-code'); }));
+
+            setTimeout(function() {
+                var inp = document.getElementById('adminChatInput');
+                if (inp) inp.focus();
+            }, 100);
+        }
+
+        function stopChatPoll() {
+            if (chatTimerId !== null) {
+                clearInterval(chatTimerId);
+                chatTimerId = null;
+            }
+        }
+
+        // ====================================================
+        // FETCH & RENDER MESSAGES
+        // ====================================================
+        function fetchMessages() {
+            if (!currentOrderCode) return;
+            fetch('/api/chat/' + currentOrderCode, { credentials: 'same-origin' })
+                .then(function(res) {
+                    if (!res.ok) {
+                        if (res.status === 401 || res.status === 403) {
+                            showSessionExpired();
+                        } else {
+                            incrementError();
+                        }
+                        return null;
+                    }
+                    return res.json();
+                })
+                .then(function(messages) {
+                    if (!messages) return;
+                    errorCount = 0;
+                    setStatusOk();
+                    renderMessages(messages);
+                })
+                .catch(function(e) {
+                    console.error('Chat poll error:', e);
+                    incrementError();
+                });
+        }
+
+        function renderMessages(messages) {
+            var container = document.getElementById('adminChatMessages');
+            var atBottom = (container.scrollHeight - container.scrollTop) <= container.clientHeight + 30;
+
+            container.innerHTML = '';
+
+            if (!messages || messages.length === 0) {
+                var empty = document.createElement('p');
+                empty.className = 'text-center text-primary/30 text-xs italic mt-4';
+                empty.textContent = 'Chưa có tin nhắn. Đợi khách hàng nhắn trước...';
+                container.appendChild(empty);
+                return;
+            }
+
+            for (var i = 0; i < messages.length; i++) {
+                var m = messages[i];
+                var isAdmin = (m.senderRole === 'ADMIN');
+
+                var wrapper = document.createElement('div');
+                wrapper.className = isAdmin ? 'text-right' : 'text-left';
+
+                var bubble = document.createElement('div');
+                bubble.className = 'inline-block px-4 py-3 text-left max-w-[70%] break-words '
+                    + (isAdmin ? 'bg-secondary text-white' : 'bg-primary/5 text-primary border border-primary/10');
+
+                // textContent chống XSS — không dùng innerHTML
+                var msgEl = document.createElement('p');
+                msgEl.textContent = m.message;
+                bubble.appendChild(msgEl);
+
+                // Timestamp
+                if (m.createdAt) {
+                    var timeEl = document.createElement('span');
+                    timeEl.className = 'block text-[10px] mt-1 opacity-60';
+                    try {
+                        var d = new Date(m.createdAt);
+                        timeEl.textContent = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+                    } catch(ex) { /* ignore */ }
+                    bubble.appendChild(timeEl);
+                }
+
+                wrapper.appendChild(bubble);
+                container.appendChild(wrapper);
+            }
+
+            if (atBottom) container.scrollTop = container.scrollHeight;
+        }
+
+        // ====================================================
+        // GUI TIN NHAN
+        // ====================================================
+        function sendAdminMessage() {
+            if (!currentOrderCode || isSending) return;
+
+            var input = document.getElementById('adminChatInput');
+            var sendBtn = document.getElementById('sendBtn');
+            var text = input.value.trim();
+            if (!text) return;
+
+            isSending = true;
+            sendBtn.disabled = true;
+
+            var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+            var formData = new FormData();
+            formData.append('role', 'ADMIN');
+            formData.append('message', text);
+
+            var headers = {};
+            headers[csrfHeader] = csrfToken;
+
+            fetch('/api/chat/' + currentOrderCode, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: headers,
+                body: formData
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    input.value = '';
+                    fetchMessages();
+                } else if (res.status === 401 || res.status === 403) {
+                    showSessionExpired();
+                }
+            })
+            .catch(function(e) {
+                console.error('Send error:', e);
+            })
+            .finally(function() {
+                isSending = false;
+                sendBtn.disabled = false;
+                input.focus();
+            });
+        }
+
+        // ====================================================
+        // XOA CHAT
+        // ====================================================
+        function clearCurrentChat() {
+            if (!currentOrderCode) return;
+            if (!confirm('Xóa lịch sử chat của đơn #' + currentOrderCode + '?')) return;
+
+            var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            var headers = {};
+            headers[csrfHeader] = csrfToken;
+
+            fetch('/api/chat/' + currentOrderCode, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: headers
+            })
+            .then(function() {
+                document.getElementById('adminChatMessages').innerHTML =
+                    '<p class="text-center text-primary/30 text-xs italic mt-4">Chat đã được xóa.</p>';
+                fetchSidebar();
+            })
+            .catch(function(e) { console.error('Clear error:', e); });
+        }
+
+        // ====================================================
+        // XU LY LOI
+        // ====================================================
+        function incrementError() {
+            errorCount++;
+            if (errorCount >= MAX_ERRORS) {
+                setStatusLost();
+                stopChatPoll();
+            } else {
+                setStatusWarn();
+            }
+        }
+
+        function showSessionExpired() {
+            clearInterval(sidebarTimerId);
+            sidebarTimerId = null;
+            stopChatPoll();
+            document.getElementById('sessionBanner').classList.remove('hidden');
+            setStatusLost();
+        }
+
+        function setStatusOk() {
+            document.getElementById('statusDot').className = 'w-2 h-2 rounded-full bg-green-400';
+            document.getElementById('statusText').textContent = 'Đang kết nối';
+            document.getElementById('statusText').className = 'text-green-400';
+        }
+        function setStatusWarn() {
+            document.getElementById('statusDot').className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
+            document.getElementById('statusText').textContent = 'Kết nối chậm...';
+            document.getElementById('statusText').className = 'text-yellow-400';
+        }
+        function setStatusLost() {
+            document.getElementById('statusDot').className = 'w-2 h-2 rounded-full bg-red-400';
+            document.getElementById('statusText').textContent = 'Mất kết nối';
+            document.getElementById('statusText').className = 'text-red-400';
+        }
+
+        // ====================================================
+        // CLEANUP
+        // ====================================================
+        window.addEventListener('beforeunload', function() {
+            if (sidebarTimerId !== null) clearInterval(sidebarTimerId);
+            stopChatPoll();
+        });
+
+        // ====================================================
+        // START
+        // ====================================================
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html>

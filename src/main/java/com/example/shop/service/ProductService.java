@@ -30,12 +30,12 @@ public class ProductService {
     private final OrderItemRepository orderItemRepository;
     private final GoogleDriveService googleDriveService;
 
-    public ProductService(ProductRepository productRepository, 
-                          ProductVariantRepository productVariantRepository,
-                          CategoryRepository categoryRepository,
-                          ProductImageRepository productImageRepository,
-                          OrderItemRepository orderItemRepository,
-                          GoogleDriveService googleDriveService) {
+    public ProductService(ProductRepository productRepository,
+            ProductVariantRepository productVariantRepository,
+            CategoryRepository categoryRepository,
+            ProductImageRepository productImageRepository,
+            OrderItemRepository orderItemRepository,
+            GoogleDriveService googleDriveService) {
         this.productRepository = productRepository;
         this.productVariantRepository = productVariantRepository;
         this.categoryRepository = categoryRepository;
@@ -62,6 +62,10 @@ public class ProductService {
         }
     }
 
+    public List<Product> getNewArrivals() {
+        return productRepository.findTop8ByOrderByIdSanPhamDesc();
+    }
+
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
@@ -73,7 +77,7 @@ public class ProductService {
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
     }
-    
+
     public List<ProductVariant> getVariantsByProduct(Product product) {
         return productVariantRepository.findByProduct(product);
     }
@@ -96,7 +100,8 @@ public class ProductService {
         if (product != null) {
             // Kiểm tra xem sản phẩm đã có trong đơn hàng nào chưa
             if (orderItemRepository.existsByProductVariant_Product_IdSanPham(id)) {
-                throw new RuntimeException("Không thể xóa sản phẩm này vì nó đã tồn tại trong các đơn hàng. Vui lòng cập nhật trạng thái ngừng kinh doanh thay vì xóa.");
+                throw new RuntimeException(
+                        "Không thể xóa sản phẩm này vì nó đã tồn tại trong các đơn hàng. Vui lòng cập nhật trạng thái ngừng kinh doanh thay vì xóa.");
             }
 
             // 1. Xoá ảnh khỏi Google Drive
@@ -105,7 +110,7 @@ public class ProductService {
             } catch (Exception e) {
                 System.err.println("GDRIVE DELETE ERROR: " + e.getMessage());
             }
-            
+
             // 2. Xoá các ảnh bổ sung
             if (product.getImages() != null) {
                 product.getImages().forEach(img -> {
@@ -119,39 +124,41 @@ public class ProductService {
 
             // 3. Xoá các biến thể liên quan trong CSDL
             productVariantRepository.deleteByProduct(product);
-            
+
             // 4. Xoá sản phẩm trong CSDL (bản ghi ảnh sẽ bị xoá theo CascadeType.ALL)
             productRepository.delete(product);
         }
     }
 
     @Transactional
-    public Product createProduct(String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa, 
-                                 List<String> variantSizes, List<String> variantColors, List<Integer> variantStocks,
-                                 List<BigDecimal> variantCosts, MultipartFile[] files) {
-        
+    public Product createProduct(String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa,
+            List<String> variantSizes, List<String> variantColors, List<Integer> variantStocks,
+            List<BigDecimal> variantCosts, MultipartFile[] files) {
+
         Product product = new Product();
         product.setTenSanPham(tenSanPham);
         product.setGiaNiemYet(giaNiemYet);
         product.setMoTa(moTa);
         product.setMaSKU("SKU-" + System.currentTimeMillis() % 1000000);
-        
+
         Category category = categoryRepository.findById(idDanhMuc).orElse(null);
         product.setCategory(category);
-        
+
         Product savedProduct = productRepository.save(product);
-        
+
         // Xử lý ảnh
         if (files != null && files.length > 0) {
             List<ProductImage> images = new ArrayList<>();
             for (int i = 0; i < files.length; i++) {
-                if (files[i] == null || files[i].isEmpty()) continue;
+                if (files[i] == null || files[i].isEmpty())
+                    continue;
                 try {
                     String path = googleDriveService.uploadFile(files[i]);
                     System.out.println("GDRIVE: Stored file at ID: " + path);
-                    
+
                     images.add(new ProductImage(path, savedProduct));
-                    if (i == 0) savedProduct.setHinhAnh(path);
+                    if (i == 0)
+                        savedProduct.setHinhAnh(path);
                 } catch (java.io.IOException | RuntimeException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (createProduct): " + e.getMessage());
                 } catch (Exception e) {
@@ -163,32 +170,32 @@ public class ProductService {
                 productRepository.save(savedProduct);
             }
         }
-        
+
         // Xử lý biến thể theo từng dòng người dùng nhập.
         List<ProductVariant> variants = buildVariantsFromRequest(
-                savedProduct, variantSizes, variantColors, variantStocks, variantCosts
-        );
+                savedProduct, variantSizes, variantColors, variantStocks, variantCosts);
         if (variants.isEmpty()) {
             throw new RuntimeException("Vui lòng thêm ít nhất 1 biến thể (size, màu, số lượng, giá vốn).");
         }
         productVariantRepository.saveAll(variants);
-        
+
         return savedProduct;
     }
 
     @Transactional
     public void updateProduct(Long id, String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa,
-                              List<Long> variantIds, List<Integer> variantStocks, List<BigDecimal> variantCosts,
-                              MultipartFile[] files) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
-        
+            List<Long> variantIds, List<Integer> variantStocks, List<BigDecimal> variantCosts,
+            MultipartFile[] files) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
+
         product.setTenSanPham(tenSanPham);
         product.setGiaNiemYet(giaNiemYet);
         product.setMoTa(moTa);
-        
+
         Category category = categoryRepository.findById(idDanhMuc).orElse(null);
         product.setCategory(category);
-        
+
         // Nếu có tải lên ảnh mới
         if (files != null && files.length > 0 && !files[0].isEmpty()) {
             // Xoá ảnh cũ (về mặt vật lý và DB)
@@ -197,16 +204,18 @@ public class ProductService {
                 productImageRepository.deleteByProduct(product);
                 product.getImages().clear();
             }
-            
+
             // Lưu ảnh mới
             List<ProductImage> newImages = new ArrayList<>();
             for (int i = 0; i < files.length; i++) {
-                if (files[i] == null || files[i].isEmpty()) continue;
+                if (files[i] == null || files[i].isEmpty())
+                    continue;
                 try {
                     String path = googleDriveService.uploadFile(files[i]);
                     System.out.println("GDRIVE: Stored file at ID: " + path);
                     newImages.add(new ProductImage(path, product));
-                    if (i == 0) product.setHinhAnh(path);
+                    if (i == 0)
+                        product.setHinhAnh(path);
                 } catch (java.io.IOException | RuntimeException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (updateProduct): " + e.getMessage());
                 } catch (Exception e) {
@@ -217,7 +226,7 @@ public class ProductService {
                 productImageRepository.saveAll(newImages);
             }
         }
-        
+
         productRepository.save(product);
 
         // Cập nhật số lượng + giá vốn theo từng biến thể hiện có
@@ -225,8 +234,10 @@ public class ProductService {
         for (int i = 0; i < count; i++) {
             Long variantId = variantIds.get(i);
             ProductVariant variant = productVariantRepository.findById(variantId).orElse(null);
-            if (variant == null) continue;
-            if (!variant.getProduct().getIdSanPham().equals(product.getIdSanPham())) continue;
+            if (variant == null)
+                continue;
+            if (!variant.getProduct().getIdSanPham().equals(product.getIdSanPham()))
+                continue;
 
             Integer stock = variantStocks.get(i);
             BigDecimal cost = variantCosts.get(i);
@@ -237,14 +248,16 @@ public class ProductService {
     }
 
     public Map<Long, Integer> getProductStockMap(List<Product> products) {
-        if (products == null || products.isEmpty()) return new HashMap<>();
-        
+        if (products == null || products.isEmpty())
+            return new HashMap<>();
+
         List<Long> ids = products.stream().map(Product::getIdSanPham).toList();
         List<ProductVariantRepository.ProductStockView> stocks = productVariantRepository.sumStockByProductIds(ids);
-        
+
         Map<Long, Integer> productStocks = new HashMap<>();
         // Khởi tạo tất cả là 0
-        for (Long id : ids) productStocks.put(id, 0);
+        for (Long id : ids)
+            productStocks.put(id, 0);
         // Cập nhật từ dữ liệu DB
         for (var s : stocks) {
             Integer total = s.getTotalStock();
@@ -254,17 +267,17 @@ public class ProductService {
     }
 
     private List<ProductVariant> buildVariantsFromRequest(Product savedProduct,
-                                                          List<String> variantSizes,
-                                                          List<String> variantColors,
-                                                          List<Integer> variantStocks,
-                                                          List<BigDecimal> variantCosts) {
+            List<String> variantSizes,
+            List<String> variantColors,
+            List<Integer> variantStocks,
+            List<BigDecimal> variantCosts) {
         if (variantSizes == null || variantColors == null || variantStocks == null || variantCosts == null) {
             return new ArrayList<>();
         }
 
         int count = Math.min(variantSizes.size(),
-                    Math.min(variantColors.size(),
-                    Math.min(variantStocks.size(), variantCosts.size())));
+                Math.min(variantColors.size(),
+                        Math.min(variantStocks.size(), variantCosts.size())));
 
         List<ProductVariant> variants = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -273,10 +286,12 @@ public class ProductService {
             Integer stockRaw = variantStocks.get(i);
             BigDecimal costRaw = variantCosts.get(i);
 
-            if (sizeRaw == null || colorRaw == null) continue;
+            if (sizeRaw == null || colorRaw == null)
+                continue;
             String size = sizeRaw.trim();
             String color = colorRaw.trim();
-            if (size.isEmpty() || color.isEmpty()) continue;
+            if (size.isEmpty() || color.isEmpty())
+                continue;
 
             ProductVariant variant = new ProductVariant();
             variant.setProduct(savedProduct);

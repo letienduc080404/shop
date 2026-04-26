@@ -41,33 +41,94 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<ProductImage> images;
 
-    public Product() {}
+    public Product() {
+    }
 
-    public java.util.List<ProductImage> getImages() { return images; }
-    public void setImages(java.util.List<ProductImage> images) { this.images = images; }
+    public java.util.List<ProductImage> getImages() {
+        return images;
+    }
 
-    public Long getIdSanPham() { return idSanPham; }
-    public void setIdSanPham(Long idSanPham) { this.idSanPham = idSanPham; }
-    public String getTenSanPham() { return tenSanPham; }
-    public void setTenSanPham(String tenSanPham) { this.tenSanPham = tenSanPham; }
-    public String getMaSKU() { return maSKU; }
-    public void setMaSKU(String maSKU) { this.maSKU = maSKU; }
-    public String getMoTa() { return moTa; }
-    public void setMoTa(String moTa) { this.moTa = moTa; }
-    public BigDecimal getGiaNiemYet() { return giaNiemYet; }
-    public void setGiaNiemYet(BigDecimal giaNiemYet) { this.giaNiemYet = giaNiemYet; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-    public String getChatLieu() { return chatLieu; }
-    public void setChatLieu(String chatLieu) { this.chatLieu = chatLieu; }
-    public TrangThaiSanPham getTrangThai() { return trangThai; }
-    public void setTrangThai(TrangThaiSanPham trangThai) { this.trangThai = trangThai; }
-    public String getHinhAnh() { return hinhAnh; }
-    public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
+    public void setImages(java.util.List<ProductImage> images) {
+        this.images = images;
+    }
+
+    public Long getIdSanPham() {
+        return idSanPham;
+    }
+
+    public void setIdSanPham(Long idSanPham) {
+        this.idSanPham = idSanPham;
+    }
+
+    public String getTenSanPham() {
+        return tenSanPham;
+    }
+
+    public void setTenSanPham(String tenSanPham) {
+        this.tenSanPham = tenSanPham;
+    }
+
+    public String getMaSKU() {
+        return maSKU;
+    }
+
+    public void setMaSKU(String maSKU) {
+        this.maSKU = maSKU;
+    }
+
+    public String getMoTa() {
+        return moTa;
+    }
+
+    public void setMoTa(String moTa) {
+        this.moTa = moTa;
+    }
+
+    public BigDecimal getGiaNiemYet() {
+        return giaNiemYet;
+    }
+
+    public void setGiaNiemYet(BigDecimal giaNiemYet) {
+        this.giaNiemYet = giaNiemYet;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public String getChatLieu() {
+        return chatLieu;
+    }
+
+    public void setChatLieu(String chatLieu) {
+        this.chatLieu = chatLieu;
+    }
+
+    public TrangThaiSanPham getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(TrangThaiSanPham trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public String getHinhAnh() {
+        return hinhAnh;
+    }
+
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
+    }
 
     public int getTotalStock() {
-        if (idSanPham == null) return 0;
-        // Cách này hơi kém tối ưu nếu gọi nhiều lần; hiện tại admin sẽ tính tồn kho ở service
+        if (idSanPham == null)
+            return 0;
+        // Cách này hơi kém tối ưu nếu gọi nhiều lần; hiện tại admin sẽ tính tồn kho ở
+        // service
         // Tối ưu hơn là dùng truy vấn aggregate hoặc một cột lưu sẵn tổng tồn
         return 0; // Tồn kho sẽ được xử lý ở service/truy vấn tuỳ nhu cầu
     }
@@ -86,7 +147,8 @@ public class Product {
             return "/uploads/" + hinhAnh;
         }
         // Placeholder dựa theo ID sản phẩm
-        if (idSanPham == null) return "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800";
+        if (idSanPham == null)
+            return "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800";
         int mod = (int) (idSanPham % 6);
         return switch (mod) {
             case 0 -> "https://images.unsplash.com/photo-1594932224440-946777db932f?w=800";

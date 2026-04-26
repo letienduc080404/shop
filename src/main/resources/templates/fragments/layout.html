@@ -4,6 +4,8 @@
 <head th:fragment="head(title)">
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title th:text="${title} + ' | DOMINO'">DOMINO</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
@@ -113,37 +115,53 @@
             </div>
             <div class="hidden md:flex items-center gap-10">
                 <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
-                    href="/shop">COLLECTIONS</a>
+                    href="/shop">HOME</a>
                 <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
-                    href="/shop">NEW ARRIVALS</a>
+                    href="/shop?newArrivals=true">NEW ARRIVALS</a>
                 <a class="text-[#1c1c1c] opacity-70 hover:opacity-100 transition-opacity font-label uppercase tracking-widest text-[10px] font-bold"
-                    href="#">EDITORIAL</a>
+                    href="/collections">COLLECTIONS</a>
             </div>
             <div class="flex items-center gap-6">
-                <!-- Search Toggle -->
-                <button class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors">search</button>
-                
+                <!-- Search Form -->
+                <form th:action="@{/shop}" method="get"
+                    class="flex items-center border-b border-outline-variant/50 focus-within:border-primary transition-colors pb-1">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Search"
+                        class="w-20 md:w-32 text-xs bg-transparent border-none focus:ring-0 px-1 py-0 outline-none text-[#1c1c1c] placeholder-outline/50">
+                    <button type="submit"
+                        class="material-symbols-outlined text-primary text-xl hover:text-secondary transition-colors">search</button>
+                </form>
                 <!-- Account / Login -->
                 <div class="flex items-center gap-4">
-                    <a href="/login" class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors" sec:authorize="isAnonymous()">person</a>
+                    <a href="/login"
+                        class="material-symbols-outlined text-primary text-2xl hover:text-secondary transition-colors"
+                        sec:authorize="isAnonymous()">person</a>
                     <div th:if="${#authorization.expression('isAuthenticated()')}" class="flex items-center gap-2">
                         <!-- Admin Shortcut -->
-                        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}" 
-                           href="/admin/products" 
-                           class="mr-2 text-[10px] font-bold uppercase tracking-widest text-secondary hover:underline transition-all">
-                           ADMIN PANEL
+                        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}" href="/admin/products"
+                            class="mr-2 text-[10px] font-bold uppercase tracking-widest text-secondary hover:underline transition-all">
+                            ADMIN PANEL
                         </a>
-                        
-                        <a href="/profile" class="text-[10px] font-bold uppercase tracking-widest hover:text-secondary transition-colors" sec:authentication="name">User</a>
+
+                        <a href="/account" th:if="${!#authorization.expression('hasRole(''ADMIN'')')}"
+                            class="text-[10px] font-bold uppercase tracking-widest hover:text-secondary transition-colors"
+                            sec:authentication="name">User</a>
+                        <a href="/orders" th:if="${!#authorization.expression('hasRole(''ADMIN'')')}"
+                            class="text-[10px] font-bold uppercase tracking-widest hover:text-secondary transition-colors hidden md:block">Lịch
+                            Sử Đơn Hàng</a>
+                        <span th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                            class="text-[10px] font-bold uppercase tracking-widest text-secondary"
+                            sec:authentication="name">Admin</span>
                         <form th:action="@{/logout}" method="post" class="inline">
-                            <button type="submit" class="material-symbols-outlined text-primary text-xl hover:text-secondary transition-colors">logout</button>
+                            <button type="submit"
+                                class="material-symbols-outlined text-primary text-xl hover:text-secondary transition-colors">logout</button>
                         </form>
                     </div>
                 </div>
 
                 <!-- Shopping Bag -->
                 <a href="/cart" class="relative group">
-                    <span class="material-symbols-outlined text-primary text-2xl group-hover:text-secondary transition-colors">shopping_bag</span>
+                    <span
+                        class="material-symbols-outlined text-primary text-2xl group-hover:text-secondary transition-colors">shopping_bag</span>
                 </a>
             </div>
         </div>
@@ -155,19 +173,27 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24">
                 <div class="space-y-8">
                     <h3 class="text-xl font-headline font-black tracking-tighter uppercase">DOMINO</h3>
-                    <p class="text-xs text-outline leading-loose tracking-[0.1em] uppercase">97 MAN THIỆN, PHƯỜNG TĂNG NHƠN PHÚ, TP. HỒ CHÍ MINH</p>
+                    <p class="text-xs text-outline leading-loose tracking-[0.1em] uppercase">97 MAN THIỆN, PHƯỜNG TĂNG
+                        NHƠN PHÚ, TP. HỒ CHÍ MINH</p>
                 </div>
                 <div class="space-y-8">
                     <h3 class="text-xs font-label font-bold tracking-[0.2em] uppercase">QUICK LINKS</h3>
                     <ul class="space-y-4">
-                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">PRIVACY POLICY</a></li>
-                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">TERMS OF SERVICE</a></li>
-                        <li><a href="#" class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">CONTACT</a></li>
+                        <li><a href="#"
+                                class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">PRIVACY
+                                POLICY</a></li>
+                        <li><a href="#"
+                                class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">TERMS
+                                OF SERVICE</a></li>
+                        <li><a href="#"
+                                class="text-xs text-outline hover:text-secondary transition-colors uppercase tracking-widest">CONTACT</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="space-y-8">
                     <h3 class="text-xs font-label font-bold tracking-[0.2em] uppercase">NEWSLETTER</h3>
-                    <p class="text-[10px] text-outline/60 uppercase tracking-widest">© 2024 CÔNG TY CỔ PHẦN SÁU ANH TRAI. ALL RIGHTS RESERVED.</p>
+                    <p class="text-[10px] text-outline/60 uppercase tracking-widest">© 2024 CÔNG TY CỔ PHẦN SÁU ANH
+                        TRAI. ALL RIGHTS RESERVED.</p>
                 </div>
             </div>
         </div>

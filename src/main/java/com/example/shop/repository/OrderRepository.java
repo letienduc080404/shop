@@ -18,6 +18,7 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByMaDonHang(String maDonHang);
+    List<Order> findByCustomer_EmailOrderByNgayDatDesc(String email);
 
     @Override
     @EntityGraph(attributePaths = {"customer"})

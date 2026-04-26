@@ -8,6 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Principal;
 
 @Controller
 public class AuthController {
@@ -32,12 +35,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@RequestParam String hoTen,
-                             @RequestParam String email,
-                             @RequestParam String password,
-                             @RequestParam(required = false) String soDienThoai,
-                             @RequestParam(required = false) String diaChi,
-                             Model model) {
-        
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam(required = false) String soDienThoai,
+            @RequestParam(required = false) String diaChi,
+            Model model) {
+
         if (customerRepository.findByEmail(email).isPresent()) {
             model.addAttribute("error", "Email đã tồn tại.");
             return "register";
@@ -53,5 +56,32 @@ public class AuthController {
         customerRepository.save(customer);
 
         return "redirect:/login?registered=true";
+    }
+
+    @GetMapping("/account")
+    public String accountPage(Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        Customer customer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (customer == null) return "redirect:/login";
+        model.addAttribute("customer", customer);
+        return "account";
+    }
+
+    @PostMapping("/account/update")
+    public String updateAccount(@RequestParam String hoTen,
+                                @RequestParam(required = false) String soDienThoai,
+                                @RequestParam(required = false) String diaChi,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        Customer customer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (customer != null) {
+            customer.setHoTen(hoTen);
+            customer.setSoDienThoai(soDienThoai);
+            customer.setDiaChi(diaChi);
+            customerRepository.save(customer);
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công!");
+        }
+        return "redirect:/account";
     }
 }

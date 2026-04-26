@@ -37,24 +37,78 @@ public class Customer {
     @Column(name = "Role", length = 50)
     private String role = "ROLE_USER";
 
-    public Customer() {}
+    public Customer() {
+    }
 
-    public Long getIdKhachHang() { return idKhachHang; }
-    public void setIdKhachHang(Long idKhachHang) { this.idKhachHang = idKhachHang; }
-    public String getHoTen() { return hoTen; }
-    public void setHoTen(String hoTen) { this.hoTen = hoTen; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getMatKhau() { return matKhau; }
-    public void setMatKhau(String matKhau) { this.matKhau = matKhau; }
-    public String getSoDienThoai() { return soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
-    public String getDiaChi() { return diaChi; }
-    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    public LocalDateTime getNgayTao() { return ngayTao; }
-    public void setNgayTao(LocalDateTime ngayTao) { this.ngayTao = ngayTao; }
-    public HangThanhVien getHangThanhVien() { return hangThanhVien; }
-    public void setHangThanhVien(HangThanhVien hangThanhVien) { this.hangThanhVien = hangThanhVien; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public Long getIdKhachHang() {
+        return idKhachHang;
+    }
+
+    public void setIdKhachHang(Long idKhachHang) {
+        this.idKhachHang = idKhachHang;
+    }
+
+    public String getHoTen() {
+        return hoTen;
+    }
+
+    public void setHoTen(String hoTen) {
+        this.hoTen = hoTen;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getMatKhau() {
+        return matKhau;
+    }
+
+    public void setMatKhau(String matKhau) {
+        this.matKhau = matKhau;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
+
+    public LocalDateTime getNgayTao() {
+        return ngayTao;
+    }
+
+    public void setNgayTao(LocalDateTime ngayTao) {
+        this.ngayTao = ngayTao;
+    }
+
+    public HangThanhVien getHangThanhVien() {
+        return hangThanhVien;
+    }
+
+    public void setHangThanhVien(HangThanhVien hangThanhVien) {
+        this.hangThanhVien = hangThanhVien;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

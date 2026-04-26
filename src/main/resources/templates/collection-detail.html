@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${collection.name})}"></head>
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+        <header class="mb-16">
+            <nav class="mb-8">
+                <a href="/collections" class="text-[10px] font-bold uppercase tracking-widest text-outline hover:text-primary transition-colors">← QUAY LẠI BỘ SƯU TẬP</a>
+            </nav>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-none mb-6 uppercase" th:text="${collection.name}">TÊN BỘ SƯU TẬP</h1>
+            <p class="text-xs tracking-[0.2em] text-outline uppercase max-w-2xl leading-relaxed" th:text="${collection.description}">
+                Mô tả chi tiết về bộ sưu tập.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
+            <div th:each="product : ${products}" class="group">
+                <a th:href="@{/product/{id}(id=${product.idSanPham})}" class="block relative aspect-[3/4] overflow-hidden bg-surface-container-low mb-6">
+                    <img th:src="${product.hinhAnh != null && !product.hinhAnh.isEmpty() ? 'https://lh3.googleusercontent.com/d/' + product.hinhAnh : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400'}" 
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                         th:alt="${product.tenSanPham}">
+                </a>
+                <div class="space-y-2">
+                    <p class="text-[10px] text-outline uppercase tracking-widest" th:text="${product.category != null ? product.category.tenDanhMuc : 'Essentials'}">CATEGORY</p>
+                    <a th:href="@{/product/{id}(id=${product.idSanPham})}" class="block">
+                        <h3 class="text-xs font-bold uppercase tracking-widest group-hover:text-secondary transition-colors" th:text="${product.tenSanPham}">PRODUCT NAME</h3>
+                    </a>
+                    <p class="text-xs font-bold" th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + '₫'">0₫</p>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${products == null || products.isEmpty()}" class="py-24 text-center border border-dashed border-outline-variant/30">
+            <p class="text-xs tracking-widest text-outline uppercase">Hiện chưa có sản phẩm nào trong bộ sưu tập này.</p>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

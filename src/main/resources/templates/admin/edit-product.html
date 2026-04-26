@@ -1,158 +1,190 @@
 <!DOCTYPE html>
-<html th:replace="~{admin/layout :: layout('Chỉnh Sửa Sản Phẩm', ~{::content}, 'inventory')}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{admin/layout :: layout('Chỉnh Sửa Sản Phẩm', ~{::content}, 'inventory')}"
+    xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<div th:fragment="content">
-    <header class="flex justify-between items-center px-12 py-8 bg-surface">
-        <div>
-            <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">Chỉnh Sửa Sản Phẩm</h2>
-            <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Cập nhật thông tin sản phẩm: <span class="text-primary" th:text="${product.tenSanPham}">NAME</span></p>
-        </div>
-        <a href="/admin/products" class="text-xs font-bold tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">arrow_back</span> QUAY LẠI DANH SÁCH
-        </a>
-    </header>
+    <div th:fragment="content">
+        <header class="flex justify-between items-center px-12 py-8 bg-surface">
+            <div>
+                <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">Chỉnh Sửa Sản Phẩm</h2>
+                <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Cập nhật thông tin
+                    sản phẩm: <span class="text-primary" th:text="${product.tenSanPham}">NAME</span></p>
+            </div>
+            <a href="/admin/products"
+                class="text-xs font-bold tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> QUAY LẠI DANH SÁCH
+            </a>
+        </header>
 
-    <main class="px-12 pb-32">
-        <form th:action="@{'/admin/product/edit/' + ${product.idSanPham}}" method="post" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-16">
-            <!-- Left Column: Basic Info -->
-            <div class="lg:col-span-7 space-y-12">
-                <section>
-                    <h3 class="text-xs font-bold tracking-[0.3em] text-primary uppercase border-b border-outline-variant pb-4 mb-8">Thông tin cơ bản</h3>
-                    <div class="space-y-8">
-                        <div class="group">
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Tên Sản Phẩm</label>
-                            <input type="text" name="tenSanPham" th:value="${product.tenSanPham}" required
-                                   class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
-                                   placeholder="VÍ DỤ: ÁO SƠ MI LỤA CAO CẤP">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-8">
+        <main class="px-12 pb-32">
+            <form th:action="@{'/admin/product/edit/' + ${product.idSanPham}}" method="post"
+                enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <!-- Left Column: Basic Info -->
+                <div class="lg:col-span-7 space-y-12">
+                    <section>
+                        <h3
+                            class="text-xs font-bold tracking-[0.3em] text-primary uppercase border-b border-outline-variant pb-4 mb-8">
+                            Thông tin cơ bản</h3>
+                        <div class="space-y-8">
                             <div class="group">
-                                <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Danh Mục</label>
-                                <select name="idDanhMuc" required
+                                <label
+                                    class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Tên
+                                    Sản Phẩm</label>
+                                <input type="text" name="tenSanPham" th:value="${product.tenSanPham}" required
+                                    class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
+                                    placeholder="VÍ DỤ: ÁO SƠ MI LỤA CAO CẤP">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="group">
+                                    <label
+                                        class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Danh
+                                        Mục</label>
+                                    <select name="idDanhMuc" required
                                         class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none appearance-none cursor-pointer">
-                                    <option th:each="cat : ${categories}" 
-                                            th:value="${cat.idDanhMuc}" 
+                                        <option th:each="cat : ${categories}" th:value="${cat.idDanhMuc}"
                                             th:text="${cat.tenDanhMuc}"
-                                            th:selected="${cat.idDanhMuc == product.category.idDanhMuc}">CATEGORY</option>
-                                </select>
+                                            th:selected="${cat.idDanhMuc == product.category.idDanhMuc}">CATEGORY
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="group">
+                                    <label
+                                        class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Giá
+                                        Niêm Yết (VND)</label>
+                                    <input type="number" name="giaNiemYet" th:value="${product.giaNiemYet}" required
+                                        class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
+                                        placeholder="2500000">
+                                </div>
                             </div>
+
                             <div class="group">
-                                <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Giá Niêm Yết (VND)</label>
-                                <input type="number" name="giaNiemYet" th:value="${product.giaNiemYet}" required
-                                       class="w-full bg-transparent border-b border-outline-variant py-3 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none"
-                                       placeholder="2500000">
-                            </div>
-                        </div>
+                                <label
+                                    class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4 transition-colors group-focus-within:text-primary">
+                                    Hình Ảnh Sản Phẩm (Tải lên để thay đổi)
+                                </label>
 
-                        <div class="group">
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4 transition-colors group-focus-within:text-primary">
-                                Hình Ảnh Sản Phẩm (Tải lên để thay đổi)
-                            </label>
-                            
-                            <div class="flex gap-4 mb-4">
-                                <div th:each="img : ${product.images}" class="w-20 h-24 relative group/img">
-                                    <img th:src="${img.duongDan}" class="w-full h-full object-cover">
-                                </div>
-                            </div>
-
-                            <div class="relative border border-dashed border-outline-variant hover:border-primary transition-all duration-500 p-12 text-center group/upload cursor-pointer bg-surface-container-lowest"
-                                 onclick="document.getElementById('fileInput').click()">
-                                
-                                <input type="file" id="fileInput" name="files" multiple class="hidden" onchange="previewImages(this)">
-                                
-                                <div class="space-y-4">
-                                    <span class="material-symbols-outlined text-4xl text-outline-variant group-hover/upload:text-secondary transition-colors duration-500">
-                                        add_a_photo
-                                    </span>
-                                    <div class="space-y-1">
-                                        <p class="text-[10px] font-bold tracking-[0.2em] uppercase">Nhấn để thay đổi ảnh</p>
-                                        <p class="text-[9px] text-on-surface-variant tracking-[0.2em] uppercase opacity-40">Để trống nếu không muốn thay đổi</p>
+                                <div class="flex gap-4 mb-4">
+                                    <div th:each="img : ${product.images}" class="w-20 h-24 relative group/img">
+                                        <img th:src="${img.duongDan}" class="w-full h-full object-cover">
                                     </div>
                                 </div>
-                            </div>
-                            <div id="imagePreview" class="mt-6 grid grid-cols-4 gap-4"></div>
-                        </div>
 
-                        <script>
-                            function previewImages(input) {
-                                const container = document.getElementById('imagePreview');
-                                container.innerHTML = '';
-                                if (input.files) {
-                                    Array.from(input.files).forEach(file => {
-                                        const reader = new FileReader();
-                                        reader.onload = function(e) {
-                                            const div = document.createElement('div');
-                                            div.className = 'aspect-[3/4] bg-surface-container overflow-hidden border border-outline-variant/10';
-                                            div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
-                                            container.appendChild(div);
-                                        }
-                                        reader.readAsDataURL(file);
-                                    });
+                                <div class="relative border border-dashed border-outline-variant hover:border-primary transition-all duration-500 p-12 text-center group/upload cursor-pointer bg-surface-container-lowest"
+                                    onclick="document.getElementById('fileInput').click()">
+
+                                    <input type="file" id="fileInput" name="files" multiple class="hidden"
+                                        onchange="previewImages(this)">
+
+                                    <div class="space-y-4">
+                                        <span
+                                            class="material-symbols-outlined text-4xl text-outline-variant group-hover/upload:text-secondary transition-colors duration-500">
+                                            add_a_photo
+                                        </span>
+                                        <div class="space-y-1">
+                                            <p class="text-[10px] font-bold tracking-[0.2em] uppercase">Nhấn để thay đổi
+                                                ảnh</p>
+                                            <p
+                                                class="text-[9px] text-on-surface-variant tracking-[0.2em] uppercase opacity-40">
+                                                Để trống nếu không muốn thay đổi</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="imagePreview" class="mt-6 grid grid-cols-4 gap-4"></div>
+                            </div>
+
+                            <script>
+                                function previewImages(input) {
+                                    const container = document.getElementById('imagePreview');
+                                    container.innerHTML = '';
+                                    if (input.files) {
+                                        Array.from(input.files).forEach(file => {
+                                            const reader = new FileReader();
+                                            reader.onload = function (e) {
+                                                const div = document.createElement('div');
+                                                div.className = 'aspect-[3/4] bg-surface-container overflow-hidden border border-outline-variant/10';
+                                                div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                                                container.appendChild(div);
+                                            }
+                                            reader.readAsDataURL(file);
+                                        });
+                                    }
                                 }
-                            }
-                        </script>
+                            </script>
 
-                        <div class="group">
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Mô Tả Sản Phẩm</label>
-                            <textarea name="moTa" rows="6" required th:text="${product.moTa}"
-                                      class="w-full bg-transparent border border-outline-variant p-4 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none resize-none"
-                                      placeholder="Mô tả chi tiết về chất liệu, thiết kế..."></textarea>
+                            <div class="group">
+                                <label
+                                    class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2 group-focus-within:text-primary transition-colors">Mô
+                                    Tả Sản Phẩm</label>
+                                <textarea name="moTa" rows="6" required th:text="${product.moTa}"
+                                    class="w-full bg-transparent border border-outline-variant p-4 focus:border-primary focus:ring-0 text-sm transition-all duration-300 outline-none resize-none"
+                                    placeholder="Mô tả chi tiết về chất liệu, thiết kế..."></textarea>
+                            </div>
                         </div>
-                    </div>
-                </section>
-            </div>
+                    </section>
+                </div>
 
-            <!-- Right Column: Info -->
-            <div class="lg:col-span-5 space-y-12">
-                <section class="bg-surface-container-low p-10 border border-outline-variant/10">
-                    <h3 class="text-xs font-bold tracking-[0.3em] text-primary uppercase border-b border-outline-variant pb-4 mb-8">Thông tin hệ thống</h3>
-                    
-                    <div class="space-y-8">
-                        <div>
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2">Mã SKU</label>
-                            <input type="text" th:value="${product.maSKU}" readonly
-                                   class="w-full bg-surface-container-high border-b border-outline-variant/30 py-3 text-sm outline-none px-2 opacity-60">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4">Danh sách biến thể hiện có</label>
-                            <div class="space-y-3">
-                                <div th:each="v : ${variants}" class="grid grid-cols-12 gap-2 items-end bg-surface-container-highest/50 px-4 py-3 text-[10px] font-bold tracking-widest uppercase border border-outline-variant/5">
-                                    <input type="hidden" name="variantIds" th:value="${v.idBienThe}">
-                                    <div class="col-span-4">
-                                        <p th:text="${v.mauSac} + ' - ' + ${v.kichThuoc}">MÀU - SIZE</p>
-                                    </div>
-                                    <div class="col-span-4">
-                                        <label class="block text-[9px] mb-1">Số lượng</label>
-                                        <input type="number" name="variantStocks" min="0" th:value="${v.soLuongTon}" required
-                                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
-                                    </div>
-                                    <div class="col-span-4">
-                                        <label class="block text-[9px] mb-1">Giá vốn</label>
-                                        <input type="number" name="variantCosts" min="0" step="1000" th:value="${v.giaVon}" required
-                                               class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
+                <!-- Right Column: Info -->
+                <div class="lg:col-span-5 space-y-12">
+                    <section class="bg-surface-container-low p-10 border border-outline-variant/10">
+                        <h3
+                            class="text-xs font-bold tracking-[0.3em] text-primary uppercase border-b border-outline-variant pb-4 mb-8">
+                            Thông tin hệ thống</h3>
+
+                        <div class="space-y-8">
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-2">Mã
+                                    SKU</label>
+                                <input type="text" th:value="${product.maSKU}" readonly
+                                    class="w-full bg-surface-container-high border-b border-outline-variant/30 py-3 text-sm outline-none px-2 opacity-60">
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase mb-4">Danh
+                                    sách biến thể hiện có</label>
+                                <div class="space-y-3">
+                                    <div th:each="v : ${variants}"
+                                        class="grid grid-cols-12 gap-2 items-end bg-surface-container-highest/50 px-4 py-3 text-[10px] font-bold tracking-widest uppercase border border-outline-variant/5">
+                                        <input type="hidden" name="variantIds" th:value="${v.idBienThe}">
+                                        <div class="col-span-4">
+                                            <p th:text="${v.mauSac} + ' - ' + ${v.kichThuoc}">MÀU - SIZE</p>
+                                        </div>
+                                        <div class="col-span-4">
+                                            <label class="block text-[9px] mb-1">Số lượng</label>
+                                            <input type="number" name="variantStocks" min="0" th:value="${v.soLuongTon}"
+                                                required
+                                                class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
+                                        </div>
+                                        <div class="col-span-4">
+                                            <label class="block text-[9px] mb-1">Giá vốn</label>
+                                            <input type="number" name="variantCosts" min="0" step="1000"
+                                                th:value="${v.giaVon}" required
+                                                class="w-full bg-transparent border border-outline-variant/30 px-2 py-2 text-[11px]">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="bg-amber-50 p-4 border-l-4 border-amber-400">
+                                <p class="text-[10px] text-amber-800 font-bold tracking-widest uppercase">Lưu ý</p>
+                                <p class="text-[9px] text-amber-700 mt-1 uppercase tracking-wider">Bạn có thể cập nhật
+                                    trực tiếp tồn kho và giá vốn cho từng biến thể ngay tại đây.</p>
+                            </div>
                         </div>
 
-                        <div class="bg-amber-50 p-4 border-l-4 border-amber-400">
-                             <p class="text-[10px] text-amber-800 font-bold tracking-widest uppercase">Lưu ý</p>
-                             <p class="text-[9px] text-amber-700 mt-1 uppercase tracking-wider">Bạn có thể cập nhật trực tiếp tồn kho và giá vốn cho từng biến thể ngay tại đây.</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-12 pt-8 border-t border-outline-variant/20">
-                        <button type="submit"
+                        <div class="mt-12 pt-8 border-t border-outline-variant/20">
+                            <button type="submit"
                                 class="w-full bg-primary text-white py-5 text-xs font-bold tracking-[0.3em] uppercase hover:bg-secondary transition-all duration-500 shadow-2xl hover:shadow-primary/20">
-                            LƯU THAY ĐỔI
-                        </button>
-                    </div>
-                </section>
-            </div>
-        </form>
-    </main>
-</div>
+                                LƯU THAY ĐỔI
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </main>
+    </div>
 </body>
+
 </html>

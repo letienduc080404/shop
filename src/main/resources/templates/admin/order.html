@@ -1,212 +1,355 @@
 <!DOCTYPE html>
-<html th:replace="~{admin/layout :: layout('QUẢN LÝ ĐƠN HÀNG', ~{::content}, 'orders')}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{admin/layout :: layout('QUẢN LÝ ĐƠN HÀNG', ~{::content}, 'orders')}"
+    xmlns:th="http://www.thymeleaf.org">
+
 <body>
-<div th:fragment="content" class="p-12">
-<!-- Top Navigation Context -->
-<header class="flex justify-between items-baseline mb-16">
-<div>
-<h2 class="text-4xl font-serif font-bold tracking-tight text-primary">QUẢN LÝ ĐƠN HÀNG</h2>
-<p class="text-xs font-label uppercase tracking-widest text-on-primary-container mt-2">Tổng quan &amp; Điều phối giao dịch</p>
-</div>
-<div class="flex items-center gap-8">
-<div class="relative">
-<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-outline-variant text-lg">search</span>
-<input class="bg-transparent border-0 border-b border-outline-variant pl-8 pr-4 py-2 text-xs tracking-widest focus:ring-0 focus:border-secondary transition-colors placeholder:text-outline-variant uppercase" placeholder="TÌM KIẾM ĐƠN HÀNG..." type="text"/>
-</div>
-<div class="flex items-center gap-4">
-<div class="text-right">
-<p class="text-[10px] font-bold tracking-widest uppercase">Admin User</p>
-<p class="text-[9px] text-secondary tracking-tighter uppercase">Super Admin</p>
-</div>
-<div class="w-10 h-10 bg-surface-container-high flex items-center justify-center">
-<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
-</div>
-</div>
-</div>
-</header>
-<!-- Stats Grid (Bento Style) -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-0 mb-12 border border-outline-variant/10">
-<div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
-<p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">TỔNG ĐƠN HÀNG</p>
-<p class="text-4xl font-serif font-black" th:text="${totalOrders}">0</p>
-<div class="mt-4 flex items-center gap-2 text-[10px] text-green-600 font-bold">
-<span class="material-symbols-outlined text-sm">trending_up</span>
-<span>THEO DÕI THEO THỜI GIAN</span>
-</div>
-</div>
-<div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
-<p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">ĐANG XỬ LÝ</p>
-<p class="text-4xl font-serif font-black text-secondary" th:text="${pendingCount}">0</p>
-<p class="mt-4 text-[10px] text-on-primary-container">YÊU CẦU ƯU TIÊN</p>
-</div>
-<div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
-<p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">DOANH THU</p>
-<p class="text-4xl font-serif font-black"
-   th:text="${#numbers.formatDecimal(revenueThisMonth, 0, 'COMMA', 0, 'POINT')}">0</p>
-<p class="mt-4 text-[10px] text-on-primary-container uppercase tracking-widest">VNĐ / THÁNG NÀY</p>
-</div>
-<div class="p-8 bg-surface-container-lowest">
-<p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">TỶ LỆ HOÀN TRẢ</p>
-<p class="text-4xl font-serif font-black"
-   th:text="${#numbers.formatDecimal(cancelRate, 1, 'POINT', 1, 'POINT')} + '%'">0%</p>
-<p class="mt-4 text-[10px] text-on-primary-container uppercase tracking-widest">TÍNH THEO ĐƠN ĐÃ HỦY</p>
-</div>
-</section>
-<!-- Filters & Table Section -->
-<div class="bg-surface-container-lowest p-0">
-<div class="flex flex-wrap items-center justify-between gap-6 px-8 py-6 border-b border-outline-variant/10">
-<div class="flex gap-10">
-<a th:href="@{/admin/orders}" class="text-[11px] font-bold tracking-widest pb-1"
-   th:classappend="${status == null ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
-    TẤT CẢ
-</a>
-<a th:href="@{/admin/orders(status='ChoXuLy')}" class="text-[11px] font-bold tracking-widest pb-1"
-   th:classappend="${status?.name() == 'ChoXuLy' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
-    CHỜ XỬ LÝ
-</a>
-<a th:href="@{/admin/orders(status='DangGiao')}" class="text-[11px] font-bold tracking-widest pb-1"
-   th:classappend="${status?.name() == 'DangGiao' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
-    ĐANG GIAO
-</a>
-<a th:href="@{/admin/orders(status='HoanThanh')}" class="text-[11px] font-bold tracking-widest pb-1"
-   th:classappend="${status?.name() == 'HoanThanh' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
-    HOÀN THÀNH
-</a>
-<a th:href="@{/admin/orders(status='DaHuy')}" class="text-[11px] font-bold tracking-widest pb-1"
-   th:classappend="${status?.name() == 'DaHuy' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
-    ĐÃ HỦY
-</a>
-</div>
-<div class="flex items-center gap-4">
-<button class="flex items-center gap-2 px-6 py-2 bg-surface-container border border-outline-variant/30 text-[10px] font-bold tracking-widest uppercase hover:bg-surface-container-high transition-all">
-<span class="material-symbols-outlined text-sm">filter_list</span>
+    <div th:fragment="content" class="p-12">
+        <!-- Top Navigation Context -->
+        <header class="flex justify-between items-baseline mb-16">
+            <div>
+                <h2 class="text-4xl font-serif font-bold tracking-tight text-primary">QUẢN LÝ ĐƠN HÀNG</h2>
+                <p class="text-xs font-label uppercase tracking-widest text-on-primary-container mt-2">Tổng quan &amp;
+                    Điều phối giao dịch</p>
+            </div>
+            <div class="flex items-center gap-8">
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-outline-variant text-lg">search</span>
+                    <input
+                        class="bg-transparent border-0 border-b border-outline-variant pl-8 pr-4 py-2 text-xs tracking-widest focus:ring-0 focus:border-secondary transition-colors placeholder:text-outline-variant uppercase"
+                        placeholder="TÌM KIẾM ĐƠN HÀNG..." type="text" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold tracking-widest uppercase">Admin User</p>
+                        <p class="text-[9px] text-secondary tracking-tighter uppercase">Super Admin</p>
+                    </div>
+                    <div class="w-10 h-10 bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Stats Grid (Bento Style) -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-0 mb-12 border border-outline-variant/10">
+            <div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
+                <p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">TỔNG ĐƠN HÀNG</p>
+                <p class="text-4xl font-serif font-black" th:text="${totalOrders}">0</p>
+                <div class="mt-4 flex items-center gap-2 text-[10px] text-green-600 font-bold">
+                    <span class="material-symbols-outlined text-sm">trending_up</span>
+                    <span>THEO DÕI THEO THỜI GIAN</span>
+                </div>
+            </div>
+            <div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
+                <p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">ĐANG XỬ LÝ</p>
+                <p class="text-4xl font-serif font-black text-secondary" th:text="${pendingCount}">0</p>
+                <p class="mt-4 text-[10px] text-on-primary-container">YÊU CẦU ƯU TIÊN</p>
+            </div>
+            <div class="p-8 bg-surface-container-lowest border-r border-outline-variant/10">
+                <p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">DOANH THU</p>
+                <p class="text-4xl font-serif font-black"
+                    th:text="${#numbers.formatDecimal(revenueThisMonth, 0, 'COMMA', 0, 'POINT')}">0</p>
+                <p class="mt-4 text-[10px] text-on-primary-container uppercase tracking-widest">VNĐ / THÁNG NÀY</p>
+            </div>
+            <div class="p-8 bg-surface-container-lowest">
+                <p class="text-[10px] tracking-[0.2em] font-bold text-on-primary-container mb-2">TỶ LỆ HOÀN TRẢ</p>
+                <p class="text-4xl font-serif font-black"
+                    th:text="${#numbers.formatDecimal(cancelRate, 1, 'POINT', 1, 'POINT')} + '%'">0%</p>
+                <p class="mt-4 text-[10px] text-on-primary-container uppercase tracking-widest">TÍNH THEO ĐƠN ĐÃ HỦY</p>
+            </div>
+        </section>
+        <!-- Filters & Table Section -->
+        <div class="bg-surface-container-lowest p-0">
+            <div class="flex flex-wrap items-center justify-between gap-6 px-8 py-6 border-b border-outline-variant/10">
+                <div class="flex gap-10">
+                    <a th:href="@{/admin/orders}" class="text-[11px] font-bold tracking-widest pb-1"
+                        th:classappend="${status == null ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
+                        TẤT CẢ
+                    </a>
+                    <a th:href="@{/admin/orders(status='ChoXuLy')}" class="text-[11px] font-bold tracking-widest pb-1"
+                        th:classappend="${status?.name() == 'ChoXuLy' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
+                        CHỜ XỬ LÝ
+                    </a>
+                    <a th:href="@{/admin/orders(status='DangGiao')}" class="text-[11px] font-bold tracking-widest pb-1"
+                        th:classappend="${status?.name() == 'DangGiao' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
+                        ĐANG GIAO
+                    </a>
+                    <a th:href="@{/admin/orders(status='HoanThanh')}" class="text-[11px] font-bold tracking-widest pb-1"
+                        th:classappend="${status?.name() == 'HoanThanh' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
+                        HOÀN THÀNH
+                    </a>
+                    <a th:href="@{/admin/orders(status='DaHuy')}" class="text-[11px] font-bold tracking-widest pb-1"
+                        th:classappend="${status?.name() == 'DaHuy' ? 'border-b-2 border-secondary' : 'text-on-primary-container hover:text-primary transition-colors'}">
+                        ĐÃ HỦY
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button
+                        class="flex items-center gap-2 px-6 py-2 bg-surface-container border border-outline-variant/30 text-[10px] font-bold tracking-widest uppercase hover:bg-surface-container-high transition-all">
+                        <span class="material-symbols-outlined text-sm">filter_list</span>
                         BỘ LỌC NÂNG CAO
                     </button>
-<button class="flex items-center gap-2 px-6 py-2 bg-primary text-white text-[10px] font-bold tracking-widest uppercase hover:bg-primary-container transition-all">
-<span class="material-symbols-outlined text-sm">download</span>
+                    <button
+                        class="flex items-center gap-2 px-6 py-2 bg-primary text-white text-[10px] font-bold tracking-widest uppercase hover:bg-primary-container transition-all">
+                        <span class="material-symbols-outlined text-sm">download</span>
                         XUẤT FILE
                     </button>
-</div>
-</div>
-<!-- Custom Table Design -->
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-surface-container-low">
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">Mã đơn hàng</th>
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">Khách hàng</th>
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">Ngày đặt</th>
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">Tổng thanh toán</th>
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">Trạng thái</th>
-<th class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10 text-right">Thao tác</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant/10">
-<tr th:each="o : ${page.content}" class="group hover:bg-surface-container-low transition-colors duration-200">
-    <td class="px-8 py-6">
-        <span class="text-xs font-bold font-serif tracking-widest" th:text="'#' + ${o.maDonHang}">#ORD-XXXX</span>
-    </td>
-    <td class="px-8 py-6">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-surface-container-high flex items-center justify-center text-[10px] font-bold"
-                 th:text="${(o.customer.hoTen != null and #strings.length(o.customer.hoTen) > 0) ? #strings.substring(o.customer.hoTen, 0, 1) : '?'}">A</div>
-            <div>
-                <p class="text-xs font-bold uppercase tracking-wide" th:text="${o.customer.hoTen}">Tên KH</p>
-                <p class="text-[9px] text-on-primary-container tracking-tighter" th:text="${o.customer.email}">email</p>
+                </div>
+            </div>
+            <!-- Custom Table Design -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low">
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Mã đơn hàng</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Khách hàng</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Ngày đặt</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Tổng thanh toán</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Trạng thái</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10">
+                                Ghi chú</th>
+                            <th
+                                class="px-8 py-4 text-[10px] font-bold tracking-[0.2em] text-on-primary-container uppercase border-b border-outline-variant/10 text-right">
+                                Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/10">
+                        <tr th:each="o : ${page.content}"
+                            class="group hover:bg-surface-container-low transition-colors duration-200">
+                            <td class="px-8 py-6">
+                                <span class="text-xs font-bold font-serif tracking-widest"
+                                    th:text="'#' + ${o.maDonHang}">#ORD-XXXX</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-surface-container-high flex items-center justify-center text-[10px] font-bold"
+                                        th:text="${(o.customer.hoTen != null and #strings.length(o.customer.hoTen) > 0) ? #strings.substring(o.customer.hoTen, 0, 1) : '?'}">
+                                        A</div>
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-wide"
+                                            th:text="${o.customer.hoTen}">Tên KH</p>
+                                        <p class="text-[9px] text-on-primary-container tracking-tighter"
+                                            th:text="${o.customer.email}">email</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-xs text-on-primary-container font-medium uppercase tracking-tighter"
+                                th:text="${#temporals.format(o.ngayDat, 'dd MMM yyyy')}">01 Jan 2026</td>
+                            <td class="px-8 py-6 text-xs font-bold tracking-widest"
+                                th:text="${#numbers.formatDecimal(o.tongTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="px-3 py-1 text-[9px] font-black tracking-widest uppercase"
+                                    th:classappend="${o.trangThaiDonHang?.name() == 'HoanThanh' ? ' bg-green-100 text-green-800' : (o.trangThaiDonHang?.name() == 'DangGiao' ? ' bg-yellow-100 text-yellow-800' : (o.trangThaiDonHang?.name() == 'DaHuy' ? ' bg-red-100 text-red-800' : ' bg-secondary/10 text-secondary'))}"
+                                    th:text="${o.trangThaiDonHang?.name() == 'HoanThanh' ? 'Hoàn thành' : (o.trangThaiDonHang?.name() == 'DangGiao' ? 'Đang giao' : (o.trangThaiDonHang?.name() == 'DaHuy' ? 'Đã hủy' : 'Chờ xử lý'))}">
+                                    Trạng thái
+                                </span>
+                            </td>
+                            <td class="px-8 py-6 text-xs text-secondary italic">
+                                <span th:text="${o.ghiChu}"></span>
+                            </td>
+                            <td class="px-8 py-6 text-right relative dropdown-container">
+                                <a class="p-2 hover:text-secondary transition-colors inline-block"
+                                    th:href="@{'/order/track/' + ${o.maDonHang}}">
+                                    <span class="material-symbols-outlined text-lg">visibility</span>
+                                </a>
+                                <button
+                                    th:if="${o.trangThaiDonHang?.name() == 'ChoXuLy' || o.trangThaiDonHang?.name() == 'DangGiao'}"
+                                    class="p-2 hover:text-secondary transition-colors focus:outline-none" type="button"
+                                    onclick="toggleDropdown(this)">
+                                    <span class="material-symbols-outlined text-lg pointer-events-none"
+                                        th:text="${o.trangThaiDonHang?.name() == 'DangGiao' ? 'local_shipping' : 'more_vert'}">more_vert</span>
+                                </button>
+                                <!-- Dropdown menu -->
+                                <div th:if="${o.trangThaiDonHang?.name() == 'ChoXuLy' || o.trangThaiDonHang?.name() == 'DangGiao'}"
+                                    class="absolute right-8 top-10 w-48 bg-white border border-outline-variant/20 shadow-lg z-50 hidden dropdown-menu text-left divide-y divide-outline-variant/10">
+                                    <!-- ChoXuLy options -->
+                                    <form th:if="${o.trangThaiDonHang?.name() == 'ChoXuLy'}"
+                                        th:action="@{/admin/order/prepare}" method="post" class="block" onsubmit="return confirmPacking(this);">
+                                        <input type="hidden" name="id" th:value="${o.idDonHang}">
+                                        <button type="submit"
+                                            class="w-full text-left px-4 py-3 text-xs font-bold hover:bg-surface-container-low transition-colors uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-sm">inventory_2</span> Đã chuẩn bị hàng
+                                        </button>
+                                    </form>
+                                    <form th:if="${o.trangThaiDonHang?.name() == 'ChoXuLy'}"
+                                        th:action="@{/admin/order/cancel}" method="post"
+                                        th:onsubmit="'return handleAdminCancel(this);'" class="block">
+                                        <input type="hidden" name="id" th:value="${o.idDonHang}">
+                                        <input type="hidden" name="reason" class="cancel-reason-input">
+                                        <button type="submit"
+                                            class="w-full text-left px-4 py-3 text-xs font-bold hover:bg-red-50 transition-colors uppercase tracking-widest text-secondary flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-sm">cancel</span> Hủy đơn
+                                        </button>
+                                    </form>
+
+                                    <!-- DangGiao option -->
+                                    <div th:if="${o.trangThaiDonHang?.name() == 'DangGiao'}" class="block">
+                                        <button type="button"
+                                            class="w-full text-left px-4 py-3 text-xs font-bold bg-surface-container-low text-secondary uppercase tracking-widest flex items-center gap-2 cursor-default">
+                                            <span class="material-symbols-outlined text-sm">local_shipping</span> Đang
+                                            giao
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <script>
+                function toggleDropdown(button) {
+                    // Close other dropdowns
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        if (menu !== button.nextElementSibling) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                    // Toggle current dropdown
+                    button.nextElementSibling.classList.toggle('hidden');
+                }
+
+                // Close dropdowns when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.dropdown-container')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                            menu.classList.add('hidden');
+                        });
+                    }
+                });
+
+                function handleAdminCancel(form) {
+                    var reason = prompt("Nhập lý do hủy đơn hàng:");
+                    if (reason === null || reason.trim() === "") {
+                        return false;
+                    }
+                    form.querySelector('.cancel-reason-input').value = reason.trim();
+                    return true;
+                }
+
+                // Custom confirm box logic
+                function confirmPacking(form) {
+                    // Prevent default submission
+                    event.preventDefault();
+                    
+                    // Custom UI Modal using simple prompt or window.confirm trick
+                    const modalHtml = `
+                        <div id="custom-confirm-modal" class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[9999] flex items-center justify-center">
+                            <div class="bg-white p-8 max-w-sm w-full border border-outline-variant/20 shadow-2xl">
+                                <h3 class="text-xl font-bold font-serif italic mb-4 text-primary">Xác nhận</h3>
+                                <p class="text-xs text-on-primary-container mb-8 leading-relaxed uppercase tracking-widest">Đơn hàng đã được đóng gói?</p>
+                                <div class="flex gap-4">
+                                    <button type="button" id="modal-btn-chua" class="flex-1 bg-surface-container border border-outline-variant/30 px-4 py-3 text-[10px] font-bold tracking-widest uppercase hover:bg-surface-container-high transition-colors">Chưa</button>
+                                    <button type="button" id="modal-btn-roi" class="flex-1 bg-primary text-white px-4 py-3 text-[10px] font-bold tracking-widest uppercase hover:bg-secondary transition-colors">Rồi</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    
+                    const modal = document.getElementById('custom-confirm-modal');
+                    document.getElementById('modal-btn-chua').onclick = function() {
+                        modal.remove(); // Close modal and stay on order page
+                    };
+                    document.getElementById('modal-btn-roi').onclick = function() {
+                        modal.remove();
+                        form.submit(); // Submit the form to transition to DangGiao
+                    };
+                    return false;
+                }
+            </script>
+            <!-- Pagination -->
+            <div
+                class="px-8 py-8 flex items-center justify-between border-t border-outline-variant/10 bg-surface-container-low/30">
+                <p class="text-[10px] font-bold text-on-primary-container tracking-widest"
+                    th:text="'HIỂN THỊ ' + ${(page.number * page.size) + 1} + '-' + ${(page.number * page.size) + page.numberOfElements} + ' TRÊN ' + ${page.totalElements} + ' ĐƠN HÀNG'">
+                    HIỂN THỊ 0-0 TRÊN 0 ĐƠN HÀNG
+                </p>
+                <div class="flex gap-2">
+                    <a class="w-10 h-10 flex items-center justify-center bg-white border border-outline-variant/30 hover:border-primary transition-colors"
+                        th:href="@{/admin/orders(page=${page.number-1}, size=${page.size}, status=${status})}"
+                        th:classappend="${page.first ? ' pointer-events-none opacity-40' : ''}">
+                        <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    </a>
+
+                    <span
+                        class="w-10 h-10 flex items-center justify-center bg-primary text-white border border-primary font-bold text-[10px]"
+                        th:text="${page.number + 1}">1</span>
+
+                    <a class="w-10 h-10 flex items-center justify-center bg-white border border-outline-variant/30 hover:border-primary transition-colors"
+                        th:href="@{/admin/orders(page=${page.number+1}, size=${page.size}, status=${status})}"
+                        th:classappend="${page.last ? ' pointer-events-none opacity-40' : ''}">
+                        <span class="material-symbols-outlined text-lg">chevron_right</span>
+                    </a>
+                </div>
             </div>
         </div>
-    </td>
-    <td class="px-8 py-6 text-xs text-on-primary-container font-medium uppercase tracking-tighter"
-        th:text="${#temporals.format(o.ngayDat, 'dd MMM yyyy')}">01 Jan 2026</td>
-    <td class="px-8 py-6 text-xs font-bold tracking-widest"
-        th:text="${#numbers.formatDecimal(o.tongTien, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</td>
-    <td class="px-8 py-6">
-        <span class="px-3 py-1 text-[9px] font-black tracking-widest uppercase"
-              th:classappend="${o.trangThaiDonHang.name() == 'HoanThanh' ? ' bg-green-100 text-green-800' : (o.trangThaiDonHang.name() == 'DangGiao' ? ' bg-yellow-100 text-yellow-800' : (o.trangThaiDonHang.name() == 'DaHuy' ? ' bg-red-100 text-red-800' : ' bg-secondary/10 text-secondary'))}"
-              th:text="${o.trangThaiDonHang.name() == 'HoanThanh' ? 'Hoàn thành' : (o.trangThaiDonHang.name() == 'DangGiao' ? 'Đang giao' : (o.trangThaiDonHang.name() == 'DaHuy' ? 'Đã hủy' : 'Chờ xử lý'))}">
-            Trạng thái
-        </span>
-    </td>
-    <td class="px-8 py-6 text-right">
-        <a class="p-2 hover:text-secondary transition-colors" th:href="@{'/order/track/' + ${o.maDonHang}}">
-            <span class="material-symbols-outlined text-lg">visibility</span>
-        </a>
-        <button class="p-2 hover:text-secondary transition-colors" type="button">
-            <span class="material-symbols-outlined text-lg">more_vert</span>
-        </button>
-    </td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Pagination -->
-<div class="px-8 py-8 flex items-center justify-between border-t border-outline-variant/10 bg-surface-container-low/30">
-<p class="text-[10px] font-bold text-on-primary-container tracking-widest"
-   th:text="'HIỂN THỊ ' + ${(page.number * page.size) + 1} + '-' + ${(page.number * page.size) + page.numberOfElements} + ' TRÊN ' + ${page.totalElements} + ' ĐƠN HÀNG'">
-    HIỂN THỊ 0-0 TRÊN 0 ĐƠN HÀNG
-</p>
-<div class="flex gap-2">
-    <a class="w-10 h-10 flex items-center justify-center bg-white border border-outline-variant/30 hover:border-primary transition-colors"
-       th:href="@{/admin/orders(page=${page.number-1}, size=${page.size}, status=${status})}"
-       th:classappend="${page.first ? ' pointer-events-none opacity-40' : ''}">
-        <span class="material-symbols-outlined text-lg">chevron_left</span>
-    </a>
-
-    <span class="w-10 h-10 flex items-center justify-center bg-primary text-white border border-primary font-bold text-[10px]"
-          th:text="${page.number + 1}">1</span>
-
-    <a class="w-10 h-10 flex items-center justify-center bg-white border border-outline-variant/30 hover:border-primary transition-colors"
-       th:href="@{/admin/orders(page=${page.number+1}, size=${page.size}, status=${status})}"
-       th:classappend="${page.last ? ' pointer-events-none opacity-40' : ''}">
-        <span class="material-symbols-outlined text-lg">chevron_right</span>
-    </a>
-</div>
-</div>
-</div>
-<!-- Order Detail Teaser / Floating Interaction Side -->
-<div class="mt-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
-<div class="lg:col-span-2">
-<div class="bg-surface-container p-12 relative overflow-hidden h-full min-h-[400px] flex flex-col justify-end">
-<div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-<img class="w-full h-full object-cover grayscale" data-alt="high-end luxury footwear editorial photography with dramatic lighting and architectural shadows for luxury brand" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlrRla-3htT2d3zkS_JC3mYMlh5MZJk-e75QidID3b6bjOBHJLh90AkpKk79N7oCI9LWqVFVxKtkPWP5qY_kcutvvp-YxAjo-iVoqjgd6BLEC-4wHriHUaymzyPXjjXx8sOtXKhC26NJIX3-0xmnYcjWSE6zAlQEdl6x1Sr_i9KlZ7Qt5f6auBizdahrzIPlFo8ViNEOYUhEGNTcOZr_E3XE05-EskSm7UEN4tD2ZUKo_iwWwJ2lgHpZ3Mss2sgnaXbplYFWTYyuuR"/>
-</div>
-<div class="relative z-10">
-<h3 class="text-3xl font-serif font-bold text-primary mb-4 leading-tight">Phân tích xu hướng giao dịch<br/>Tuần này</h3>
-<p class="text-sm text-on-primary-container max-w-md mb-8">Dữ liệu cho thấy sự tăng trưởng 18% trong danh mục Phụ kiện cao cấp. Đề xuất điều chỉnh kho vận cho khu vực TP. Hồ Chí Minh.</p>
-<button class="bg-primary text-white px-10 py-4 text-[11px] font-black tracking-widest uppercase hover:bg-secondary transition-all">XEM BÁO CÁO CHI TIẾT</button>
-</div>
-</div>
-</div>
-<div class="bg-primary text-[#fbf9f8] p-12">
-<p class="text-[10px] tracking-[0.3em] font-black opacity-40 mb-12 uppercase">Thanh toán gần đây</p>
-<div class="space-y-10">
-<div class="flex items-start justify-between group cursor-pointer">
-<div>
-<p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98231</p>
-<p class="text-lg font-serif font-bold tracking-tight">Thanh toán qua Visa</p>
-<p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">24,500,000 VNĐ</p>
-</div>
-<span class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
-</div>
-<div class="flex items-start justify-between group cursor-pointer">
-<div>
-<p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98232</p>
-<p class="text-lg font-serif font-bold tracking-tight">Ví điện tử MoMo</p>
-<p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">12,200,000 VNĐ</p>
-</div>
-<span class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
-</div>
-<div class="flex items-start justify-between group cursor-pointer">
-<div>
-<p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98234</p>
-<p class="text-lg font-serif font-bold tracking-tight">Chuyển khoản Vietcombank</p>
-<p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">45,000,000 VNĐ</p>
-</div>
-<span class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
-</div>
-</div>
-</div>
-</div>
-</div>
+        <!-- Order Detail Teaser / Floating Interaction Side -->
+        <div class="mt-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div class="lg:col-span-2">
+                <div
+                    class="bg-surface-container p-12 relative overflow-hidden h-full min-h-[400px] flex flex-col justify-end">
+                    <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                        <img class="w-full h-full object-cover grayscale"
+                            data-alt="high-end luxury footwear editorial photography with dramatic lighting and architectural shadows for luxury brand"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlrRla-3htT2d3zkS_JC3mYMlh5MZJk-e75QidID3b6bjOBHJLh90AkpKk79N7oCI9LWqVFVxKtkPWP5qY_kcutvvp-YxAjo-iVoqjgd6BLEC-4wHriHUaymzyPXjjXx8sOtXKhC26NJIX3-0xmnYcjWSE6zAlQEdl6x1Sr_i9KlZ7Qt5f6auBizdahrzIPlFo8ViNEOYUhEGNTcOZr_E3XE05-EskSm7UEN4tD2ZUKo_iwWwJ2lgHpZ3Mss2sgnaXbplYFWTYyuuR" />
+                    </div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl font-serif font-bold text-primary mb-4 leading-tight">Phân tích xu hướng
+                            giao dịch<br />Tuần này</h3>
+                        <p class="text-sm text-on-primary-container max-w-md mb-8">Dữ liệu cho thấy sự tăng trưởng 18%
+                            trong danh mục Phụ kiện cao cấp. Đề xuất điều chỉnh kho vận cho khu vực TP. Hồ Chí Minh.</p>
+                        <button
+                            class="bg-primary text-white px-10 py-4 text-[11px] font-black tracking-widest uppercase hover:bg-secondary transition-all">XEM
+                            BÁO CÁO CHI TIẾT</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-primary text-[#fbf9f8] p-12">
+                <p class="text-[10px] tracking-[0.3em] font-black opacity-40 mb-12 uppercase">Thanh toán gần đây</p>
+                <div class="space-y-10">
+                    <div class="flex items-start justify-between group cursor-pointer">
+                        <div>
+                            <p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98231</p>
+                            <p class="text-lg font-serif font-bold tracking-tight">Thanh toán qua Visa</p>
+                            <p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">24,500,000 VNĐ</p>
+                        </div>
+                        <span
+                            class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                    </div>
+                    <div class="flex items-start justify-between group cursor-pointer">
+                        <div>
+                            <p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98232</p>
+                            <p class="text-lg font-serif font-bold tracking-tight">Ví điện tử MoMo</p>
+                            <p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">12,200,000 VNĐ</p>
+                        </div>
+                        <span
+                            class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                    </div>
+                    <div class="flex items-start justify-between group cursor-pointer">
+                        <div>
+                            <p class="text-[10px] font-black tracking-widest opacity-40 mb-1">DMN-98234</p>
+                            <p class="text-lg font-serif font-bold tracking-tight">Chuyển khoản Vietcombank</p>
+                            <p class="text-[10px] tracking-widest opacity-60 mt-1 uppercase">45,000,000 VNĐ</p>
+                        </div>
+                        <span
+                            class="material-symbols-outlined text-secondary group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
