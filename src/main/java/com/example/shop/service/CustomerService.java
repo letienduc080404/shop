@@ -59,6 +59,7 @@ public class CustomerService {
                     c.getEmail(),
                     c.getHangThanhVien()
             );
+            dto.setAnhDaiDien(c.getAnhDaiDien());
             OrderRepository.CustomerOrderAggView agg = aggMap.get(c.getIdKhachHang());
             if (agg != null) {
                 BigDecimal spending = agg.getTongChiTieu();

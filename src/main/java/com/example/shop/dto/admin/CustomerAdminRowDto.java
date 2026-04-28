@@ -9,6 +9,7 @@ public class CustomerAdminRowDto {
     private Long idKhachHang;
     private String hoTen;
     private String email;
+    private String anhDaiDien;
     private HangThanhVien hangThanhVien;
 
     private BigDecimal tongChiTieu = BigDecimal.ZERO;
@@ -46,6 +47,14 @@ public class CustomerAdminRowDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAnhDaiDien() {
+        return anhDaiDien;
+    }
+
+    public void setAnhDaiDien(String anhDaiDien) {
+        this.anhDaiDien = anhDaiDien;
     }
 
     public HangThanhVien getHangThanhVien() {

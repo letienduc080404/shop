@@ -90,7 +90,14 @@
                 <div class="grid grid-cols-12 gap-4 px-6 py-10 items-center hover:bg-surface-container-low transition-colors group"
                      th:each="c : ${page.content}">
                     <div class="col-span-4 flex items-center gap-6">
-                        <div class="w-12 h-12 bg-surface-container border border-outline-variant" th:text="${#strings.substring(c.hoTen, 0, 1)}">A</div>
+                        <div class="w-12 h-12 bg-surface-container border border-outline-variant overflow-hidden flex items-center justify-center">
+                            <img th:if="${c.anhDaiDien != null && !c.anhDaiDien.isEmpty()}"
+                                 th:src="${'https://lh3.googleusercontent.com/d/' + c.anhDaiDien}"
+                                 alt="Avatar"
+                                 class="w-full h-full object-cover"/>
+                            <span th:if="${c.anhDaiDien == null || c.anhDaiDien.isEmpty()}"
+                                  th:text="${#strings.substring(c.hoTen, 0, 1)}">A</span>
+                        </div>
                         <div>
                             <a th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number},size=${page.size},selectedId=${c.idKhachHang})}"
                                class="font-headline text-lg font-bold hover:text-secondary transition-colors underline-offset-4 hover:underline"
@@ -150,8 +157,13 @@
                 <a class="material-symbols-outlined" th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number},size=${page.size})}">close</a>
             </div>
             <div class="text-center mb-10">
-                <div class="w-32 h-32 bg-surface-container mx-auto mb-6 flex items-center justify-center text-3xl font-headline" th:text="${selectedCustomer != null ? #strings.substring(selectedCustomer.hoTen, 0, 1) : ''}">
-                    A
+                <div class="w-32 h-32 bg-surface-container mx-auto mb-6 flex items-center justify-center text-3xl font-headline overflow-hidden">
+                    <img th:if="${selectedCustomer != null && selectedCustomer.anhDaiDien != null && !selectedCustomer.anhDaiDien.isEmpty()}"
+                         th:src="${'https://lh3.googleusercontent.com/d/' + selectedCustomer.anhDaiDien}"
+                         alt="Avatar"
+                         class="w-full h-full object-cover"/>
+                    <span th:if="${selectedCustomer != null && (selectedCustomer.anhDaiDien == null || selectedCustomer.anhDaiDien.isEmpty())}"
+                          th:text="${#strings.substring(selectedCustomer.hoTen, 0, 1)}">A</span>
                 </div>
                 <h4 class="font-headline text-3xl font-black" th:text="${selectedCustomer?.hoTen}">Tên khách</h4>
                 <p class="font-label text-[11px] tracking-widest text-primary/40 uppercase mt-2"
