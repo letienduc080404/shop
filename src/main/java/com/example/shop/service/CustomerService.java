@@ -31,7 +31,7 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CustomerAdminRowDto> getCustomersForAdmin(String q, int page, int size) {
+    public Page<CustomerAdminRowDto> getCustomersForAdmin(String q, HangThanhVien hang, int page, int size) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
                 Math.min(Math.max(size, 1), 100),
@@ -39,7 +39,7 @@ public class CustomerService {
         );
 
         String keyword = (q == null || q.isBlank()) ? null : q.trim();
-        Page<Customer> customersPage = customerRepository.searchForAdmin(keyword, pageable);
+        Page<Customer> customersPage = customerRepository.searchForAdmin(keyword, hang, pageable);
 
         List<Long> customerIds = customersPage.getContent().stream()
                 .map(Customer::getIdKhachHang)

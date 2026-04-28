@@ -16,6 +16,7 @@
                        placeholder="TÌM KIẾM THEO TÊN, EMAIL HOẶC ID..."
                        th:value="${q}"
                        type="text"/>
+                <input name="hang" th:value="${hang}" type="hidden"/>
                 <input name="size" th:value="${page.size}" type="hidden"/>
             </form>
         </header>
@@ -53,7 +54,19 @@
         <div class="flex items-center justify-between mb-10">
             <h3 class="text-2xl font-headline font-bold">Danh sách Định danh</h3>
             <div class="flex gap-4">
-                <button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase">Lọc phân hạng</button>
+                <form class="flex items-center gap-3" method="get" th:action="@{/admin/customers}">
+                    <input name="q" th:value="${q}" type="hidden"/>
+                    <input name="size" th:value="${page.size}" type="hidden"/>
+                    <select class="font-label text-[10px] tracking-widest border border-outline-variant px-4 py-2 bg-white uppercase"
+                            name="hang"
+                            onchange="this.form.submit()">
+                        <option th:selected="${hang == ''}" value="">Tất cả hạng</option>
+                        <option th:each="h : ${hangOptions}"
+                                th:selected="${hang == h.name()}"
+                                th:text="${h}"
+                                th:value="${h.name()}">Hạng</option>
+                    </select>
+                </form>
                 <button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase">Xuất báo cáo</button>
             </div>
         </div>
@@ -76,7 +89,7 @@
                     <div class="col-span-4 flex items-center gap-6">
                         <div class="w-12 h-12 bg-surface-container border border-outline-variant" th:text="${#strings.substring(c.hoTen, 0, 1)}">A</div>
                         <div>
-                            <a th:href="@{/admin/customers(q=${q},page=${page.number},size=${page.size},selectedId=${c.idKhachHang})}"
+                            <a th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number},size=${page.size},selectedId=${c.idKhachHang})}"
                                class="font-headline text-lg font-bold hover:text-secondary transition-colors underline-offset-4 hover:underline"
                                th:text="${c.hoTen}">Tên khách</a>
                             <p class="font-label text-[10px] text-primary/40 tracking-wider mt-1" th:text="${c.email}">email@domain.com</p>
@@ -110,14 +123,14 @@
                 <div class="flex gap-2">
                     <a class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:border-primary transition-colors font-label text-xs"
                        th:if="${page.number > 0}"
-                       th:href="@{/admin/customers(q=${q},page=${page.number-1},size=${page.size})}">
+                       th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number-1},size=${page.size})}">
                         <span class="material-symbols-outlined text-sm" style="transform: rotate(180deg)">chevron_right</span>
                     </a>
                     <span class="w-12 h-12 flex items-center justify-center font-label text-xs underline decoration-2 underline-offset-8"
                           th:text="${page.number + 1}">1</span>
                     <a class="w-12 h-12 flex items-center justify-center border border-outline-variant hover:border-primary transition-colors font-label text-xs"
                        th:if="${page.number + 1 < page.totalPages}"
-                       th:href="@{/admin/customers(q=${q},page=${page.number+1},size=${page.size})}">
+                       th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number+1},size=${page.size})}">
                         <span class="material-symbols-outlined text-sm">chevron_right</span>
                     </a>
                 </div>
@@ -131,7 +144,7 @@
         <div class="h-full flex flex-col">
             <div class="flex justify-between items-start mb-12">
                 <span class="font-label text-[10px] tracking-widest font-bold text-secondary uppercase">Hồ sơ chi tiết</span>
-                <a class="material-symbols-outlined" th:href="@{/admin/customers(q=${q},page=${page.number},size=${page.size})}">close</a>
+                <a class="material-symbols-outlined" th:href="@{/admin/customers(q=${q},hang=${hang},page=${page.number},size=${page.size})}">close</a>
             </div>
             <div class="text-center mb-10">
                 <div class="w-32 h-32 bg-surface-container mx-auto mb-6 flex items-center justify-center text-3xl font-headline" th:text="${selectedCustomer != null ? #strings.substring(selectedCustomer.hoTen, 0, 1) : ''}">

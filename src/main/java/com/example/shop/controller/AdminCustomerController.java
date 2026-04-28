@@ -3,6 +3,7 @@ package com.example.shop.controller;
 import com.example.shop.dto.admin.CustomerAdminRowDto;
 import com.example.shop.entity.Customer;
 import com.example.shop.entity.Order;
+import com.example.shop.entity.enums.HangThanhVien;
 import com.example.shop.service.CustomerService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -27,12 +28,14 @@ public class AdminCustomerController {
     @GetMapping("/customers")
     public String listCustomers(
             @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "hang", required = false) String hang,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "selectedId", required = false) Long selectedId,
             Model model
     ) {
-        Page<CustomerAdminRowDto> customersPage = customerService.getCustomersForAdmin(q, page, size);
+        HangThanhVien selectedHang = parseHangThanhVien(hang);
+        Page<CustomerAdminRowDto> customersPage = customerService.getCustomersForAdmin(q, selectedHang, page, size);
 
         long totalCustomers = customerService.getTotalCustomers();
         long diamondCustomers = customerService.getDiamondCustomers();
@@ -48,6 +51,8 @@ public class AdminCustomerController {
 
         model.addAttribute("page", customersPage);
         model.addAttribute("q", q);
+        model.addAttribute("hang", selectedHang != null ? selectedHang.name() : "");
+        model.addAttribute("hangOptions", HangThanhVien.values());
         model.addAttribute("currentTab", "customers");
 
         model.addAttribute("totalCustomers", totalCustomers);
@@ -59,6 +64,17 @@ public class AdminCustomerController {
         model.addAttribute("selectedCustomerOrders", selectedCustomerOrders);
 
         return "admin/customer";
+    }
+
+    private HangThanhVien parseHangThanhVien(String hang) {
+        if (hang == null || hang.isBlank()) {
+            return null;
+        }
+        try {
+            return HangThanhVien.valueOf(hang.trim());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }
 

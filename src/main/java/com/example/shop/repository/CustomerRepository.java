@@ -19,10 +19,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("""
         select c
         from Customer c
-        where (:q is null)
+        where (:hang is null or c.hangThanhVien = :hang)
+          and (
+               (:q is null)
            or (lower(c.hoTen) like lower(concat('%', :q, '%')))
            or (lower(c.email) like lower(concat('%', :q, '%')))
            or (concat('', c.idKhachHang) like concat('%', :q, '%'))
+          )
     """)
-    Page<Customer> searchForAdmin(@Param("q") String q, Pageable pageable);
+    Page<Customer> searchForAdmin(@Param("q") String q, @Param("hang") HangThanhVien hang, Pageable pageable);
 }
