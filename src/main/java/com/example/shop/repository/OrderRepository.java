@@ -85,6 +85,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findTop5ByOrderByNgayDatDesc();
 
     List<Order> findTop5ByCustomer_IdKhachHangOrderByNgayDatDesc(Long idKhachHang);
+    long deleteByCustomer_IdKhachHang(Long idKhachHang);
 
     interface CustomerOrderAggView {
         Long getCustomerId();

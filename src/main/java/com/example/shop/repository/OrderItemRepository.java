@@ -15,6 +15,7 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     boolean existsByProductVariant_Product_IdSanPham(Long idSanPham);
+    long deleteByOrder_Customer_IdKhachHang(Long customerId);
 
     interface ProductSalesAggView {
         Long getProductId();

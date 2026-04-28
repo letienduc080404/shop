@@ -6,6 +6,7 @@ import com.example.shop.entity.Order;
 import com.example.shop.entity.enums.HangThanhVien;
 import com.example.shop.entity.enums.TrangThaiDonHang;
 import com.example.shop.repository.CustomerRepository;
+import com.example.shop.repository.OrderItemRepository;
 import com.example.shop.repository.OrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,10 +25,12 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public CustomerService(CustomerRepository customerRepository, OrderRepository orderRepository) {
+    public CustomerService(CustomerRepository customerRepository, OrderRepository orderRepository, OrderItemRepository orderItemRepository) {
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @Transactional(readOnly = true)
@@ -125,6 +128,9 @@ public class CustomerService {
         if (id == null || !customerRepository.existsById(id)) {
             return false;
         }
+        // Xóa dữ liệu phụ thuộc trước để tránh lỗi khóa ngoại.
+        orderItemRepository.deleteByOrder_Customer_IdKhachHang(id);
+        orderRepository.deleteByCustomer_IdKhachHang(id);
         customerRepository.deleteById(id);
         return true;
     }

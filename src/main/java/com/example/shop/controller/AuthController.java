@@ -2,8 +2,13 @@ package com.example.shop.controller;
 
 import com.example.shop.entity.Customer;
 import com.example.shop.repository.CustomerRepository;
+import com.example.shop.service.CustomerService;
 import com.example.shop.service.GoogleDriveService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +26,18 @@ public class AuthController {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final GoogleDriveService googleDriveService;
+    private final CustomerService customerService;
 
-    public AuthController(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, GoogleDriveService googleDriveService) {
+    public AuthController(
+            CustomerRepository customerRepository,
+            PasswordEncoder passwordEncoder,
+            GoogleDriveService googleDriveService,
+            CustomerService customerService
+    ) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
         this.googleDriveService = googleDriveService;
+        this.customerService = customerService;
     }
 
     @GetMapping("/login")
@@ -110,5 +122,32 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("success", "Cập nhật thông tin thành công!");
         }
         return "redirect:/account";
+    }
+
+    @PostMapping("/account/delete")
+    public String deleteAccount(
+            Principal principal,
+            Authentication authentication,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (principal == null) return "redirect:/login";
+
+        Customer customer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (customer == null) return "redirect:/login";
+
+        try {
+            String oldAvatar = customer.getAnhDaiDien();
+            customerService.deleteCustomerById(customer.getIdKhachHang());
+            if (oldAvatar != null && !oldAvatar.isBlank()) {
+                googleDriveService.deleteFile(oldAvatar);
+            }
+            new SecurityContextLogoutHandler().logout(request, response, authentication);
+            return "redirect:/?accountDeleted=true";
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa tài khoản. Vui lòng thử lại.");
+            return "redirect:/account";
+        }
     }
 }

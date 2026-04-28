@@ -5,7 +5,7 @@ import com.example.shop.entity.Customer;
 import com.example.shop.entity.Order;
 import com.example.shop.entity.enums.HangThanhVien;
 import com.example.shop.service.CustomerService;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.example.shop.service.GoogleDriveService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,9 +25,11 @@ import java.util.List;
 public class AdminCustomerController {
 
     private final CustomerService customerService;
+    private final GoogleDriveService googleDriveService;
 
-    public AdminCustomerController(CustomerService customerService) {
+    public AdminCustomerController(CustomerService customerService, GoogleDriveService googleDriveService) {
         this.customerService = customerService;
+        this.googleDriveService = googleDriveService;
     }
 
     @GetMapping("/customers")
@@ -92,14 +94,18 @@ public class AdminCustomerController {
             RedirectAttributes redirectAttributes
     ) {
         try {
+            Customer customer = customerService.getCustomerById(id);
             boolean deleted = customerService.deleteCustomerById(id);
             if (deleted) {
+                if (customer != null && customer.getAnhDaiDien() != null && !customer.getAnhDaiDien().isBlank()) {
+                    googleDriveService.deleteFile(customer.getAnhDaiDien());
+                }
                 redirectAttributes.addFlashAttribute("success", "Đã xóa khách hàng thành công.");
             } else {
                 redirectAttributes.addFlashAttribute("error", "Không tìm thấy khách hàng cần xóa.");
             }
-        } catch (DataIntegrityViolationException ex) {
-            redirectAttributes.addFlashAttribute("error", "Không thể xóa khách hàng vì đang có dữ liệu liên quan (đơn hàng).");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("error", "Không thể xóa khách hàng. Vui lòng thử lại.");
         }
 
         return buildCustomersRedirectUrl(q, hang, page, size);
