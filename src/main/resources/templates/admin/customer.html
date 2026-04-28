@@ -3,6 +3,13 @@
 <body>
 <div th:fragment="content">
     <div class="p-12 max-w-[1600px]">
+        <div th:if="${success}" class="mb-8 border-l-4 border-green-500 bg-green-50 text-green-700 px-4 py-3 font-label text-[10px] tracking-widest uppercase">
+            <span th:text="${success}">Thành công</span>
+        </div>
+        <div th:if="${error}" class="mb-8 border-l-4 border-red-500 bg-red-50 text-red-700 px-4 py-3 font-label text-[10px] tracking-widest uppercase">
+            <span th:text="${error}">Lỗi</span>
+        </div>
+
         <!-- Phần tiêu đề -->
         <header class="flex justify-between items-end mb-16">
             <div class="space-y-2">
@@ -121,7 +128,20 @@
                         <p class="font-label text-[10px] text-primary/40 uppercase mt-1">Lần mua cuối</p>
                     </div>
                     <div class="col-span-1 text-right">
-                        <button class="material-symbols-outlined text-outline-variant hover:text-primary transition-colors">more_vert</button>
+                        <form method="post"
+                              th:action="@{/admin/customers/delete/{id}(id=${c.idKhachHang})}"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa khách hàng này?')">
+                            <input type="hidden" name="q" th:value="${q}"/>
+                            <input type="hidden" name="hang" th:value="${hang}"/>
+                            <input type="hidden" name="page" th:value="${page.number}"/>
+                            <input type="hidden" name="size" th:value="${page.size}"/>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit"
+                                    class="material-symbols-outlined text-outline-variant hover:text-red-600 transition-colors"
+                                    title="Xóa khách hàng">
+                                more_vert
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

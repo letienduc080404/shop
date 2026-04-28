@@ -119,5 +119,14 @@ public class CustomerService {
         List<Order> orders = orderRepository.findTop5ByCustomer_IdKhachHangOrderByNgayDatDesc(customerId);
         return orders.size() <= max ? orders : orders.subList(0, max);
     }
+
+    @Transactional
+    public boolean deleteCustomerById(Long id) {
+        if (id == null || !customerRepository.existsById(id)) {
+            return false;
+        }
+        customerRepository.deleteById(id);
+        return true;
+    }
 }
 
