@@ -27,6 +27,9 @@ public class Customer {
     @Column(name = "DiaChi", length = 255)
     private String diaChi;
 
+    @Column(name = "AnhDaiDien", length = 255)
+    private String anhDaiDien;
+
     @Column(name = "NgayTao")
     private LocalDateTime ngayTao = LocalDateTime.now();
 
@@ -86,6 +89,14 @@ public class Customer {
 
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
+    }
+
+    public String getAnhDaiDien() {
+        return anhDaiDien;
+    }
+
+    public void setAnhDaiDien(String anhDaiDien) {
+        this.anhDaiDien = anhDaiDien;
     }
 
     public LocalDateTime getNgayTao() {
