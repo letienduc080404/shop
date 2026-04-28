@@ -58,14 +58,17 @@
                     <input name="q" th:value="${q}" type="hidden"/>
                     <input name="size" th:value="${page.size}" type="hidden"/>
                     <select class="font-label text-[10px] tracking-widest border border-outline-variant px-4 py-2 bg-white uppercase"
-                            name="hang"
-                            onchange="this.form.submit()">
-                        <option th:selected="${hang == ''}" value="">Tất cả hạng</option>
+                            name="hang">
+                        <option th:selected="${hang == ''}" value="">Phân hạng: Tất cả</option>
                         <option th:each="h : ${hangOptions}"
                                 th:selected="${hang == h.name()}"
-                                th:text="${h}"
+                                th:text="'Phân hạng: ' + ${h}"
                                 th:value="${h.name()}">Hạng</option>
                     </select>
+                    <button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase"
+                            type="submit">
+                        Lọc phân hạng
+                    </button>
                 </form>
                 <button class="font-label text-[10px] tracking-widest border border-outline-variant px-6 py-2 hover:bg-primary hover:text-white transition-all uppercase">Xuất báo cáo</button>
             </div>
