@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="widget">
+    <div id="chatbot-widget" class="chatbot-widget">
+        <button id="chatbot-toggle" class="chatbot-toggle" type="button" aria-label="Mở chatbot">
+            <span class="material-symbols-outlined">chat</span>
+        </button>
+
+        <section id="chatbot-panel" class="chatbot-panel chatbot-hidden" aria-live="polite">
+            <header class="chatbot-header">
+                <h3>Trợ lý mua sắm AI</h3>
+                <button id="chatbot-close" type="button" class="chatbot-close" aria-label="Đóng chatbot">×</button>
+            </header>
+            <div id="chatbot-messages" class="chatbot-messages">
+                <div class="chatbot-message chatbot-message-bot">
+                    Xin chào! Mình có thể giúp bạn tìm sản phẩm, giá, tồn kho và trạng thái đơn hàng.
+                </div>
+            </div>
+            <div id="chatbot-loading" class="chatbot-loading chatbot-hidden">AI đang trả lời...</div>
+            <form id="chatbot-form" class="chatbot-form">
+                <input id="chatbot-input" type="text" maxlength="500" placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
+                <button id="chatbot-send" type="submit">Gửi</button>
+            </form>
+        </section>
+    </div>
+</div>
+</body>
+</html>

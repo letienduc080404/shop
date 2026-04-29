@@ -104,6 +104,7 @@
             display: none;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/chatbot.css}" />
 </head>
 
 <body>
@@ -197,6 +198,8 @@
                 </div>
             </div>
         </div>
+        <div th:replace="~{fragments/chatbot :: widget}"></div>
+        <script th:src="@{/js/chatbot.js}"></script>
     </footer>
 </body>
 

@@ -1,0 +1,314 @@
+package com.example.shop.chatbot;
+
+import com.example.shop.entity.Order;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.math.BigDecimal;
+import java.text.Normalizer;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Service
+public class ChatBotService {
+
+    private static final String FALLBACK_SCOPE_MESSAGE = "Mình là trợ lý mua sắm, mình có thể hỗ trợ bạn tìm sản phẩm, giá, tồn kho và đơn hàng trong shop.";
+    private static final DateTimeFormatter ORDER_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final Pattern PRICE_PATTERN = Pattern.compile("(\\d+[\\.,]?\\d*)\\s*(k|nghìn|nghin|tr|triệu|trieu)?", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORDER_PATTERN = Pattern.compile("\\b([A-Za-z]{2,5}[-_]?[0-9]{2,10})\\b");
+
+    private final ChatShopQueryRepository chatShopQueryRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${openai.api.key:}")
+    private String openAiApiKey;
+
+    @Value("${openai.model:gpt-4o-mini}")
+    private String openAiModel;
+
+    public ChatBotService(ChatShopQueryRepository chatShopQueryRepository) {
+        this.chatShopQueryRepository = chatShopQueryRepository;
+    }
+
+    public ChatResponse ask(ChatRequest request) {
+        String message = request != null && request.getMessage() != null ? request.getMessage().trim() : "";
+        if (message.isBlank()) {
+            return new ChatResponse("Bạn vui lòng nhập câu hỏi trước khi gửi.");
+        }
+
+        String normalized = normalize(message);
+        String ruleAnswer = answerByRules(message, normalized);
+
+        if (isOpenAiConfigured()) {
+            try {
+                String aiAnswer = askOpenAi(message, ruleAnswer);
+                if (!aiAnswer.isBlank()) {
+                    return new ChatResponse(aiAnswer);
+                }
+            } catch (Exception ignored) {
+                // Nếu OpenAI lỗi thì fallback về rule-based
+            }
+        }
+        return new ChatResponse(ruleAnswer);
+    }
+
+    private String answerByRules(String originalMessage, String normalized) {
+        if (isOutOfScope(normalized)) {
+            return FALLBACK_SCOPE_MESSAGE;
+        }
+
+        if (normalized.contains("bao nhieu san pham") || normalized.contains("tong so san pham")) {
+            return "Hiện tại shop đang có khoảng " + chatShopQueryRepository.countProducts() + " sản phẩm.";
+        }
+
+        Optional<String> orderCode = extractOrderCode(originalMessage);
+        if (isOrderQuestion(normalized) && orderCode.isPresent()) {
+            Optional<Order> order = chatShopQueryRepository.getOrderStatus(orderCode.get());
+            if (order.isEmpty()) {
+                return "Mình chưa tìm thấy đơn hàng " + orderCode.get().toUpperCase(Locale.ROOT) + ". Bạn kiểm tra lại mã đơn giúp mình nhé.";
+            }
+            Order found = order.get();
+            String orderTime = found.getNgayDat() != null ? found.getNgayDat().format(ORDER_TIME_FORMATTER) : "không rõ";
+            return "Đơn " + found.getMaDonHang() + " hiện ở trạng thái " + found.getTrangThaiDonHang()
+                    + ", đặt lúc " + orderTime + ".";
+        }
+
+        if (normalized.contains("ban chay") || normalized.contains("noi bat")) {
+            List<ProductChatDto> bestSelling = chatShopQueryRepository.getBestSellingProducts();
+            if (bestSelling.isEmpty()) {
+                return "Mình chưa có dữ liệu bán chạy, nhưng bạn có thể xem thêm ở mục sản phẩm mới nhất.";
+            }
+            return "Top sản phẩm bán chạy: " + formatProductList(bestSelling, 5);
+        }
+
+        if (normalized.contains("goi y") || normalized.contains("di choi")) {
+            List<ProductChatDto> suggestions = chatShopQueryRepository.searchProducts("ao");
+            if (suggestions.isEmpty()) {
+                suggestions = chatShopQueryRepository.getBestSellingProducts();
+            }
+            if (suggestions.isEmpty()) {
+                return "Mình chưa có gợi ý phù hợp ngay lúc này, bạn thử mô tả rõ kiểu đồ bạn thích nhé.";
+            }
+            return "Bạn có thể tham khảo: " + formatProductList(suggestions, 4)
+                    + ". Nếu muốn, mình lọc tiếp theo ngân sách hoặc màu sắc cho bạn.";
+        }
+
+        if (normalized.contains("mau trang") || normalized.contains("trang khong")) {
+            List<ProductChatDto> whiteProducts = chatShopQueryRepository.findProductsByColor("trắng");
+            if (whiteProducts.isEmpty()) {
+                whiteProducts = chatShopQueryRepository.findProductsByColor("trang");
+            }
+            if (whiteProducts.isEmpty()) {
+                return "Hiện mình chưa thấy sản phẩm màu trắng phù hợp trong kho.";
+            }
+            return "Mình có các sản phẩm màu trắng: " + formatProductList(whiteProducts, 6);
+        }
+
+        Optional<BigDecimal> maxPrice = extractPrice(normalized);
+        if (maxPrice.isPresent()) {
+            List<ProductChatDto> byPrice = chatShopQueryRepository.findProductsByPrice(maxPrice.get());
+            byPrice = byPrice.stream().filter(this::isInStock).toList();
+            if (containsKeyword(normalized, "vay") || containsKeyword(normalized, "nu")) {
+                byPrice = byPrice.stream().filter(p -> normalize(p.getName()).contains("vay") || normalize(p.getCategory()).contains("nu")).toList();
+            }
+            if (byPrice.isEmpty()) {
+                return "Hiện chưa có sản phẩm phù hợp mức giá này, bạn có thể tăng ngân sách một chút để mình tìm thêm.";
+            }
+            return "Các sản phẩm phù hợp ngân sách của bạn: " + formatProductList(byPrice, 8);
+        }
+
+        if (containsKeyword(normalized, "ton kho") || containsKeyword(normalized, "con hang")) {
+            String keyword = extractLikelyProductKeyword(normalized);
+            Optional<ProductChatDto> stock = chatShopQueryRepository.checkProductStock(keyword);
+            if (stock.isEmpty()) {
+                return "Mình chưa tìm thấy sản phẩm bạn hỏi, bạn gửi giúp mình tên sản phẩm cụ thể hơn nhé.";
+            }
+            ProductChatDto product = stock.get();
+            if (product.getTotalStock() > 0) {
+                return product.getName() + " hiện còn hàng (" + product.getTotalStock() + " sản phẩm khả dụng).";
+            }
+            return product.getName() + " hiện đang tạm hết hàng.";
+        }
+
+        if (containsKeyword(normalized, "ao so mi")) {
+            return answerForSearchKeyword("áo sơ mi");
+        }
+        if (containsKeyword(normalized, "quan jean") || containsKeyword(normalized, "jean nam")) {
+            return answerForSearchKeyword("quần jean nam");
+        }
+        if (containsKeyword(normalized, "hoodie")) {
+            return answerForSearchKeyword("hoodie");
+        }
+
+        String keyword = extractLikelyProductKeyword(normalized);
+        if (!keyword.isBlank()) {
+            List<ProductChatDto> products = chatShopQueryRepository.searchProducts(keyword);
+            if (!products.isEmpty()) {
+                return "Mình tìm thấy: " + formatProductList(products, 6);
+            }
+        }
+
+        return FALLBACK_SCOPE_MESSAGE;
+    }
+
+    private String answerForSearchKeyword(String keyword) {
+        List<ProductChatDto> products = chatShopQueryRepository.searchProducts(keyword);
+        if (products.isEmpty()) {
+            return "Hiện tại shop chưa có sản phẩm phù hợp với từ khóa \"" + keyword + "\".";
+        }
+        return "Shop có các sản phẩm phù hợp: " + formatProductList(products, 6);
+    }
+
+    private boolean isOutOfScope(String normalized) {
+        return normalized.contains("viet code")
+                || normalized.contains("chinh tri")
+                || normalized.contains("bong da")
+                || normalized.contains("thoi tiet")
+                || normalized.contains("hack")
+                || normalized.contains("sql");
+    }
+
+    private String askOpenAi(String userMessage, String fallbackAnswer) {
+        String prompt = "Bạn là trợ lý mua sắm cho website thời trang. "
+                + "Trả lời ngắn gọn, lịch sự, dùng tiếng Việt. "
+                + "Chỉ tư vấn phạm vi sản phẩm, giá, tồn kho, đơn hàng. "
+                + "Nếu không chắc, dùng nội dung gợi ý này: " + fallbackAnswer;
+
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", openAiModel);
+        requestBody.put("messages", List.of(
+                Map.of("role", "system", "content", prompt),
+                Map.of("role", "user", "content", userMessage)
+        ));
+        requestBody.put("temperature", 0.3);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = restTemplate.postForObject(
+                "https://api.openai.com/v1/chat/completions",
+                entity,
+                Map.class
+        );
+        if (response == null) {
+            return "";
+        }
+
+        Object choicesObj = response.get("choices");
+        if (!(choicesObj instanceof List<?> choices) || choices.isEmpty()) {
+            return "";
+        }
+        Object first = choices.get(0);
+        if (!(first instanceof Map<?, ?> firstMap)) {
+            return "";
+        }
+        Object messageObj = firstMap.get("message");
+        if (!(messageObj instanceof Map<?, ?> messageMap)) {
+            return "";
+        }
+        Object content = messageMap.get("content");
+        return content instanceof String text ? text.trim() : "";
+    }
+
+    private boolean isOpenAiConfigured() {
+        return openAiApiKey != null && !openAiApiKey.isBlank();
+    }
+
+    private boolean isOrderQuestion(String normalized) {
+        return normalized.contains("don hang") || normalized.contains("ma don");
+    }
+
+    private Optional<String> extractOrderCode(String message) {
+        Matcher matcher = ORDER_PATTERN.matcher(message);
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(1));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<BigDecimal> extractPrice(String normalized) {
+        Matcher matcher = PRICE_PATTERN.matcher(normalized);
+        while (matcher.find()) {
+            String numberPart = matcher.group(1);
+            String unit = matcher.group(2);
+            try {
+                String normalizedNumber = numberPart.replace(",", ".");
+                BigDecimal value = new BigDecimal(normalizedNumber);
+                if (unit != null) {
+                    String u = unit.toLowerCase(Locale.ROOT);
+                    if (u.equals("k") || u.equals("nghìn") || u.equals("nghin")) {
+                        value = value.multiply(BigDecimal.valueOf(1000));
+                    } else if (u.equals("tr") || u.equals("triệu") || u.equals("trieu")) {
+                        value = value.multiply(BigDecimal.valueOf(1_000_000));
+                    }
+                } else if (value.compareTo(BigDecimal.valueOf(1000)) <= 0) {
+                    value = value.multiply(BigDecimal.valueOf(1000));
+                }
+                return Optional.of(value);
+            } catch (NumberFormatException ignored) {
+                // Skip invalid number
+            }
+        }
+        return Optional.empty();
+    }
+
+    private String extractLikelyProductKeyword(String normalized) {
+        String cleaned = normalized
+                .replace("shop co", "")
+                .replace("co", "")
+                .replace("khong", "")
+                .replace("san pham", "")
+                .replace("nao", "")
+                .replace("duoi", "")
+                .replace("gia", "")
+                .replace("ton kho", "")
+                .replace("con hang", "")
+                .trim();
+        if (cleaned.length() > 60) {
+            cleaned = cleaned.substring(0, 60);
+        }
+        return cleaned;
+    }
+
+    private String formatProductList(List<ProductChatDto> products, int maxItems) {
+        return products.stream()
+                .limit(maxItems)
+                .map(p -> p.getName() + " (" + money(p.getPrice()) + ", tồn: " + p.getTotalStock() + ")")
+                .reduce((a, b) -> a + "; " + b)
+                .orElse("chưa có dữ liệu");
+    }
+
+    private String money(BigDecimal value) {
+        if (value == null) {
+            return "0đ";
+        }
+        return String.format("%,.0fđ", value.doubleValue());
+    }
+
+    private boolean isInStock(ProductChatDto product) {
+        return product.getTotalStock() > 0;
+    }
+
+    private boolean containsKeyword(String normalized, String keyword) {
+        return normalized.contains(normalize(keyword));
+    }
+
+    private String normalize(String input) {
+        String noAccent = Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return noAccent.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+    }
+}
