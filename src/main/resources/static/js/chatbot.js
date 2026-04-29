@@ -34,7 +34,7 @@
             || normalized.includes("không chắc");
     }
 
-    async function sendToAdminSupport(orderCode, originalQuestion) {
+    async function sendToAdminSupport(conversationKey, originalQuestion) {
         const csrf = getCsrfInfo();
         if (!csrf || !csrf.header || !csrf.token) {
             throw new Error("NO_CSRF");
@@ -44,7 +44,7 @@
         formData.append("role", "USER");
         formData.append("message", "Khách cần hỗ trợ từ chatbot. Câu hỏi: " + originalQuestion);
 
-        const response = await fetch("/api/chat/" + encodeURIComponent(orderCode), {
+        const response = await fetch("/api/chat/" + encodeURIComponent(conversationKey), {
             method: "POST",
             headers: { [csrf.header]: csrf.token },
             body: formData,
@@ -56,6 +56,57 @@
         }
     }
 
+    async function fetchMyOrderCodes() {
+        const response = await fetch("/api/chatbot/my-orders", {
+            method: "GET",
+            credentials: "same-origin",
+        });
+        if (response.status === 401 || response.status === 403) {
+            throw new Error("UNAUTHORIZED");
+        }
+        if (!response.ok) {
+            throw new Error("LOAD_ORDERS_FAILED");
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    }
+
+    function appendOrderPicker(container, orderCodes, originalQuestion, doneCallback) {
+        const pickWrap = document.createElement("div");
+        pickWrap.className = "chatbot-admin-handoff";
+
+        const title = document.createElement("p");
+        title.className = "chatbot-admin-title";
+        title.textContent = "Chọn đơn hàng bạn muốn hỗ trợ:";
+        pickWrap.appendChild(title);
+
+        const list = document.createElement("div");
+        list.className = "chatbot-admin-actions";
+
+        orderCodes.forEach(function (orderCode) {
+            const itemBtn = document.createElement("button");
+            itemBtn.type = "button";
+            itemBtn.className = "chatbot-admin-btn chatbot-order-select-btn";
+            itemBtn.textContent = orderCode;
+            itemBtn.addEventListener("click", async function () {
+                list.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
+                try {
+                    await sendToAdminSupport("ORDER-" + orderCode.toUpperCase(), originalQuestion);
+                    window.location.href = "/order/track/" + encodeURIComponent(orderCode);
+                } catch (error) {
+                    appendMessage(container, "Không thể chuyển yêu cầu theo đơn hàng lúc này.", "bot");
+                    list.querySelectorAll("button").forEach(function (b) { b.disabled = false; });
+                }
+            });
+            list.appendChild(itemBtn);
+        });
+
+        pickWrap.appendChild(list);
+        container.appendChild(pickWrap);
+        container.scrollTop = container.scrollHeight;
+        doneCallback();
+    }
+
     function appendAdminHandoffOption(container, originalQuestion) {
         const wrap = document.createElement("div");
         wrap.className = "chatbot-admin-handoff";
@@ -65,29 +116,60 @@
         title.textContent = "Bạn muốn chuyển sang nhắn admin không?";
         wrap.appendChild(title);
 
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "chatbot-admin-btn";
-        button.textContent = "Nhắn admin";
-        wrap.appendChild(button);
+        const actions = document.createElement("div");
+        actions.className = "chatbot-admin-actions";
 
-        button.addEventListener("click", async function () {
-            const orderCodeInput = window.prompt("Nhập mã đơn hàng để nhắn admin (ví dụ: ORD-ABC12345):");
-            const orderCode = (orderCodeInput || "").trim();
-            if (!orderCode) {
-                return;
-            }
+        const orderBtn = document.createElement("button");
+        orderBtn.type = "button";
+        orderBtn.className = "chatbot-admin-btn";
+        orderBtn.textContent = "Theo mã đơn";
+        actions.appendChild(orderBtn);
 
-            button.disabled = true;
-            button.textContent = "Đang chuyển...";
+        const directBtn = document.createElement("button");
+        directBtn.type = "button";
+        directBtn.className = "chatbot-admin-btn";
+        directBtn.textContent = "Liên hệ trực tiếp";
+        actions.appendChild(directBtn);
+
+        wrap.appendChild(actions);
+
+        function setButtonsDisabled(disabled) {
+            orderBtn.disabled = disabled;
+            directBtn.disabled = disabled;
+        }
+
+        orderBtn.addEventListener("click", async function () {
+            setButtonsDisabled(true);
             try {
-                await sendToAdminSupport(orderCode, originalQuestion);
-                window.location.href = "/order/track/" + encodeURIComponent(orderCode);
+                const orderCodes = await fetchMyOrderCodes();
+                if (orderCodes.length === 0) {
+                    appendMessage(container, "Bạn chưa có đơn hàng nào để chọn hỗ trợ.", "bot");
+                    setButtonsDisabled(false);
+                    return;
+                }
+                appendOrderPicker(container, orderCodes, originalQuestion, function () {
+                    setButtonsDisabled(false);
+                });
             } catch (error) {
-                appendMessage(container, "Không thể chuyển sang chat admin lúc này. Bạn vui lòng đăng nhập và kiểm tra lại mã đơn.", "bot");
+                if (error && error.message === "UNAUTHORIZED") {
+                    appendMessage(container, "Bạn cần đăng nhập để chọn đơn hàng hỗ trợ.", "bot");
+                } else {
+                    appendMessage(container, "Không tải được danh sách đơn hàng lúc này.", "bot");
+                }
+                setButtonsDisabled(false);
+            }
+        });
+
+        directBtn.addEventListener("click", async function () {
+            const directKey = "DIRECT-" + Date.now();
+            setButtonsDisabled(true);
+            try {
+                await sendToAdminSupport(directKey, originalQuestion);
+                appendMessage(container, "Đã gửi yêu cầu liên hệ trực tiếp tới admin. Mã hỗ trợ: " + directKey, "bot");
+            } catch (error) {
+                appendMessage(container, "Không thể gửi yêu cầu liên hệ trực tiếp tới admin lúc này.", "bot");
             } finally {
-                button.disabled = false;
-                button.textContent = "Nhắn admin";
+                setButtonsDisabled(false);
             }
         });
 

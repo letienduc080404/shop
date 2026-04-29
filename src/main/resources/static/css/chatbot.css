@@ -122,6 +122,12 @@
     cursor: default;
 }
 
+.chatbot-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 .chatbot-loading {
     padding: 8px 14px;
     font-size: 13px;
