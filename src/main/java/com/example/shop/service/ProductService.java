@@ -131,13 +131,14 @@ public class ProductService {
     }
 
     @Transactional
-    public Product createProduct(String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa,
+    public Product createProduct(String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, BigDecimal giaKhuyenMai, String moTa,
             List<String> variantSizes, List<String> variantColors, List<Integer> variantStocks,
             List<BigDecimal> variantCosts, MultipartFile[] files) {
 
         Product product = new Product();
         product.setTenSanPham(tenSanPham);
         product.setGiaNiemYet(giaNiemYet);
+        product.setGiaKhuyenMai(normalizeSalePrice(giaNiemYet, giaKhuyenMai));
         product.setMoTa(moTa);
         product.setMaSKU("SKU-" + System.currentTimeMillis() % 1000000);
 
@@ -161,8 +162,6 @@ public class ProductService {
                         savedProduct.setHinhAnh(path);
                 } catch (java.io.IOException | RuntimeException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (createProduct): " + e.getMessage());
-                } catch (Exception e) {
-                    System.err.println("GDRIVE CRITICAL ERROR (createProduct): " + e.getMessage());
                 }
             }
             if (!images.isEmpty()) {
@@ -183,7 +182,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(Long id, String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, String moTa,
+    public void updateProduct(Long id, String tenSanPham, Long idDanhMuc, BigDecimal giaNiemYet, BigDecimal giaKhuyenMai, String moTa,
             List<Long> variantIds, List<Integer> variantStocks, List<BigDecimal> variantCosts,
             MultipartFile[] files) {
         Product product = productRepository.findById(id)
@@ -191,6 +190,7 @@ public class ProductService {
 
         product.setTenSanPham(tenSanPham);
         product.setGiaNiemYet(giaNiemYet);
+        product.setGiaKhuyenMai(normalizeSalePrice(giaNiemYet, giaKhuyenMai));
         product.setMoTa(moTa);
 
         Category category = categoryRepository.findById(idDanhMuc).orElse(null);
@@ -218,8 +218,6 @@ public class ProductService {
                         product.setHinhAnh(path);
                 } catch (java.io.IOException | RuntimeException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (updateProduct): " + e.getMessage());
-                } catch (Exception e) {
-                    System.err.println("GDRIVE CRITICAL ERROR (updateProduct): " + e.getMessage());
                 }
             }
             if (!newImages.isEmpty()) {
@@ -302,5 +300,15 @@ public class ProductService {
             variants.add(variant);
         }
         return variants;
+    }
+
+    private BigDecimal normalizeSalePrice(BigDecimal listedPrice, BigDecimal salePrice) {
+        if (salePrice == null || listedPrice == null) {
+            return null;
+        }
+        if (salePrice.compareTo(BigDecimal.ZERO) <= 0 || salePrice.compareTo(listedPrice) >= 0) {
+            return null;
+        }
+        return salePrice;
     }
 }

@@ -100,15 +100,28 @@
                             <span class="text-sm font-serif" th:text="${productStocks.get(product.idSanPham)}">42</span>
                         </td>
                         <td class="py-8 text-center">
-                            <span class="text-sm font-serif" th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + 'đ'">4.250.000đ</span>
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="text-sm font-serif"
+                                      th:classappend="${product.giaKhuyenMai != null and product.giaKhuyenMai > 0 and product.giaKhuyenMai < product.giaNiemYet ? 'line-through text-on-surface-variant/70' : ''}"
+                                      th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + 'đ'">4.250.000đ</span>
+                                <span th:if="${product.giaKhuyenMai != null and product.giaKhuyenMai > 0 and product.giaKhuyenMai < product.giaNiemYet}"
+                                      class="text-xs font-bold tracking-widest text-secondary"
+                                      th:text="${#numbers.formatDecimal(product.giaKhuyenMai, 0, 'COMMA', 0, 'POINT')} + 'đ'">3.850.000đ</span>
+                            </div>
                         </td>
                         <td class="py-8 text-center">
-                            <span th:with="stock=${productStocks.get(product.idSanPham)}" class="flex items-center justify-center">
-                                <span class="inline-block w-2 h-2 rounded-full mr-2" 
-                                      th:classappend="${stock > 10 ? 'bg-green-500' : (stock > 0 ? 'bg-secondary' : 'bg-outline')}"></span>
-                                <span class="text-[10px] font-bold tracking-widest uppercase"
-                                      th:classappend="${stock > 10 ? 'text-primary' : (stock > 0 ? 'text-secondary' : 'text-outline')}"
-                                      th:text="${stock > 10 ? 'CÒN HÀNG' : (stock > 0 ? 'SẮP HẾT HÀNG' : 'HẾT HÀNG')}">STATUS</span>
+                            <span th:with="stock=${productStocks.get(product.idSanPham)}" class="flex flex-col items-center justify-center gap-2">
+                                <span class="flex items-center justify-center">
+                                    <span class="inline-block w-2 h-2 rounded-full mr-2" 
+                                          th:classappend="${stock > 10 ? 'bg-green-500' : (stock > 0 ? 'bg-secondary' : 'bg-outline')}"></span>
+                                    <span class="text-[10px] font-bold tracking-widest uppercase"
+                                          th:classappend="${stock > 10 ? 'text-primary' : (stock > 0 ? 'text-secondary' : 'text-outline')}"
+                                          th:text="${stock > 10 ? 'CÒN HÀNG' : (stock > 0 ? 'SẮP HẾT HÀNG' : 'HẾT HÀNG')}">STATUS</span>
+                                </span>
+                                <span th:if="${product.giaKhuyenMai != null and product.giaKhuyenMai > 0 and product.giaKhuyenMai < product.giaNiemYet}"
+                                      class="inline-flex items-center px-2 py-1 rounded-full bg-secondary/15 text-secondary text-[9px] font-bold tracking-widest uppercase">
+                                    ĐANG KHUYẾN MÃI
+                                </span>
                             </span>
                         </td>
                         <td class="py-8 text-right">

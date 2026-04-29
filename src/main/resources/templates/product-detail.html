@@ -32,7 +32,13 @@
                            th:text="${product.category != null ? product.category.tenDanhMuc : 'Essentials'}">Sưu tập Thu Đông '24</p>
                         <h1 class="text-5xl font-headline font-black text-primary leading-tight mb-2 tracking-tighter uppercase" 
                             th:text="${product.tenSanPham}">TÊN SẢN PHẨM</h1>
-                        <p class="text-2xl text-primary/60 font-light" 
+                        <div th:if="${product.giaKhuyenMai != null and product.giaKhuyenMai.compareTo(product.giaNiemYet) < 0}" class="flex items-center gap-3">
+                            <p class="text-lg text-outline line-through font-light"
+                               th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</p>
+                            <p class="text-2xl text-secondary font-bold"
+                               th:text="${#numbers.formatDecimal(product.giaKhuyenMai, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</p>
+                        </div>
+                        <p th:if="${product.giaKhuyenMai == null or product.giaKhuyenMai.compareTo(product.giaNiemYet) >= 0}" class="text-2xl text-primary/60 font-light" 
                            th:text="${product.giaNiemYet != null ? #numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">0 VNĐ</p>
                     </div>
 
@@ -198,7 +204,14 @@
                             <h3 class="font-headline font-bold text-sm tracking-tight mb-2 uppercase" th:text="${rec.tenSanPham}">SƠ MI OXFORD TRẮNG</h3>
                             <p class="text-xs text-outline mb-1" 
                                th:text="${rec.category != null ? rec.category.tenDanhMuc : 'Essentials'}">CATEGORY</p>
-                            <p class="text-sm font-medium" th:text="${rec.giaNiemYet != null ? #numbers.formatDecimal(rec.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">850,000 VNĐ</p>
+                            <p class="text-sm font-medium" th:if="${rec.giaKhuyenMai != null and rec.giaKhuyenMai.compareTo(rec.giaNiemYet) < 0}">
+                                <span class="line-through text-outline mr-2"
+                                      th:text="${#numbers.formatDecimal(rec.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">850,000 VNĐ</span>
+                                <span class="text-secondary"
+                                      th:text="${#numbers.formatDecimal(rec.giaKhuyenMai, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">650,000 VNĐ</span>
+                            </p>
+                            <p class="text-sm font-medium" th:if="${rec.giaKhuyenMai == null or rec.giaKhuyenMai.compareTo(rec.giaNiemYet) >= 0}"
+                               th:text="${rec.giaNiemYet != null ? #numbers.formatDecimal(rec.giaNiemYet, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">850,000 VNĐ</p>
                         </a>
                     </article>
                 </div>

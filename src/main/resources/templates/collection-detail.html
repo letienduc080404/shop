@@ -27,7 +27,14 @@
                     <a th:href="@{/product/{id}(id=${product.idSanPham})}" class="block">
                         <h3 class="text-xs font-bold uppercase tracking-widest group-hover:text-secondary transition-colors" th:text="${product.tenSanPham}">PRODUCT NAME</h3>
                     </a>
-                    <p class="text-xs font-bold" th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + '₫'">0₫</p>
+                    <p class="text-xs font-bold" th:if="${product.giaKhuyenMai != null and product.giaKhuyenMai.compareTo(product.giaNiemYet) < 0}">
+                        <span class="line-through text-outline mr-2"
+                              th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                        <span class="text-secondary"
+                              th:text="${#numbers.formatDecimal(product.giaKhuyenMai, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                    </p>
+                    <p class="text-xs font-bold" th:if="${product.giaKhuyenMai == null or product.giaKhuyenMai.compareTo(product.giaNiemYet) >= 0}"
+                       th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT')} + '₫'">0₫</p>
                 </div>
             </div>
         </div>

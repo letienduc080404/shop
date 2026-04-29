@@ -24,6 +24,9 @@ public class Product {
     @Column(name = "GiaNiemYet", nullable = false, precision = 12, scale = 2)
     private BigDecimal giaNiemYet;
 
+    @Column(name = "GiaKhuyenMai", precision = 12, scale = 2)
+    private BigDecimal giaKhuyenMai;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_DanhMuc", nullable = false)
     private Category category;
@@ -90,6 +93,22 @@ public class Product {
 
     public void setGiaNiemYet(BigDecimal giaNiemYet) {
         this.giaNiemYet = giaNiemYet;
+    }
+
+    public BigDecimal getGiaKhuyenMai() {
+        return giaKhuyenMai;
+    }
+
+    public void setGiaKhuyenMai(BigDecimal giaKhuyenMai) {
+        this.giaKhuyenMai = giaKhuyenMai;
+    }
+
+    public BigDecimal getGiaHienTai() {
+        if (giaKhuyenMai != null && giaNiemYet != null && giaKhuyenMai.compareTo(BigDecimal.ZERO) > 0
+                && giaKhuyenMai.compareTo(giaNiemYet) < 0) {
+            return giaKhuyenMai;
+        }
+        return giaNiemYet != null ? giaNiemYet : BigDecimal.ZERO;
     }
 
     public Category getCategory() {

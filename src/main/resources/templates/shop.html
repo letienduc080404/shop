@@ -71,7 +71,13 @@
                                 <p class="text-outline text-xs font-label tracking-widest uppercase"
                                     th:text="${product.category != null ? product.category.tenDanhMuc : 'Essentials'}">
                                     CATEGORY</p>
-                                <p class="font-serif text-sm"
+                                <p class="font-serif text-sm" th:if="${product.giaKhuyenMai != null and product.giaKhuyenMai.compareTo(product.giaNiemYet) < 0}">
+                                    <span class="line-through text-outline mr-2"
+                                          th:text="${#numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</span>
+                                    <span class="text-secondary"
+                                          th:text="${#numbers.formatDecimal(product.giaKhuyenMai, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</span>
+                                </p>
+                                <p class="font-serif text-sm" th:if="${product.giaKhuyenMai == null or product.giaKhuyenMai.compareTo(product.giaNiemYet) >= 0}"
                                     th:text="${product.giaNiemYet != null ? #numbers.formatDecimal(product.giaNiemYet, 0, 'COMMA', 0, 'POINT') + 'đ' : '0đ'}">
                                     0đ</p>
                             </div>

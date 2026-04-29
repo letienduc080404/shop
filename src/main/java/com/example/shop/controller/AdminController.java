@@ -59,6 +59,7 @@ public class AdminController {
     public String addProduct(@RequestParam("tenSanPham") String tenSanPham,
             @RequestParam("idDanhMuc") Long idDanhMuc,
             @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
+            @RequestParam(name = "giaKhuyenMai", required = false) BigDecimal giaKhuyenMai,
             @RequestParam("moTa") String moTa,
             @RequestParam(name = "variantSizes", required = false) List<String> variantSizes,
             @RequestParam(name = "variantColors", required = false) List<String> variantColors,
@@ -67,7 +68,7 @@ public class AdminController {
             @RequestParam("files") MultipartFile[] files) {
 
         productService.createProduct(
-                tenSanPham, idDanhMuc, giaNiemYet, moTa,
+                tenSanPham, idDanhMuc, giaNiemYet, giaKhuyenMai, moTa,
                 variantSizes == null ? Collections.emptyList() : variantSizes,
                 variantColors == null ? Collections.emptyList() : variantColors,
                 variantStocks == null ? Collections.emptyList() : variantStocks,
@@ -93,6 +94,7 @@ public class AdminController {
             @RequestParam("tenSanPham") String tenSanPham,
             @RequestParam("idDanhMuc") Long idDanhMuc,
             @RequestParam("giaNiemYet") BigDecimal giaNiemYet,
+            @RequestParam(name = "giaKhuyenMai", required = false) BigDecimal giaKhuyenMai,
             @RequestParam("moTa") String moTa,
             @RequestParam(name = "variantIds", required = false) List<Long> variantIds,
             @RequestParam(name = "variantStocks", required = false) List<Integer> variantStocks,
@@ -100,7 +102,7 @@ public class AdminController {
             @RequestParam("files") MultipartFile[] files) {
 
         productService.updateProduct(
-                id, tenSanPham, idDanhMuc, giaNiemYet, moTa,
+                id, tenSanPham, idDanhMuc, giaNiemYet, giaKhuyenMai, moTa,
                 variantIds == null ? Collections.emptyList() : variantIds,
                 variantStocks == null ? Collections.emptyList() : variantStocks,
                 variantCosts == null ? Collections.emptyList() : variantCosts,

@@ -79,7 +79,7 @@ public class CartController {
                 CartItem newItem = new CartItem();
                 newItem.setIdSanPham(product.getIdSanPham());
                 newItem.setTenSanPham(product.getTenSanPham());
-                newItem.setGia(product.getGiaNiemYet().doubleValue());
+                newItem.setGia(product.getGiaHienTai().doubleValue());
                 newItem.setSoLuong(soLuong);
                 newItem.setKichThuoc(kichThuoc);
                 newItem.setMauSac(mauSac);
