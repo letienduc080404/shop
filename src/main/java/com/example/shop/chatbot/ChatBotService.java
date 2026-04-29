@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 public class ChatBotService {
 
     private static final String FALLBACK_SCOPE_MESSAGE = "Mình là trợ lý mua sắm, mình có thể hỗ trợ bạn tìm sản phẩm, giá, tồn kho và đơn hàng trong shop.";
+    private static final String SHOP_ADDRESS = "97 Man Thiện, Phường Tăng Nhơn Phú, TP. Hồ Chí Minh.";
     private static final DateTimeFormatter ORDER_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Pattern PRICE_PATTERN = Pattern.compile("(\\d+[\\.,]?\\d*)\\s*(k|nghìn|nghin|tr|triệu|trieu)?", Pattern.CASE_INSENSITIVE);
     private static final Pattern ORDER_PATTERN = Pattern.compile("\\b([A-Za-z]{2,5}[-_]?[0-9]{2,10})\\b");
@@ -63,6 +64,14 @@ public class ChatBotService {
     }
 
     private String answerByRules(String originalMessage, String normalized) {
+        if (isGreeting(normalized)) {
+            return FALLBACK_SCOPE_MESSAGE;
+        }
+
+        if (isAddressQuestion(normalized)) {
+            return "Địa chỉ shop: " + SHOP_ADDRESS;
+        }
+
         if (isOutOfScope(normalized)) {
             return FALLBACK_SCOPE_MESSAGE;
         }
@@ -192,6 +201,21 @@ public class ChatBotService {
                 || normalized.contains("thoi tiet")
                 || normalized.contains("hack")
                 || normalized.contains("sql");
+    }
+
+    private boolean isGreeting(String normalized) {
+        return normalized.equals("xin chao")
+                || normalized.equals("chao")
+                || normalized.equals("hello")
+                || normalized.equals("hi")
+                || normalized.equals("hey");
+    }
+
+    private boolean isAddressQuestion(String normalized) {
+        return normalized.contains("dia chi")
+                || normalized.contains("o dau")
+                || normalized.contains("cua hang o dau")
+                || normalized.contains("shop o dau");
     }
 
     private String askOpenAi(String userMessage, String fallbackAnswer) {
