@@ -1,5 +1,7 @@
 (function () {
     const FALLBACK_SCOPE_MESSAGE = "Mình là trợ lý mua sắm, mình có thể hỗ trợ bạn tìm sản phẩm, giá, tồn kho và đơn hàng trong shop.";
+    const SUPPORT_CHAT_STORAGE_KEY = "shop_direct_support_key";
+    const SUPPORT_CHAT_POLL_MS = 4000;
 
     function getCsrfInfo() {
         const tokenMeta = document.querySelector('meta[name="_csrf"]');
@@ -21,6 +23,13 @@
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
         return div;
+    }
+
+    function setPanelVisible(panelEl, visible) {
+        if (!panelEl) {
+            return;
+        }
+        panelEl.classList.toggle("chatbot-hidden", !visible);
     }
 
     function shouldShowAdminHandoff(answer) {
@@ -54,6 +63,34 @@
         if (!response.ok) {
             throw new Error("ADMIN_CHAT_API_ERROR");
         }
+    }
+
+    async function loadSupportMessages(conversationKey) {
+        const response = await fetch("/api/chat/" + encodeURIComponent(conversationKey), {
+            method: "GET",
+            credentials: "same-origin",
+        });
+        if (response.status === 401 || response.status === 403) {
+            throw new Error("UNAUTHORIZED");
+        }
+        if (!response.ok) {
+            throw new Error("LOAD_SUPPORT_FAILED");
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    }
+
+    function renderSupportMessages(container, messages) {
+        container.innerHTML = "";
+        if (!messages || messages.length === 0) {
+            appendMessage(container, "Bạn đã mở chat hỗ trợ trực tiếp. Hãy gửi nội dung để admin hỗ trợ nhanh hơn.", "bot");
+            return;
+        }
+
+        messages.forEach(function (msg) {
+            const sender = msg && msg.senderRole === "USER" ? "user" : "bot";
+            appendMessage(container, msg.message || "", sender);
+        });
     }
 
     async function fetchMyOrderCodes() {
@@ -107,7 +144,7 @@
         doneCallback();
     }
 
-    function appendAdminHandoffOption(container, originalQuestion) {
+    function appendAdminHandoffOption(container, originalQuestion, supportChatContext) {
         const wrap = document.createElement("div");
         wrap.className = "chatbot-admin-handoff";
 
@@ -161,11 +198,12 @@
         });
 
         directBtn.addEventListener("click", async function () {
-            const directKey = "DIRECT-" + Date.now();
             setButtonsDisabled(true);
             try {
+                const directKey = supportChatContext.getOrCreateConversationKey();
                 await sendToAdminSupport(directKey, originalQuestion);
-                window.location.href = "/support/chat/" + encodeURIComponent(directKey);
+                supportChatContext.open();
+                await supportChatContext.sync();
             } catch (error) {
                 appendMessage(container, "Không thể gửi yêu cầu liên hệ trực tiếp tới admin lúc này.", "bot");
             } finally {
@@ -185,7 +223,7 @@
         }
     }
 
-    async function sendMessage(message, messagesEl, loadingEl) {
+    async function sendMessage(message, messagesEl, loadingEl, supportChatContext) {
         const csrf = getCsrfInfo();
         const headers = {
             "Content-Type": "application/json",
@@ -210,11 +248,11 @@
             const answer = data && typeof data.answer === "string" ? data.answer : "Mình chưa có câu trả lời phù hợp.";
             appendMessage(messagesEl, answer, "bot");
             if (shouldShowAdminHandoff(answer)) {
-                appendAdminHandoffOption(messagesEl, message);
+                appendAdminHandoffOption(messagesEl, message, supportChatContext);
             }
         } catch (error) {
             appendMessage(messagesEl, "Xin lỗi, hiện tại chatbot đang gặp lỗi kết nối.", "bot");
-            appendAdminHandoffOption(messagesEl, message);
+            appendAdminHandoffOption(messagesEl, message, supportChatContext);
         } finally {
             setLoading(false, loadingEl);
         }
@@ -229,10 +267,80 @@
         const toggleBtn = document.getElementById("chatbot-toggle");
         const panel = document.getElementById("chatbot-panel");
         const closeBtn = document.getElementById("chatbot-close");
+        const reopenSupportBtn = document.getElementById("reopen-support-chat");
         const form = document.getElementById("chatbot-form");
         const input = document.getElementById("chatbot-input");
         const messagesEl = document.getElementById("chatbot-messages");
         const loadingEl = document.getElementById("chatbot-loading");
+        const supportPanel = document.getElementById("support-chat-panel");
+        const supportCloseBtn = document.getElementById("support-chat-close");
+        const supportMessagesEl = document.getElementById("support-chat-messages");
+        const supportLoadingEl = document.getElementById("support-chat-loading");
+        const supportForm = document.getElementById("support-chat-form");
+        const supportInput = document.getElementById("support-chat-input");
+
+        let supportConversationKey = localStorage.getItem(SUPPORT_CHAT_STORAGE_KEY);
+        let supportPollTimerId = null;
+
+        function updateReopenSupportButtonVisibility() {
+            if (!reopenSupportBtn) {
+                return;
+            }
+            const hasConversation = !!supportConversationKey;
+            reopenSupportBtn.classList.toggle("chatbot-hidden", !hasConversation);
+        }
+
+        function getOrCreateSupportConversationKey() {
+            if (!supportConversationKey) {
+                supportConversationKey = "DIRECT-" + Date.now();
+                localStorage.setItem(SUPPORT_CHAT_STORAGE_KEY, supportConversationKey);
+                updateReopenSupportButtonVisibility();
+            }
+            return supportConversationKey;
+        }
+
+        async function syncSupportMessages() {
+            if (!supportConversationKey) {
+                return;
+            }
+            setLoading(true, supportLoadingEl);
+            try {
+                const messages = await loadSupportMessages(supportConversationKey);
+                renderSupportMessages(supportMessagesEl, messages);
+            } catch (error) {
+                if (error && error.message === "UNAUTHORIZED") {
+                    setPanelVisible(supportPanel, false);
+                    localStorage.removeItem(SUPPORT_CHAT_STORAGE_KEY);
+                    supportConversationKey = null;
+                    updateReopenSupportButtonVisibility();
+                    appendMessage(messagesEl, "Bạn cần đăng nhập để tiếp tục chat hỗ trợ trực tiếp.", "bot");
+                }
+            } finally {
+                setLoading(false, supportLoadingEl);
+            }
+        }
+
+        function startSupportPolling() {
+            if (supportPollTimerId) {
+                clearInterval(supportPollTimerId);
+            }
+            supportPollTimerId = window.setInterval(syncSupportMessages, SUPPORT_CHAT_POLL_MS);
+        }
+
+        function openSupportPanel() {
+            setPanelVisible(supportPanel, true);
+            startSupportPolling();
+            syncSupportMessages();
+            if (supportInput) {
+                supportInput.focus();
+            }
+        }
+
+        const supportChatContext = {
+            getOrCreateConversationKey: getOrCreateSupportConversationKey,
+            open: openSupportPanel,
+            sync: syncSupportMessages,
+        };
 
         toggleBtn.addEventListener("click", function () {
             panel.classList.toggle("chatbot-hidden");
@@ -253,13 +361,57 @@
             }
             appendMessage(messagesEl, message, "user");
             input.value = "";
-            await sendMessage(message, messagesEl, loadingEl);
+            await sendMessage(message, messagesEl, loadingEl, supportChatContext);
         });
 
         input.addEventListener("keydown", function (event) {
             if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 form.requestSubmit();
+            }
+        });
+
+        if (supportCloseBtn) {
+            supportCloseBtn.addEventListener("click", function () {
+                setPanelVisible(supportPanel, false);
+            });
+        }
+
+        if (reopenSupportBtn) {
+            reopenSupportBtn.addEventListener("click", function () {
+                openSupportPanel();
+            });
+        }
+
+        if (supportForm) {
+            supportForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const message = supportInput.value.trim();
+                if (!message) {
+                    return;
+                }
+
+                const conversationKey = getOrCreateSupportConversationKey();
+                appendMessage(supportMessagesEl, message, "user");
+                supportInput.value = "";
+                try {
+                    await sendToAdminSupport(conversationKey, message);
+                    await syncSupportMessages();
+                } catch (error) {
+                    appendMessage(supportMessagesEl, "Không gửi được tin nhắn hỗ trợ lúc này.", "bot");
+                }
+            });
+        }
+
+        if (supportConversationKey) {
+            openSupportPanel();
+        }
+
+        updateReopenSupportButtonVisibility();
+
+        window.addEventListener("beforeunload", function () {
+            if (supportPollTimerId) {
+                clearInterval(supportPollTimerId);
             }
         });
     });

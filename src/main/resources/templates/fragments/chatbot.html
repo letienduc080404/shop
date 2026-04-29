@@ -10,7 +10,12 @@
         <section id="chatbot-panel" class="chatbot-panel chatbot-hidden" aria-live="polite">
             <header class="chatbot-header">
                 <h3>Trợ lý mua sắm AI</h3>
-                <button id="chatbot-close" type="button" class="chatbot-close" aria-label="Đóng chatbot">×</button>
+                <div class="chatbot-header-actions">
+                    <button id="reopen-support-chat" type="button" class="chatbot-header-btn chatbot-hidden" aria-label="Mở lại chat hỗ trợ">
+                        Mở lại hỗ trợ
+                    </button>
+                    <button id="chatbot-close" type="button" class="chatbot-close" aria-label="Đóng chatbot">×</button>
+                </div>
             </header>
             <div id="chatbot-messages" class="chatbot-messages">
                 <div class="chatbot-message chatbot-message-bot">
@@ -21,6 +26,23 @@
             <form id="chatbot-form" class="chatbot-form">
                 <input id="chatbot-input" type="text" maxlength="500" placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
                 <button id="chatbot-send" type="submit">Gửi</button>
+            </form>
+        </section>
+
+        <section id="support-chat-panel" class="chatbot-panel chatbot-hidden support-chat-panel" aria-live="polite">
+            <header class="chatbot-header">
+                <h3>Hỗ trợ trực tiếp</h3>
+                <button id="support-chat-close" type="button" class="chatbot-close" aria-label="Đóng chat hỗ trợ">×</button>
+            </header>
+            <div id="support-chat-messages" class="chatbot-messages">
+                <div class="chatbot-message chatbot-message-bot">
+                    Bạn đã mở chat hỗ trợ trực tiếp. Hãy gửi nội dung để admin hỗ trợ nhanh hơn.
+                </div>
+            </div>
+            <div id="support-chat-loading" class="chatbot-loading chatbot-hidden">Đang đồng bộ tin nhắn...</div>
+            <form id="support-chat-form" class="chatbot-form">
+                <input id="support-chat-input" type="text" maxlength="1000" placeholder="Nhập nội dung cần hỗ trợ..." autocomplete="off" />
+                <button id="support-chat-send" type="submit">Gửi</button>
             </form>
         </section>
     </div>
