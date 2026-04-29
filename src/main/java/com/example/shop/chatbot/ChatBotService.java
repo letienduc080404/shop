@@ -150,11 +150,27 @@ public class ChatBotService {
             return answerForSearchKeyword("hoodie");
         }
 
-        String keyword = extractLikelyProductKeyword(normalized);
-        if (!keyword.isBlank()) {
+        List<String> candidateKeywords = buildCandidateKeywords(normalized);
+        for (String keyword : candidateKeywords) {
             List<ProductChatDto> products = chatShopQueryRepository.searchProducts(keyword);
             if (!products.isEmpty()) {
                 return "Mình tìm thấy: " + formatProductList(products, 6);
+            }
+        }
+
+        if (containsKeyword(normalized, "nam")) {
+            List<ProductChatDto> byMaleCategory = chatShopQueryRepository.findProductsByCategory("nam");
+            if (!byMaleCategory.isEmpty()) {
+                return "Một số sản phẩm nam bạn có thể tham khảo: " + formatProductList(byMaleCategory, 6);
+            }
+        }
+        if (containsKeyword(normalized, "nu")) {
+            List<ProductChatDto> byFemaleCategory = chatShopQueryRepository.findProductsByCategory("nữ");
+            if (byFemaleCategory.isEmpty()) {
+                byFemaleCategory = chatShopQueryRepository.findProductsByCategory("nu");
+            }
+            if (!byFemaleCategory.isEmpty()) {
+                return "Một số sản phẩm nữ bạn có thể tham khảo: " + formatProductList(byFemaleCategory, 6);
             }
         }
 
@@ -281,6 +297,37 @@ public class ChatBotService {
             cleaned = cleaned.substring(0, 60);
         }
         return cleaned;
+    }
+
+    private List<String> buildCandidateKeywords(String normalized) {
+        java.util.LinkedHashSet<String> keywords = new java.util.LinkedHashSet<>();
+
+        String likely = extractLikelyProductKeyword(normalized);
+        if (!likely.isBlank()) {
+            keywords.add(likely);
+        }
+
+        String[] commonProductWords = {"quan", "ao", "vay", "hoodie", "jean", "so mi", "thun", "khoac"};
+        for (String word : commonProductWords) {
+            if (normalized.contains(word)) {
+                keywords.add(word);
+            }
+        }
+
+        String compact = normalized.replace("toi muon mua", "")
+                .replace("hay ho tro cho toi kiem", "")
+                .replace("hay ho tro toi tim", "")
+                .replace("cho toi", "")
+                .replace("toi", "")
+                .replace("mua", "")
+                .replace("tim", "")
+                .replace("kiem", "")
+                .trim();
+        if (!compact.isBlank()) {
+            keywords.add(compact);
+        }
+
+        return keywords.stream().filter(k -> !k.isBlank()).toList();
     }
 
     private String formatProductList(List<ProductChatDto> products, int maxItems) {
