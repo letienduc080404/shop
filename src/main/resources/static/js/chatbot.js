@@ -1,4 +1,6 @@
 (function () {
+    const FALLBACK_SCOPE_MESSAGE = "Mình là trợ lý mua sắm, mình có thể hỗ trợ bạn tìm sản phẩm, giá, tồn kho và đơn hàng trong shop.";
+
     function getCsrfInfo() {
         const tokenMeta = document.querySelector('meta[name="_csrf"]');
         const headerMeta = document.querySelector('meta[name="_csrf_header"]');
@@ -17,6 +19,79 @@
         div.classList.add(sender === "user" ? "chatbot-message-user" : "chatbot-message-bot");
         div.textContent = text;
         container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+        return div;
+    }
+
+    function shouldShowAdminHandoff(answer) {
+        if (!answer) {
+            return true;
+        }
+        const normalized = answer.trim().toLowerCase();
+        return normalized === FALLBACK_SCOPE_MESSAGE.toLowerCase()
+            || normalized.includes("mình chưa có câu trả lời phù hợp")
+            || normalized.includes("xin lỗi")
+            || normalized.includes("không chắc");
+    }
+
+    async function sendToAdminSupport(orderCode, originalQuestion) {
+        const csrf = getCsrfInfo();
+        if (!csrf || !csrf.header || !csrf.token) {
+            throw new Error("NO_CSRF");
+        }
+
+        const formData = new FormData();
+        formData.append("role", "USER");
+        formData.append("message", "Khách cần hỗ trợ từ chatbot. Câu hỏi: " + originalQuestion);
+
+        const response = await fetch("/api/chat/" + encodeURIComponent(orderCode), {
+            method: "POST",
+            headers: { [csrf.header]: csrf.token },
+            body: formData,
+            credentials: "same-origin",
+        });
+
+        if (!response.ok) {
+            throw new Error("ADMIN_CHAT_API_ERROR");
+        }
+    }
+
+    function appendAdminHandoffOption(container, originalQuestion) {
+        const wrap = document.createElement("div");
+        wrap.className = "chatbot-admin-handoff";
+
+        const title = document.createElement("p");
+        title.className = "chatbot-admin-title";
+        title.textContent = "Bạn muốn chuyển sang nhắn admin không?";
+        wrap.appendChild(title);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chatbot-admin-btn";
+        button.textContent = "Nhắn admin";
+        wrap.appendChild(button);
+
+        button.addEventListener("click", async function () {
+            const orderCodeInput = window.prompt("Nhập mã đơn hàng để nhắn admin (ví dụ: ORD-ABC12345):");
+            const orderCode = (orderCodeInput || "").trim();
+            if (!orderCode) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Đang chuyển...";
+            try {
+                await sendToAdminSupport(orderCode, originalQuestion);
+                window.location.href = "/order/track/" + encodeURIComponent(orderCode);
+            } catch (error) {
+                appendMessage(container, "Không thể chuyển sang chat admin lúc này. Bạn vui lòng đăng nhập và kiểm tra lại mã đơn.", "bot");
+            } finally {
+                button.disabled = false;
+                button.textContent = "Nhắn admin";
+            }
+        });
+
+        container.appendChild(wrap);
         container.scrollTop = container.scrollHeight;
     }
 
@@ -52,8 +127,12 @@
             const data = await response.json();
             const answer = data && typeof data.answer === "string" ? data.answer : "Mình chưa có câu trả lời phù hợp.";
             appendMessage(messagesEl, answer, "bot");
+            if (shouldShowAdminHandoff(answer)) {
+                appendAdminHandoffOption(messagesEl, message);
+            }
         } catch (error) {
             appendMessage(messagesEl, "Xin lỗi, hiện tại chatbot đang gặp lỗi kết nối.", "bot");
+            appendAdminHandoffOption(messagesEl, message);
         } finally {
             setLoading(false, loadingEl);
         }
