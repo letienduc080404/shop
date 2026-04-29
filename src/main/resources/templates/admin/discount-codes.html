@@ -44,9 +44,17 @@
                               th:text="${item.active ? 'Active' : 'Disabled'}">Active</span>
                     </td>
                     <td class="py-8 text-right">
-                        <a th:href="@{'/admin/discount-codes/edit/' + ${item.id}}" class="hover:text-secondary transition-colors">
-                            <span class="material-symbols-outlined text-lg">edit</span>
-                        </a>
+                        <div class="flex items-center justify-end gap-4">
+                            <a th:href="@{'/admin/discount-codes/edit/' + ${item.id}}" class="hover:text-secondary transition-colors">
+                                <span class="material-symbols-outlined text-lg">edit</span>
+                            </a>
+                            <form th:action="@{'/admin/discount-codes/delete/' + ${item.id}}" method="post"
+                                  onsubmit="return confirm('Delete this discount code?');">
+                                <button type="submit" class="hover:text-secondary transition-colors">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

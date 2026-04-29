@@ -72,6 +72,18 @@ public class DiscountCodeService {
         return cloneCode(target);
     }
 
+    public boolean deleteById(Long id) {
+        if (id == null) {
+            return false;
+        }
+        DiscountCode removed = store.remove(id);
+        if (removed == null) {
+            return false;
+        }
+        persistToStorage();
+        return true;
+    }
+
     public BigDecimal calculateDiscount(DiscountCode discountCode, BigDecimal subtotal) {
         if (discountCode == null || subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;

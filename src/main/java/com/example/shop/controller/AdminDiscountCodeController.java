@@ -60,4 +60,15 @@ public class AdminDiscountCodeController {
             return "redirect:/admin/discount-codes/edit/" + discountCode.getId();
         }
     }
+
+    @PostMapping("/delete/{id}")
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        boolean deleted = discountCodeService.deleteById(id);
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("success", "Deleted discount code successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Discount code not found.");
+        }
+        return "redirect:/admin/discount-codes";
+    }
 }
