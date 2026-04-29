@@ -31,6 +31,11 @@
                     <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-outline">TỔNG THANH TOÁN</p>
                     <p class="text-2xl font-black tracking-tighter" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</p>
                 </div>
+                <div th:if="${order.tienGiamGia != null and !order.tienGiamGia.equals(T(java.math.BigDecimal).ZERO)}" class="space-y-2">
+                    <p class="text-[10px] font-bold tracking-[0.2em] uppercase text-outline">ƯU ĐÃI ÁP DỤNG</p>
+                    <p class="text-sm font-bold tracking-widest text-green-700"
+                       th:text="${order.maUuDai + ' (-' + #numbers.formatDecimal(order.tienGiamGia, 0, 'COMMA', 0, 'POINT') + '₫)'}">SALE10 (-10.000₫)</p>
+                </div>
             </div>
 
             <div class="flex flex-col md:flex-row gap-4 justify-center pt-8">

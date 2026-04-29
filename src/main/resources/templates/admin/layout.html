@@ -143,6 +143,12 @@
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="text-[11px] font-semibold tracking-wider uppercase">ORDERS</span>
             </a>
+            <a th:href="@{/admin/discount-codes}"
+                class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
+                th:classappend="${currentTab == 'discount-codes' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
+                <span class="material-symbols-outlined">sell</span>
+                <span class="text-[11px] font-semibold tracking-wider uppercase">DISCOUNT CODES</span>
+            </a>
             <a th:href="@{/admin/customers}"
                 class="flex items-center gap-4 px-6 py-4 transition-all hover:translate-x-2 duration-300"
                 th:classappend="${currentTab == 'customers' ? 'bg-[#b71507] text-white' : 'text-[#fbf9f8]/60 hover:bg-[#1c1c1c]'}">
@@ -181,11 +187,11 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="ml-64 min-h-screen bg-surface">
+    <main class="ml-64 min-h-screen bg-surface flex flex-col">
         <div th:replace="${content}"></div>
 
         <!-- Footer -->
-        <footer class="border-t border-outline-variant/10 bg-surface px-12 py-20">
+        <footer class="border-t border-outline-variant/10 bg-surface px-12 py-20 mt-auto">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-full">
                 <div>
                     <h5 class="text-xl font-serif font-black text-[#1c1c1c] dark:text-[#fbf9f8] mb-6 uppercase">DOMINO

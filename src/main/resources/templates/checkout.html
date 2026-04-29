@@ -118,6 +118,25 @@
                                 </label>
                             </div>
                         </section>
+                        <section class="mb-16">
+                            <div class="flex items-center gap-4 mb-8">
+                                <span class="text-xs font-bold bg-primary text-white w-6 h-6 flex items-center justify-center">03</span>
+                                <h2 class="text-xl font-bold tracking-widest uppercase">MÃ ƯU ĐÃI</h2>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-end gap-4">
+                                    <input id="promoCodeInput" name="promoCode" th:value="${promoCode}" class="flex-1 bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 focus:border-secondary transition-colors text-sm uppercase"
+                                        placeholder="Nhập mã ưu đãi (VD: SALE10)" type="text" />
+                                    <button id="applyPromoButton" type="button"
+                                        class="border border-outline-variant/40 px-6 py-3 text-[10px] font-bold tracking-widest uppercase hover:border-primary transition-colors">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                                <p th:if="${promoError}" class="text-xs text-secondary font-medium" th:text="${promoError}">Mã ưu đãi không hợp lệ.</p>
+                                <p th:if="${appliedDiscountCode != null}" class="text-xs text-green-700 font-medium"
+                                   th:text="${'Đã áp dụng mã ' + appliedDiscountCode.code}">Đã áp dụng mã</p>
+                            </div>
+                        </section>
                     </div>
                     <!-- Right Column: Order Summary (Sticky) -->
                     <div class="lg:col-span-5">
@@ -145,13 +164,17 @@
                                         <span class="text-on-surface-variant">TỔNG TIỀN HÀNG</span>
                                         <span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
                                     </div>
+                                    <div class="flex justify-between" th:if="${discount != null and !discount.equals(T(java.math.BigDecimal).ZERO)}">
+                                        <span class="text-on-surface-variant">ƯU ĐÃI</span>
+                                        <span class="text-green-700" th:text="${'- ' + #numbers.formatDecimal(discount, 0, 'COMMA', 0, 'POINT') + '₫'}">-0₫</span>
+                                    </div>
                                     <div class="flex justify-between">
                                         <span class="text-on-surface-variant">PHÍ VẬN CHUYỂN</span>
                                         <span class="text-secondary">MIỄN PHÍ</span>
                                     </div>
                                     <div class="flex justify-between text-lg font-black pt-6 border-t border-primary/10">
                                         <span class="tracking-tighter">TỔNG CỘNG</span>
-                                        <span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
+                                        <span th:text="${#numbers.formatDecimal(finalTotal, 0, 'COMMA', 0, 'POINT') + '₫'}">0₫</span>
                                     </div>
                                 </div>
                                 <!-- Checkout CTA -->
@@ -174,6 +197,29 @@
     </main>
     <!-- Standardized Footer -->
     <footer th:replace="~{fragments/layout :: footer}"></footer>
+    <script>
+        (function () {
+            const input = document.getElementById("promoCodeInput");
+            const button = document.getElementById("applyPromoButton");
+            if (!input || !button) {
+                return;
+            }
+
+            function applyPromoCode() {
+                const code = input.value.trim();
+                const url = code ? ("/checkout?promoCode=" + encodeURIComponent(code)) : "/checkout";
+                window.location.href = url;
+            }
+
+            button.addEventListener("click", applyPromoCode);
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    applyPromoCode();
+                }
+            });
+        })();
+    </script>
 </body>
 
 </html>

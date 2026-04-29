@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -65,7 +66,9 @@ public class OrderService {
     @Transactional
     public Order createOrder(Customer customer, List<CartItem> cartItems,
             String diaChi, String soDienThoai,
-            PhuongThucThanhToan phuongThuc) {
+            PhuongThucThanhToan phuongThuc,
+            BigDecimal tienGiamGia,
+            String maUuDai) {
 
         Order order = new Order();
         order.setCustomer(customer);
@@ -76,8 +79,15 @@ public class OrderService {
         order.setDiaChiNH(diaChi);
         order.setSoDienThoaiNH(soDienThoai);
 
-        double total = cartItems.stream().mapToDouble(item -> item.getGia() * item.getSoLuong()).sum();
-        order.setTongTien(BigDecimal.valueOf(total));
+        BigDecimal subtotal = cartItems.stream()
+                .map(item -> BigDecimal.valueOf(item.getGia()).multiply(BigDecimal.valueOf(item.getSoLuong())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal discount = tienGiamGia == null ? BigDecimal.ZERO : tienGiamGia.max(BigDecimal.ZERO);
+        BigDecimal finalTotal = subtotal.subtract(discount).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+
+        order.setTienGiamGia(discount.setScale(2, RoundingMode.HALF_UP));
+        order.setMaUuDai(maUuDai);
+        order.setTongTien(finalTotal);
 
         Order savedOrder = orderRepository.save(order);
 

@@ -132,7 +132,12 @@
                     <div class="space-y-4 pt-6 border-t border-primary/5">
                         <div class="flex justify-between text-xs font-label uppercase tracking-widest">
                             <span class="text-primary/50">TỔNG GIÁ TRỊ</span>
-                            <span th:text="${order.tongTien != null ? #numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">0₫</span>
+                            <span th:text="${order.tongTien != null ? #numbers.formatDecimal(order.tongTien.add(order.tienGiamGia != null ? order.tienGiamGia : T(java.math.BigDecimal).ZERO), 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">0₫</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-label uppercase tracking-widest"
+                             th:if="${order.tienGiamGia != null and !order.tienGiamGia.equals(T(java.math.BigDecimal).ZERO)}">
+                            <span class="text-primary/50">ƯU ĐÃI</span>
+                            <span class="text-secondary" th:text="${'- ' + #numbers.formatDecimal(order.tienGiamGia, 0, 'COMMA', 0, 'POINT') + '₫'}">-0₫</span>
                         </div>
                         <div class="flex justify-between text-xs font-label uppercase tracking-widest">
                             <span class="text-primary/50">PHÍ VẬN CHUYỂN</span>

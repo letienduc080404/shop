@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Discount Code Form', ~{::content}, 'discount-codes')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content" class="p-12">
+    <header class="mb-10">
+        <h2 class="text-4xl font-black tracking-tighter uppercase font-serif"
+            th:text="${discountCode.id == null ? 'CREATE DISCOUNT CODE' : 'EDIT DISCOUNT CODE'}">CREATE DISCOUNT CODE</h2>
+    </header>
+
+    <div th:if="${error}" class="mb-6 p-4 bg-red-100 text-red-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/admin/discount-codes/save}" method="post" th:object="${discountCode}" class="max-w-2xl space-y-8">
+        <input type="hidden" th:field="*{id}" />
+
+        <div>
+            <label class="text-[10px] font-bold tracking-widest uppercase text-outline mb-2 block">Code</label>
+            <input th:field="*{code}" required class="w-full border border-outline-variant/40 p-4 text-sm uppercase tracking-wider" placeholder="EX: SALE50" />
+        </div>
+
+        <div>
+            <label class="text-[10px] font-bold tracking-widest uppercase text-outline mb-2 block">Type</label>
+            <select th:field="*{type}" class="w-full border border-outline-variant/40 p-4 text-sm">
+                <option th:each="type : ${types}" th:value="${type}"
+                        th:text="${type.name() == 'PERCENT' ? 'Percent discount' : 'Amount discount'}">
+                    Percent discount
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <label class="text-[10px] font-bold tracking-widest uppercase text-outline mb-2 block">Value</label>
+            <input th:field="*{value}" type="number" min="0.01" step="0.01" required class="w-full border border-outline-variant/40 p-4 text-sm" />
+            <p class="text-[10px] mt-2 text-on-surface-variant uppercase tracking-widest">For percent type, value must be from 0.01 to 100</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <input th:field="*{active}" type="checkbox" class="w-4 h-4" />
+            <label class="text-xs font-bold tracking-widest uppercase">Active</label>
+        </div>
+
+        <div class="flex items-center gap-4 pt-4">
+            <button type="submit" class="bg-primary text-white px-8 py-4 text-xs font-bold tracking-widest uppercase hover:bg-secondary transition-colors">
+                Save
+            </button>
+            <a href="/admin/discount-codes" class="border border-outline-variant/40 px-8 py-4 text-xs font-bold tracking-widest uppercase">Back</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

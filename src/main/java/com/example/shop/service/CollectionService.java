@@ -1,31 +1,22 @@
 package com.example.shop.service;
 
 import com.example.shop.model.Collection;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class CollectionService {
-    private final String FILE_PATH = "collections.json";
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final CollectionsAndDiscountStorageService storageService;
+
+    public CollectionService(CollectionsAndDiscountStorageService storageService) {
+        this.storageService = storageService;
+    }
 
     public List<Collection> getAllCollections() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new ArrayList<>();
-        try {
-            return objectMapper.readValue(file, new TypeReference<List<Collection>>() {});
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        return storageService.readCollections();
     }
 
     public Collection getCollectionById(String id) {
@@ -71,10 +62,6 @@ public class CollectionService {
     }
 
     private void saveToFile(List<Collection> collections) {
-        try {
-            objectMapper.writeValue(new File(FILE_PATH), collections);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        storageService.writeCollections(collections);
     }
 }

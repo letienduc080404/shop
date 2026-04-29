@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html th:replace="~{admin/layout :: layout('Discount Codes', ~{::content}, 'discount-codes')}" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <header class="flex justify-between items-center px-12 py-8 bg-surface">
+        <div>
+            <h2 class="text-4xl font-black tracking-tighter uppercase font-serif">Discount Codes</h2>
+            <p class="text-xs font-medium tracking-widest text-on-surface-variant uppercase mt-2">Manage checkout promotions</p>
+        </div>
+        <a href="/admin/discount-codes/add" class="bg-primary text-white px-10 py-4 text-xs font-bold tracking-widest hover:bg-secondary transition-all duration-300 inline-block">
+            CREATE CODE
+        </a>
+    </header>
+
+    <div th:if="${success}" class="mx-12 mb-6 p-4 bg-green-100 text-green-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="mx-12 mb-6 p-4 bg-red-100 text-red-800 text-xs font-bold tracking-widest uppercase">
+        <span th:text="${error}"></span>
+    </div>
+
+    <section class="px-12 pb-20">
+        <div class="w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="text-[10px] tracking-[0.2em] text-on-surface-variant uppercase border-b border-outline-variant/20">
+                    <th class="py-6 font-semibold">Code</th>
+                    <th class="py-6 font-semibold">Type</th>
+                    <th class="py-6 font-semibold">Value</th>
+                    <th class="py-6 font-semibold">Status</th>
+                    <th class="py-6 font-semibold text-right">Action</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                <tr th:each="item : ${discountCodes}" class="group hover:bg-surface-container-low transition-colors duration-200">
+                    <td class="py-8 text-sm font-bold uppercase tracking-widest" th:text="${item.code}">SALE10</td>
+                    <td class="py-8 text-sm" th:text="${item.type.name() == 'PERCENT' ? 'Percent' : 'Amount'}">Percent</td>
+                    <td class="py-8 text-sm">
+                        <span th:text="${item.type.name() == 'PERCENT' ? #numbers.formatDecimal(item.value, 0, 'COMMA', 0, 'POINT') + '%' : #numbers.formatDecimal(item.value, 0, 'COMMA', 0, 'POINT') + '₫'}">10%</span>
+                    </td>
+                    <td class="py-8 text-sm">
+                        <span class="px-3 py-1 text-[9px] font-black tracking-widest uppercase"
+                              th:classappend="${item.active ? ' bg-green-100 text-green-700' : ' bg-red-100 text-red-700'}"
+                              th:text="${item.active ? 'Active' : 'Disabled'}">Active</span>
+                    </td>
+                    <td class="py-8 text-right">
+                        <a th:href="@{'/admin/discount-codes/edit/' + ${item.id}}" class="hover:text-secondary transition-colors">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+</body>
+</html>

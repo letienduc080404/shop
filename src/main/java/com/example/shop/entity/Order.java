@@ -27,6 +27,12 @@ public class Order {
     @Column(name = "TongTien", nullable = false, precision = 12, scale = 2)
     private BigDecimal tongTien = BigDecimal.ZERO;
 
+    @Column(name = "TienGiamGia", precision = 12, scale = 2)
+    private BigDecimal tienGiamGia = BigDecimal.ZERO;
+
+    @Column(name = "MaUuDai", length = 50)
+    private String maUuDai;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "TrangThaiDonHang")
     private TrangThaiDonHang trangThaiDonHang = TrangThaiDonHang.ChoXuLy;
@@ -56,6 +62,10 @@ public class Order {
     public void setNgayDat(java.time.LocalDateTime ngayDat) { this.ngayDat = ngayDat; }
     public BigDecimal getTongTien() { return tongTien; }
     public void setTongTien(BigDecimal tongTien) { this.tongTien = tongTien; }
+    public BigDecimal getTienGiamGia() { return tienGiamGia; }
+    public void setTienGiamGia(BigDecimal tienGiamGia) { this.tienGiamGia = tienGiamGia; }
+    public String getMaUuDai() { return maUuDai; }
+    public void setMaUuDai(String maUuDai) { this.maUuDai = maUuDai; }
     public TrangThaiDonHang getTrangThaiDonHang() { return trangThaiDonHang; }
     public void setTrangThaiDonHang(TrangThaiDonHang trangThaiDonHang) { this.trangThaiDonHang = trangThaiDonHang; }
     public PhuongThucThanhToan getPhuongThucThanhToan() { return phuongThucThanhToan; }
