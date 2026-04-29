@@ -1,6 +1,8 @@
 package com.example.shop.controller;
 
 import com.example.shop.entity.SupportMessage;
+import com.example.shop.entity.Customer;
+import com.example.shop.repository.CustomerRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,12 @@ public class ChatController {
 
     // Sử dụng bộ nhớ tạm thời (RAM) để lưu tin nhắn thay vì Database
     private static final Map<String, List<SupportMessage>> IN_MEMORY_DB = new ConcurrentHashMap<>();
+
+    private final CustomerRepository customerRepository;
+
+    public ChatController(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     // --- API cho giao diện người dùng và Admin (AJAX polling) ---
     @GetMapping("/api/chat/active")
@@ -45,7 +53,8 @@ public class ChatController {
     @ResponseBody
     public ResponseEntity<SupportMessage> sendMessage(@PathVariable String orderCode,
             @RequestParam String role,
-            @RequestParam String message) {
+            @RequestParam String message,
+            java.security.Principal principal) {
 
         // Validate orderCode
         if (orderCode == null || orderCode.isBlank() || orderCode.length() > 50) {
@@ -62,6 +71,24 @@ public class ChatController {
         String trimmedMessage = message.trim();
         if (trimmedMessage.length() > MAX_MESSAGE_LENGTH) {
             trimmedMessage = trimmedMessage.substring(0, MAX_MESSAGE_LENGTH);
+        }
+
+        // Nếu là tin nhắn của người dùng thì chèn thêm tên + email (gmail) để admin dễ nhận diện.
+        if ("USER".equals(role) && principal != null && principal.getName() != null && !principal.getName().isBlank()) {
+            String email = principal.getName();
+            String displayPrefix = "Khách: " + email;
+            try {
+                java.util.Optional<Customer> customerOpt = customerRepository.findByEmail(email);
+                if (customerOpt.isPresent()) {
+                    String hoTen = customerOpt.get().getHoTen();
+                    if (hoTen != null && !hoTen.isBlank()) {
+                        displayPrefix = "Khách: " + hoTen + " (" + email + ")";
+                    }
+                }
+            } catch (Exception ignored) {
+                // Nếu query customer fail thì vẫn hiển thị email
+            }
+            trimmedMessage = displayPrefix + "\n" + trimmedMessage;
         }
 
         // Không tạo thêm đơn mới nếu đã đạt giới hạn tối đa

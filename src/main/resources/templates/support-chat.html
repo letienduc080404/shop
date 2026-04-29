@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('HỖ TRỢ KHÁCH HÀNG')}"></head>
+
+<body class="bg-background text-primary selection:bg-secondary selection:text-white">
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-4xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl md:text-4xl font-serif italic font-bold tracking-tight">Hỗ trợ khách hàng</h1>
+            <p class="text-xs uppercase tracking-widest text-outline/70 mt-2" th:text="'Mã hỗ trợ: #' + ${conversationKey}">
+                Mã hỗ trợ: #DIRECT-xxxx
+            </p>
+        </div>
+
+        <section class="bg-surface-container-lowest border border-outline-variant/40 shadow-sm rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-outline-variant/40 flex items-center justify-between">
+                <span class="text-xs uppercase tracking-widest font-label text-outline/70">CHAT VỚI ADMIN</span>
+                <button type="button"
+                    class="text-xs px-3 py-1.5 border border-outline-variant/50 hover:border-secondary hover:text-secondary transition-colors rounded-full"
+                    onclick="clearCurrentChat()">Xóa chat</button>
+            </div>
+
+            <div id="chatMessages" class="h-[55vh] overflow-y-auto p-5 space-y-4 bg-surface-container-low text-sm">
+                <p id="placeholderMsg" class="text-center text-primary/40 italic mt-4">
+                    Bắt đầu trò chuyện với hỗ trợ viên...
+                </p>
+            </div>
+
+            <form id="chatForm" class="p-4 border-t border-outline-variant/40 flex gap-3 bg-white">
+                <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." maxlength="1000"
+                    class="flex-1 border border-outline-variant focus:border-primary outline-none px-4 py-3 text-sm rounded-xl" />
+                <button type="submit"
+                    class="bg-primary text-white px-6 py-3 font-label text-xs tracking-widest uppercase hover:bg-secondary transition-colors rounded-xl">
+                    Gửi
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script th:inline="javascript">
+        const conversationKey = /*[[${conversationKey}]]*/ '';
+        const chatMessages = document.getElementById('chatMessages');
+        const placeholderMsg = document.getElementById('placeholderMsg');
+        const chatInput = document.getElementById('chatInput');
+        const chatForm = document.getElementById('chatForm');
+
+        const CHAT_POLL_MS = 4000;
+        let chatTimerId = null;
+        let isSending = false;
+        let consecutiveErrors = 0;
+        const MAX_ERRORS = 4;
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        function renderMessages(messages) {
+            chatMessages.innerHTML = '';
+            if (!messages || messages.length === 0) {
+                chatMessages.appendChild(placeholderMsg);
+                return;
+            }
+
+            messages.forEach(m => {
+                const isUser = m.senderRole === 'USER';
+                const wrapper = document.createElement('div');
+                wrapper.className = isUser ? 'text-right' : 'text-left';
+
+                const bubble = document.createElement('div');
+                bubble.className = 'inline-block px-4 py-2 max-w-[80%] rounded-2xl break-words '
+                    + (isUser ? 'bg-primary text-white' : 'bg-white border border-outline-variant/50 text-primary');
+
+                const msgEl = document.createElement('p');
+                msgEl.className = 'text-sm whitespace-pre-wrap';
+                msgEl.textContent = m.message; // chống XSS
+                bubble.appendChild(msgEl);
+                wrapper.appendChild(bubble);
+                chatMessages.appendChild(wrapper);
+            });
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function loadMessages() {
+            try {
+                const res = await fetch('/api/chat/' + encodeURIComponent(conversationKey), { credentials: 'same-origin' });
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        // Session hết hạn
+                        if (chatTimerId !== null) {
+                            clearInterval(chatTimerId);
+                            chatTimerId = null;
+                        }
+                        chatMessages.innerHTML = '<p class="text-center text-red-500 text-xs mt-4">Phiên đăng nhập hết hạn. <a href="/login" class="underline">Đăng nhập lại</a></p>';
+                    }
+                    return;
+                }
+                consecutiveErrors = 0;
+                const messages = await res.json();
+                renderMessages(messages);
+            } catch (e) {
+                consecutiveErrors++;
+                if (consecutiveErrors >= MAX_ERRORS) {
+                    chatMessages.innerHTML = '<p class="text-center text-primary/40 text-xs mt-4">Mất kết nối. Vui lòng thử lại sau.</p>';
+                    if (chatTimerId !== null) {
+                        clearInterval(chatTimerId);
+                        chatTimerId = null;
+                    }
+                }
+            }
+        }
+
+        async function sendChatMessage(event) {
+            event.preventDefault();
+            if (isSending) return;
+
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            isSending = true;
+            try {
+                const formData = new FormData();
+                formData.append('role', 'USER');
+                formData.append('message', text);
+
+                const headers = {};
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                const res = await fetch('/api/chat/' + encodeURIComponent(conversationKey), {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: formData
+                });
+
+                if (res.ok) {
+                    chatInput.value = '';
+                    await loadMessages();
+                }
+            } catch (e) {
+                // ignore
+            } finally {
+                isSending = false;
+            }
+        }
+
+        window.clearCurrentChat = async function () {
+            if (!conversationKey) return;
+            if (!confirm('Xóa lịch sử chat của mã hỗ trợ này?')) return;
+
+            const headers = {};
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            try {
+                await fetch('/api/chat/' + encodeURIComponent(conversationKey), {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: headers
+                });
+                placeholderMsg.style.display = 'block';
+                await loadMessages();
+            } catch (e) {
+                // ignore
+            }
+        };
+
+        chatForm.addEventListener('submit', sendChatMessage);
+
+        // Poll ngay khi load
+        loadMessages();
+        chatTimerId = setInterval(loadMessages, CHAT_POLL_MS);
+
+        window.addEventListener('beforeunload', () => {
+            if (chatTimerId !== null) clearInterval(chatTimerId);
+        });
+    </script>
+</body>
+
+</html>
+

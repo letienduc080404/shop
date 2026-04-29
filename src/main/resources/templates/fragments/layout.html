@@ -198,7 +198,9 @@
                 </div>
             </div>
         </div>
-        <div th:replace="~{fragments/chatbot :: widget}"></div>
+        <!-- Ẩn chatbot AI trên trang chat hỗ trợ (khi khách đã chuyển qua nhắn admin) -->
+        <div th:if="${!#httpServletRequest.requestURI.startsWith('/support/chat')}"
+            th:replace="~{fragments/chatbot :: widget}"></div>
         <script th:src="@{/js/chatbot.js}"></script>
     </footer>
 </body>

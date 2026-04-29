@@ -42,7 +42,7 @@
 
         const formData = new FormData();
         formData.append("role", "USER");
-        formData.append("message", "Khách cần hỗ trợ từ chatbot. Câu hỏi: " + originalQuestion);
+        formData.append("message", originalQuestion);
 
         const response = await fetch("/api/chat/" + encodeURIComponent(conversationKey), {
             method: "POST",
@@ -165,7 +165,7 @@
             setButtonsDisabled(true);
             try {
                 await sendToAdminSupport(directKey, originalQuestion);
-                appendMessage(container, "Đã gửi yêu cầu liên hệ trực tiếp tới admin. Mã hỗ trợ: " + directKey, "bot");
+                window.location.href = "/support/chat/" + encodeURIComponent(directKey);
             } catch (error) {
                 appendMessage(container, "Không thể gửi yêu cầu liên hệ trực tiếp tới admin lúc này.", "bot");
             } finally {
