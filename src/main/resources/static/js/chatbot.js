@@ -267,7 +267,6 @@
         const toggleBtn = document.getElementById("chatbot-toggle");
         const panel = document.getElementById("chatbot-panel");
         const closeBtn = document.getElementById("chatbot-close");
-        const reopenSupportBtn = document.getElementById("reopen-support-chat");
         const form = document.getElementById("chatbot-form");
         const input = document.getElementById("chatbot-input");
         const messagesEl = document.getElementById("chatbot-messages");
@@ -284,11 +283,7 @@
         let supportPollTimerId = null;
 
         function updateReopenSupportButtonVisibility() {
-            if (!reopenSupportBtn) {
-                return;
-            }
-            const hasConversation = !!supportConversationKey;
-            reopenSupportBtn.classList.toggle("chatbot-hidden", !hasConversation);
+            // Nút 'Chat với Admin' luôn hiển thị, không cần ẩn/hiện
         }
 
         function getOrCreateSupportConversationKey() {
@@ -330,6 +325,7 @@
 
         function openSupportPanel() {
             setPanelVisible(supportPanel, true);
+            localStorage.setItem("supportPanelState", "open");
             startSupportPolling();
             syncSupportMessages();
             if (supportInput) {
@@ -345,6 +341,13 @@
         const headerDirectBtn = document.getElementById("chatbot-header-direct");
         if (headerDirectBtn) {
             headerDirectBtn.addEventListener("click", async function () {
+                if (supportConversationKey) {
+                    openSupportPanel();
+                    return;
+                }
+                
+                headerDirectBtn.disabled = true;
+                headerDirectBtn.textContent = "Đang kết nối...";
                 const directKey = getOrCreateSupportConversationKey();
                 openSupportPanel();
                 try {
@@ -352,6 +355,9 @@
                     await syncSupportMessages();
                 } catch (error) {
                     console.error("Lỗi khi kết nối hỗ trợ", error);
+                } finally {
+                    headerDirectBtn.disabled = false;
+                    headerDirectBtn.textContent = "Chat với Admin";
                 }
             });
         }
@@ -388,14 +394,11 @@
         if (supportCloseBtn) {
             supportCloseBtn.addEventListener("click", function () {
                 setPanelVisible(supportPanel, false);
+                localStorage.setItem("supportPanelState", "closed");
             });
         }
 
-        if (reopenSupportBtn) {
-            reopenSupportBtn.addEventListener("click", function () {
-                openSupportPanel();
-            });
-        }
+        // Nút reopenSupportBtn đã được gộp vào headerDirectBtn
 
         if (supportForm) {
             supportForm.addEventListener("submit", async function (event) {
@@ -417,7 +420,7 @@
             });
         }
 
-        if (supportConversationKey) {
+        if (supportConversationKey && localStorage.getItem("supportPanelState") === "open") {
             openSupportPanel();
         }
 
