@@ -272,6 +272,7 @@
         const input = document.getElementById("chatbot-input");
         const messagesEl = document.getElementById("chatbot-messages");
         const loadingEl = document.getElementById("chatbot-loading");
+
         const supportPanel = document.getElementById("support-chat-panel");
         const supportCloseBtn = document.getElementById("support-chat-close");
         const supportMessagesEl = document.getElementById("support-chat-messages");
@@ -341,6 +342,19 @@
             open: openSupportPanel,
             sync: syncSupportMessages,
         };
+        const headerDirectBtn = document.getElementById("chatbot-header-direct");
+        if (headerDirectBtn) {
+            headerDirectBtn.addEventListener("click", async function () {
+                const directKey = getOrCreateSupportConversationKey();
+                openSupportPanel();
+                try {
+                    await sendToAdminSupport(directKey, "Khách hàng chủ động yêu cầu liên hệ trực tiếp");
+                    await syncSupportMessages();
+                } catch (error) {
+                    console.error("Lỗi khi kết nối hỗ trợ", error);
+                }
+            });
+        }
 
         toggleBtn.addEventListener("click", function () {
             panel.classList.toggle("chatbot-hidden");

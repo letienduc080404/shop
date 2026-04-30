@@ -97,7 +97,7 @@ public class AnalyticsService {
             String hieuSuat = i == 0 ? "CAO NHẤT" : (i == 1 ? "ỔN ĐỊNH" : "TIỀM NĂNG");
             String hsCss = i == 0 ? "bg-secondary/10 text-secondary" : (i == 1 ? "bg-primary/10 text-primary" : "bg-tertiary/10 text-tertiary");
 
-            long daBan = r.getDaBan() != null ? r.getDaBan() : 0L;
+            long daBan = Optional.ofNullable(r.getDaBan()).orElse(0L);
             result.add(new TopProductAnalyticsRowDto(p.getTenSanPham(), "Collections: " + dm, p.getImageUrl(),
                     FormatUtils.formatMoneyVnd(p.getGiaNiemYet()), daBan, 
                     FormatUtils.formatCompactVnd(r.getDoanhThu()) + " ₫", hieuSuat, hsCss));

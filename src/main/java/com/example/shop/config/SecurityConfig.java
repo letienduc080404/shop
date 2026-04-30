@@ -40,6 +40,9 @@ public class SecurityConfig {
                 .passwordParameter("password")
                 .permitAll()
             )
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/chat/**", "/api/chat")
+            )
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/")

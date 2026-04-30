@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập | DOMINO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -19,12 +19,17 @@
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        headline: ['Playfair Display', 'serif'],
+                        headline: ['Inter', 'sans-serif'],
                     },
                 }
             }
         }
     </script>
+    <style>
+        *:not(.material-symbols-outlined) {
+            font-family: 'Inter', sans-serif !important;
+        }
+    </style>
 </head>
 <body class="bg-surface font-sans text-primary m-0 p-0 selection:bg-secondary selection:text-white">
     <main class="min-h-screen flex items-center justify-center px-6 py-12">
@@ -85,20 +90,6 @@
             </div>
         </div>
     </main>
-
-    <script th:inline="javascript">
-        (function() {
-            function normalizeNode(node) {
-                if (node.nodeType === 3) {
-                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
-                } else if (node.nodeType === 1) {
-                    for (let i = 0; i < node.childNodes.length; i++) {
-                        normalizeNode(node.childNodes[i]);
-                    }
-                }
-            }
-            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
-        })();
-    </script>
 </body>
+</html>
 </html>

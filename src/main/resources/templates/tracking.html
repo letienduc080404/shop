@@ -124,7 +124,7 @@
                             <img class="w-full h-full object-cover" th:src="${item.productVariant?.product?.getImageUrl()}" th:alt="${item.productVariant?.product?.tenSanPham}" />
                         </div>
                         <div>
-                            <h5 class="text-lg font-bold font-serif italic mb-1" th:text="${item.productVariant?.product?.tenSanPham}">PRODUCT NAME</h5>
+                            <h5 class="text-lg font-bold font-serif italic mb-1 tracking-normal" th:text="${item.productVariant?.product?.tenSanPham}">PRODUCT NAME</h5>
                             <p class="text-xs font-label uppercase text-primary/50 tracking-widest mb-4" th:text="'Color: ' + ${item.productVariant?.mauSac} + ' / Size: ' + ${item.productVariant?.kichThuoc}">Color: Obsidian / Size: 50</p>
                             <p class="font-bold text-xl" th:text="${item.giaBan != null ? #numbers.formatDecimal(item.giaBan, 0, 'COMMA', 0, 'POINT') + '₫' : '0₫'}">0₫</p>
                         </div>

@@ -8,8 +8,10 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title>HỖ TRỢ KHÁCH HÀNG - DOMINO ADMIN</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -22,7 +24,7 @@
                         "outline-variant": "#c4c7c7"
                     },
                     fontFamily: {
-                        headline: ["Noto Serif"],
+                        headline: ["Inter"],
                         body: ["Inter"],
                         label: ["Inter"]
                     }
@@ -30,6 +32,26 @@
             }
         }
     </script>
+    <style>
+        *:not(.material-symbols-outlined) {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
 </head>
 
 <body class="bg-surface text-primary flex h-screen overflow-hidden">
@@ -54,7 +76,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto border-t border-white/10">
+        <div class="flex-1 overflow-y-auto custom-scrollbar border-t border-white/10">
             <h3 class="p-6 text-[10px] font-bold tracking-widest uppercase text-white/50">CÁC ĐƠN CẦN HỖ TRỢ</h3>
             <ul id="sidebarChatList" class="space-y-1 px-4">
                 <!--

@@ -160,7 +160,7 @@ public class ProductService {
                     images.add(new ProductImage(path, savedProduct));
                     if (i == 0)
                         savedProduct.setHinhAnh(path);
-                } catch (java.io.IOException | RuntimeException e) {
+                } catch (java.io.IOException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (createProduct): " + e.getMessage());
                 }
             }
@@ -216,7 +216,7 @@ public class ProductService {
                     newImages.add(new ProductImage(path, product));
                     if (i == 0)
                         product.setHinhAnh(path);
-                } catch (java.io.IOException | RuntimeException e) {
+                } catch (java.io.IOException e) {
                     System.err.println("GDRIVE UPLOAD ERROR (updateProduct): " + e.getMessage());
                 }
             }

@@ -56,7 +56,8 @@ public class ChatBotService {
                 if (!aiAnswer.isBlank()) {
                     return new ChatResponse(aiAnswer);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                System.err.println("=== CHATBOT GEMINI ERROR: " + e.getMessage());
                 // Nếu OpenAI lỗi thì fallback về rule-based
             }
         }
@@ -167,6 +168,10 @@ public class ChatBotService {
             }
         }
 
+        if (!candidateKeywords.isEmpty()) {
+            return "Hiện tại Aura Shop chưa có sản phẩm \"" + originalMessage + "\". Bạn có thể tham khảo các bộ sưu tập áo thun, sơ mi hoặc quần tây đang có sẵn nhé!";
+        }
+
         if (containsKeyword(normalized, "nam")) {
             List<ProductChatDto> byMaleCategory = chatShopQueryRepository.findProductsByCategory("nam");
             if (!byMaleCategory.isEmpty()) {
@@ -219,50 +224,70 @@ public class ChatBotService {
     }
 
     private String askOpenAi(String userMessage, String fallbackAnswer) {
-        String prompt = "Bạn là trợ lý mua sắm cho website thời trang. "
-                + "Trả lời ngắn gọn, lịch sự, dùng tiếng Việt. "
-                + "Chỉ tư vấn phạm vi sản phẩm, giá, tồn kho, đơn hàng. "
-                + "Nếu không chắc, dùng nội dung gợi ý này: " + fallbackAnswer;
+        String systemPrompt = """
+                Bạn là một stylist / chuyên gia tư vấn thời trang cực kỳ thân thiện cho website Aura Shop.
+                Nhiệm vụ: Giải đáp câu hỏi của khách, gợi ý cách phối đồ, tư vấn phong cách, size số.
+                Yêu cầu: Trả lời thật ngắn gọn, súc tích (tối đa 2 - 3 câu ngắn), không lê thê dài dòng. Đi thẳng vào trọng tâm câu hỏi.
+                Dữ liệu thực tế từ shop: %s.
+                Nếu khách hỏi về chủ đề thời trang chung, hãy thoải mái tư vấn nhanh gọn, duyên dáng.
+                """.formatted(fallbackAnswer);
+
+        String combinedPrompt = systemPrompt + "\n\nCâu hỏi từ khách hàng: " + userMessage;
 
         Map<String, Object> requestBody = new LinkedHashMap<>();
-        requestBody.put("model", openAiModel);
-        requestBody.put("messages", List.of(
-                Map.of("role", "system", "content", prompt),
-                Map.of("role", "user", "content", userMessage)
-        ));
-        requestBody.put("temperature", 0.3);
+        Map<String, Object> textPart = Map.of("text", combinedPrompt);
+        Map<String, Object> contentNode = Map.of(
+                "role", "user",
+                "parts", List.of(textPart)
+        );
+        requestBody.put("contents", List.of(contentNode));
+        requestBody.put("generationConfig", Map.of("temperature", 0.3));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(openAiApiKey);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/" + openAiModel + ":generateContent?key=" + openAiApiKey;
 
         @SuppressWarnings("unchecked")
         Map<String, Object> response = restTemplate.postForObject(
-                "https://api.openai.com/v1/chat/completions",
+                url,
                 entity,
                 Map.class
         );
+
         if (response == null) {
             return "";
         }
 
-        Object choicesObj = response.get("choices");
-        if (!(choicesObj instanceof List<?> choices) || choices.isEmpty()) {
+        try {
+            Object candidatesObj = response.get("candidates");
+            if (!(candidatesObj instanceof List<?> candidates) || candidates.isEmpty()) {
+                return "";
+            }
+            Object firstCandidate = candidates.get(0);
+            if (!(firstCandidate instanceof Map<?, ?> candMap)) {
+                return "";
+            }
+            Object contentObj = candMap.get("content");
+            if (!(contentObj instanceof Map<?, ?> contentMap)) {
+                return "";
+            }
+            Object partsObj = contentMap.get("parts");
+            if (!(partsObj instanceof List<?> parts) || parts.isEmpty()) {
+                return "";
+            }
+            Object firstPart = parts.get(0);
+            if (!(firstPart instanceof Map<?, ?> partMap)) {
+                return "";
+            }
+            Object textObj = partMap.get("text");
+            return textObj instanceof String text ? text.trim() : "";
+        } catch (Exception e) {
             return "";
         }
-        Object first = choices.get(0);
-        if (!(first instanceof Map<?, ?> firstMap)) {
-            return "";
-        }
-        Object messageObj = firstMap.get("message");
-        if (!(messageObj instanceof Map<?, ?> messageMap)) {
-            return "";
-        }
-        Object content = messageMap.get("content");
-        return content instanceof String text ? text.trim() : "";
     }
-
+    
     private boolean isOpenAiConfigured() {
         return openAiApiKey != null && !openAiApiKey.isBlank();
     }

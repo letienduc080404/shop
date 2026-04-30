@@ -168,21 +168,7 @@
 
     <!-- Standardized Footer -->
     <footer th:replace="~{fragments/layout :: footer}"></footer>
-
-    <script>
-        (function() {
-            function normalizeNode(node) {
-                if (node.nodeType === 3) {
-                    if (node.nodeValue) node.nodeValue = node.nodeValue.normalize('NFC');
-                } else if (node.nodeType === 1) {
-                    for (let i = 0; i < node.childNodes.length; i++) {
-                        normalizeNode(node.childNodes[i]);
-                    }
-                }
-            }
-            document.addEventListener('DOMContentLoaded', () => normalizeNode(document.body));
-        })();
-    </script>
 </body>
+</html>
 
 </html>
